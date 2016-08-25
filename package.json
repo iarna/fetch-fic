@@ -1,0 +1,36 @@
+{
+  "name": "xenforo-to-epub",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "bin": {
+    "xenforo-to-epub": "cmdline.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Rebecca Turner <me@re-becca.org> (http://re-becca.org/)",
+  "license": "ISC",
+  "dependencies": {
+    "bluebird": "^3.4.2",
+    "cheerio": "^0.22.0",
+    "epub-generator": "^1.0.1",
+    "html5": "^1.0.5",
+    "jsdom": "^9.4.2",
+    "node-fetch": "^1.6.0",
+    "sanitize-html": "^1.13.0"
+  },
+  "files": [
+    "index.js",
+    "cmdline.js"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/iarna/xenforo-to-epub"
+  },
+  "bugs": {
+    "url": "https://github.com/iarna/xenforo-to-epub/issues"
+  },
+  "homepage": "https://github.com/iarna/xenforo-to-epub"
+}
