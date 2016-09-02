@@ -2,7 +2,7 @@
   "name": "xenforo-to-epub",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "fic-to-epub.js",
   "bin": {
     "xenforo-to-epub": "cmdline.js"
   },
@@ -13,17 +13,24 @@
   "author": "Rebecca Turner <me@re-becca.org> (http://re-becca.org/)",
   "license": "ISC",
   "dependencies": {
+    "are-we-there-yet": "^1.1.2",
     "bluebird": "^3.4.2",
     "cheerio": "^0.22.0",
     "epub-generator": "^1.0.1",
-    "html5": "^1.0.5",
-    "jsdom": "^9.4.2",
+    "gauge": "^2.6.0",
     "node-fetch": "^1.6.0",
+    "readable-stream": "^2.1.5",
     "sanitize-html": "^1.13.0"
   },
   "files": [
-    "index.js",
-    "cmdline.js"
+    "cmdline.js",
+    "fic-to-epub.js",
+    "filenameize.js",
+    "get-chapter-list.js",
+    "get-chapter.js",
+    "get-fic.js",
+    "spin-with.js",
+    "thread-url.js"
   ],
   "repository": {
     "type": "git",
@@ -32,5 +39,8 @@
   "bugs": {
     "url": "https://github.com/iarna/xenforo-to-epub/issues"
   },
-  "homepage": "https://github.com/iarna/xenforo-to-epub"
+  "homepage": "https://github.com/iarna/xenforo-to-epub",
+  "devDependencies": {
+    "standard": "^8.0.0"
+  }
 }
