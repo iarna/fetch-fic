@@ -13,6 +13,7 @@ ChapterList.prototype = {}
 inherits(ChapterList, Array)
 
 ChapterList.prototype.addChapter = function (baseName, link) {
+  if (this.some(function (chap) { return chap.link === link })) return
   var name = baseName
   var ctr = 0
   while (this.some(function (chap) { return chap.name === name })) {
