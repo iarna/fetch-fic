@@ -25,7 +25,7 @@ function ficToEpub (fic) {
     result.author = chapter.author
     result.authorUrl = chapter.authorUrl
     result.started = chapter.started
-    result.link = chapter.base
+    result.link = chapter.finalURL
     result.description = 'Fetched from ' + result.link
     result.creation = chapter.started && new Date(chapter.started)
     result.emit('meta', result)
