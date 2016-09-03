@@ -5,7 +5,8 @@ var fetch = require('node-fetch')
 fetch.Promise = Bluebird
 var fs = require('fs')
 var ThreadURL = require('./thread-url.js')
-var getChapterList = require('./get-chapter-list.js')
+var getChapterList = require('./get-chapter-list.js').getChapterList
+var scrapeChapterList = require('./get-chapter-list.js').scrapeChapterList
 var getFic = require('./get-fic.js')
 var ficToEpub = require('./fic-to-epub.js')
 var filenameize = require('./filenameize.js')
@@ -49,6 +50,12 @@ function main (args) {
     })
   }
   var chapterList = getChapterList(fetchWithOpts, thread).then(function (chapters) {
+    if (chapters.length === 0) {
+      return scrapeChapterList(fetch, thread)
+    } else {
+      return chapters
+    }
+  }).then(function (chapters) {
     tracker.addWork(chapters.length + 1)
     gauge.show(name + ': Fetching chapters')
     return chapters

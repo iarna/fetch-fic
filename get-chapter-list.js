@@ -1,6 +1,6 @@
 'use strict'
-module.exports = getChapterList
-module.exports.scrape = scrapeChapterList
+exports.getChapterList = getChapterList
+exports.scrapeChapterList = scrapeChapterList
 var url = require('url')
 var getChapter = require('./get-chapter.js')
 var cheerio = require('cheerio')
@@ -34,11 +34,7 @@ function getChapterList (fetch, thread) {
       var link = $(this).attr('href')
       threadMarks.addChapter(name, url.resolve(base, link))
     })
-    if (threadMarks.length === 0) {
-      return scrapeChapterList(fetch, thread)
-    } else {
-      return threadMarks
-    }
+    return threadMarks
   })
 }
 
