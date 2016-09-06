@@ -13,17 +13,23 @@ var filenameize = require('./filenameize.js')
 var Gauge = require('gauge')
 var Tracker = require('are-we-there-yet').Tracker
 var spinWith = require('./spin-with.js')
+var argv = require('yargs')
+  .usage('Usage: $0 <url> [--xf_session=<sessionid>]')
+  .demand(1, '<url> - The URL of the thread you want to epubize')
+  .describe('xf_session', 'value of your xf_session variable')
+  .boolean('scrape')
+  .describe('scrape', 'scrape the index instead of using threadmarks')
+  .boolean('and-scrape')
+  .describe('and-scrape', 'pull chapters from BOTH the index AND the threadmarks')
+  .argv
 
-main(process.argv.slice(2))
+main()
 
-function main (args) {
-  if (args.length < 1) {
-    console.error('xenforo-to-epub <url> [<xf_session>]')
-    process.exit(1)
-  }
-  var toFetch = args[0]
-  var cookie = args[1]
-
+function main () {
+  var toFetch = argv._[0]
+  var cookie = argv.xf_session
+  var fromThreadmarks = !argv.scrape
+  var fromScrape = argv.scrape || argv['and-scrape']
   var fetchOpts = {}
   if (cookie) {
     if (!fetchOpts.headers) fetchOpts.headers = {}
