@@ -12,8 +12,11 @@ function getFic (fetch, chapterList, maxConcurrency) {
     return getChapter(fetch, chapterInfo.link).then(function (chapter) {
       chapter.name = chapterInfo.name
       return chapter
+    }).catch(function (err) {
+      console.error(err.message)
     })
   }, {concurrency: maxConcurrency}).each(function (chapter) {
+    if (!chapter) return
     fic.queueChapter(chapter)
   }).then(function () {
     fic.queueChapter(null)
