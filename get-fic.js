@@ -10,6 +10,7 @@ function getFic (fetch, chapterList, maxConcurrency) {
   var fic = new FicStream()
   Bluebird.map(chapterList, function (chapterInfo, ii) {
     return getChapter(fetch, chapterInfo.link).then(function (chapter) {
+      chapter.order = chapterInfo.order
       chapter.name = chapterInfo.name
       return chapter
     }).catch(function (err) {

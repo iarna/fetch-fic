@@ -19,7 +19,7 @@ ChapterList.prototype.addChapter = function (baseName, link) {
   while (this.some(function (chap) { return chap.name === name })) {
     name = baseName + ' (' + ++ctr + ')'
   }
-  this.push({name: name, link: link})
+  this.push({order: this.length, name: name, link: link})
 }
 
 function getChapterList (fetch, thread, threadMarks) {
