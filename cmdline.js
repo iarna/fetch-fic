@@ -1,9 +1,16 @@
 #!/usr/bin/env node
 'use strict'
+var crypto = require('crypto')
+var path = require('path')
+var homedir = require('os-homedir')
 var Bluebird = require('bluebird')
+var mkdirp = Bluebird.promisify(require('mkdirp'))
 var fetch = require('node-fetch')
 fetch.Promise = Bluebird
 var fs = require('fs')
+var url = require('url')
+var readFile = Bluebird.promisify(fs.readFile)
+var writeFile = Bluebird.promisify(fs.writeFile)
 var ThreadURL = require('./thread-url.js')
 var getChapterList = require('./get-chapter-list.js').getChapterList
 var scrapeChapterList = require('./get-chapter-list.js').scrapeChapterList
@@ -27,7 +34,35 @@ var argv = require('yargs')
   .describe('from-chapter-list', 'build an epub from a JSON chapterlist on disk')
   .argv
 
+var inMemory = {}
 main()
+
+function fetchWithCache (toFetch, opts) {
+  var parsed = url.parse(toFetch)
+  parsed.hash = null
+  var normalized = url.format(parsed)
+  var urlHash = crypto.createHash('sha1').update(normalized).digest('hex')
+  var cachePath = path.join(homedir(), '.xenforo-to-epub', urlHash.slice(0,1), urlHash.slice(0,2))
+  var cacheFile = path.join(cachePath, urlHash + '.json')
+  if (inMemory[urlHash]) {
+    return Bluebird.resolve(inMemory[urlHash])
+  }
+  return mkdirp(cachePath).then(function () {
+    return readFile(cacheFile, 'utf8')
+  }).then(function (cached) {
+    return inMemory[urlHash] = JSON.parse(cached)
+  }).catch(function (err) {
+    return fetch(toFetch, opts).then(function (res) {
+      toFetch = res.url
+      return res.text()
+    }).then(function (result) {
+      inMemory[urlHash] = [toFetch, result]
+      return writeFile(cacheFile, JSON.stringify(inMemory[urlHash])).then(function () {
+        return inMemory[urlHash]
+      })
+    })
+  })
+}
 
 function main () {
   var toFetch = argv._[0]
@@ -54,7 +89,7 @@ function main () {
   var name = thread.name || toFetch
   gauge.show(name + ': Fetching chapter list')
   var fetchWithOpts = function (url) {
-    return spin(fetch(url, fetchOpts)).then(function (result) {
+    return spin(fetchWithCache(url, fetchOpts)).then(function (result) {
       tracker.completeWork(1)
       return result
     }, function (err) {

@@ -18,7 +18,9 @@
     "cheerio": "^0.22.0",
     "epub-generator": "^1.0.1",
     "gauge": "^2.6.0",
+    "mkdirp": "^0.5.1",
     "node-fetch": "^1.6.0",
+    "os-homedir": "^1.0.1",
     "readable-stream": "^2.1.5",
     "sanitize-html": "^1.13.0",
     "yargs": "^5.0.0"

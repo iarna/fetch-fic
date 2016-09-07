@@ -3,24 +3,8 @@ module.exports = getChapter
 var url = require('url')
 var cheerio = require('cheerio')
 
-var cache = {}
-function withCache (fetch, href) {
-  var parsed = url.parse(href)
-  parsed.hash = null
-  var dehashed = url.format(href)
-  if (cache[dehashed]) return cache[dehashed]
-  var final
-  cache[dehashed] = fetch(dehashed).then(function (res) {
-    final = res.url
-    return res.text()
-  }).then(function (html) {
-    return [final, html]
-  })
-  return cache[dehashed]
-}
-
 function getChapter (fetch, chapter) {
-  return withCache(fetch, chapter).spread(function (finalURL, html) {
+  return fetch(chapter).spread(function (finalURL, html) {
     var id = url.parse(finalURL).hash || url.parse(chapter).hash || ''
     var $ = cheerio.load(html)
     var content

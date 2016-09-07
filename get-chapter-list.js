@@ -22,10 +22,8 @@ ChapterList.prototype.addChapter = function (baseName, link) {
   this.push({name: name, link: link})
 }
 
-function getChapterList (fetch, thread) {
-  return fetch(thread.threadmarks).then(function (res) {
-    return res.text()
-  }).then(function (html) {
+function getChapterList (fetch, thread, threadMarks) {
+  return fetch(thread.threadmarks).spread(function (finalUrl, html) {
     var $ = cheerio.load(html)
     var base = $('base').attr('href') || thread.threadmarks
     var links = $('li.primaryContent.memberListItem > a')
