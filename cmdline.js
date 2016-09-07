@@ -21,6 +21,10 @@ var argv = require('yargs')
   .describe('scrape', 'scrape the index instead of using threadmarks')
   .boolean('and-scrape')
   .describe('and-scrape', 'pull chapters from BOTH the index AND the threadmarks')
+  .boolean('chapter-list-only')
+  .describe('chapter-list-only', 'fetch only the chapterlist and print as JSON')
+  .string('from-chapter-list')
+  .describe('from-chapter-list', 'build an epub from a JSON chapterlist on disk')
   .argv
 
 main()
@@ -30,6 +34,9 @@ function main () {
   var cookie = argv.xf_session
   var fromThreadmarks = !argv.scrape
   var fromScrape = argv.scrape || argv['and-scrape']
+  var chapterListOnly = argv['chapter-list-only']
+  var fromChapterList = argv['from-chapter-list']
+
   var fetchOpts = {}
   if (cookie) {
     if (!fetchOpts.headers) fetchOpts.headers = {}
@@ -55,13 +62,38 @@ function main () {
       throw err
     })
   }
-  var chapterList = getChapterList(fetchWithOpts, thread).then(function (chapters) {
-    if (chapters.length === 0) {
-      return scrapeChapterList(fetch, thread)
-    } else {
-      return chapters
-    }
-  }).then(function (chapters) {
+  var chapterList
+  if (fromChapterList) {
+    chapterList = readFile(fromChapterList, 'utf8').then(function (chaptertxt) {
+      return JSON.parse(chaptertxt).map(function (chapter, ii) {
+        chapter.order = ii
+        return chapter
+      })
+    })
+  } else {
+    chapterList = new Bluebird(function (resolve) {
+      if (fromThreadmarks) {
+        return resolve(getChapterList(fetchWithOpts, thread, chapterList).then(function (chapters) {
+          if (chapters.length === 0 || fromScrape) {
+            return scrapeChapterList(fetchWithOpts, thread, chapters)
+          } else {
+            return chapters
+          }
+        }))
+      } else {
+        return resolve(scrapeChapterList(fetchWithOpts, thread))
+      }
+    })
+  }
+  if (chapterListOnly) {
+    return chapterList.then(function (chapters) {
+      tracker.finish()
+      gauge.disable()
+      // clear off the order flag, we'll fill it back in on import
+      console.log(JSON.stringify(chapters.map(function (x) { delete x.order; return x }), null, 2))
+    })
+  }
+  chapterList = chapterList.then(function (chapters) {
     tracker.addWork(chapters.length + 1)
     gauge.show(name + ': Fetching chapters')
     return chapters

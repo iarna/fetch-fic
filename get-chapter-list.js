@@ -29,7 +29,7 @@ function getChapterList (fetch, thread) {
     var $ = cheerio.load(html)
     var base = $('base').attr('href') || thread.threadmarks
     var links = $('li.primaryContent.memberListItem > a')
-    var threadMarks = new ChapterList()
+    if (!threadMarks) threadMarks = new ChapterList()
     links.each(function () {
       var name = $(this).text().trim()
       var link = $(this).attr('href')
@@ -39,10 +39,10 @@ function getChapterList (fetch, thread) {
   })
 }
 
-function scrapeChapterList (fetch, thread) {
+function scrapeChapterList (fetch, thread, scraped) {
   return getChapter(fetch, thread.raw).then(function (chapter) {
     var $ = cheerio.load(chapter.content)
-    var scraped = new ChapterList()
+    if (!scraped) scraped = new ChapterList()
     var links = $('a.internalLink')
     if (links.length === 0) {
       scraped.addChapter(chapter.workTitle, chapter.finalURL)
