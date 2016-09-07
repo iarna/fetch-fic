@@ -136,15 +136,13 @@ function main () {
 
   var fic = getFic(fetchWithOpts, chapterList)
   var epubStream = ficToEpub(fic)
-  var filename
 
-  epubStream.once('meta', function () {
-    filename = filenameize(thread.name || epubStream.title) + '.epub'
-    epubStream.pipe(fs.createWriteStream(filename))
-  })
-  epubStream.once('end', function () {
-    tracker.finish()
-    gauge.disable()
-    console.log(filename)
+  epubStream.once('meta', function (meta) {
+    var filename = filenameize(thread.name || meta.title) + '.epub'
+    epubStream.pipe(fs.createWriteStream(filename)).once('finish', function () {
+      tracker.finish()
+      gauge.disable()
+      console.log(filename)
+    })
   })
 }
