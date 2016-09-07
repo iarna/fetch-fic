@@ -116,3 +116,14 @@ been tested with the following:
 * https://forum.questionablequesting.com
 
 Currently it will warn if you use it with another site.
+
+## PRIOR ART
+
+[FanFicFare](https://fanficfare.appspot.com/) ([as Calibre plugin](http://www.mobileread.com/forums/showthread.php?t=259221))
+knows how to talk to the sites
+this has been tested with.  It's a great general tool.  It's missing a
+couple of specific features however:
+
+* It can't scrape indexes w/o threadmarks.
+* It has no facility for editing the chapter list before ebook creation.
+* Is not as aggressive about cleaning up the HTML that goes in the epubs.
