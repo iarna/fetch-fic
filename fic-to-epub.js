@@ -1,101 +1,55 @@
 'use strict'
 module.exports = ficToEpub
-var EpubGenerator = require('epub-generator')
-var sanitizeHtml = require('sanitize-html')
-var tidy = require('htmltidy').tidy
+var url = require('url')
+var Streampub = require('streampub')
+var newChapter = Streampub.newChapter
 var PassThrough = require('readable-stream').PassThrough
 var filenameize = require('./filenameize.js')
+var sanitizeHtml = require('sanitize-html')
+var through = require('through2').obj
 
-var tidyOpt = {'output-xhtml': true, doctype: 'strict', 'numeric-entities': true}
 var mime = 'application/xhtml+xml'
 
 function ficToEpub (fic) {
   var result = new PassThrough()
-  result.author = null
-  result.title = null
-  result.description = null
-  result.creation = null
-  result.link = null
-  result.filename = null
-  var epub
-  function readMeta () {
-    var chapter = fic.read()
-    if (chapter == null) return fic.once('readable', readMeta)
-    result.title = chapter.workTitle
-    result.author = chapter.author
-    result.authorUrl = chapter.authorUrl
-    result.started = chapter.started
-    result.link = chapter.finalURL
-    result.description = 'Fetched from ' + result.link
-    result.creation = chapter.started && new Date(chapter.started)
-    result.emit('meta', result)
-    epub = new EpubGenerator({
-      author: result.author,
-      title: result.title,
-      description: result.description,
-      date: result.creation
-    })
-    epub.pipe(result)
-    epub.once('error', function (err) {
-      result.emit('error', err)
-    })
-    var toc =
-      '<div style="text-align: center;">' +
-      '<h1>' + result.title + '</h1>' +
-      '<h3>' + result.author + '</h3>' +
-      '<p>URL: ' + '<a href="' + result.link + '">' + result.link + '</a></p>' +
-      '</div>'
-    tidy(toc, tidyOpt, function (err, html) {
-      if (err) return result.emit('error', err)
-      epub.add('top.html', html, {mimetype: mime, toc: true, title: 'Title Page'})
-      addChapter(chapter)
-    })
-  }
-  function readMore () {
-    var chapter = fic.read()
-    if (chapter == null) return fic.once('readable', readMeta)
-    addChapter(chapter)
-  }
-  var done = false
-  var addingChapters = 0
-  function addChapter (chapter) {
-    ++addingChapters
-    tidy(sanitizeHtml(desmiley(chapter.content)), tidyOpt, function (err, html) {
-      --addingChapters
-      if (err) return result.emit('error', err)
-      var name = chapter.name
-      epub.add(filenameize('chapter-' + name) + '.html', html, {
-        mimetype: mime,
-        toc: true,
-        title: name
-      })
-      if (done) {
-        finish()
-      } else {
-        readMore()
-      }
-    })
-  }
-  fic.once('end', function () {
-    done = true
-    finish()
-  })
-  function finish () {
-    // because this is async it's possible for fic's end event to fire
-    // BEFORE we've finished adding chapters, so we have to track that by
-    // hand.
-    if (addingChapters) return
-    if (epub) {
-      epub.end()
-    } else {
-      result.emit('error', new Error('No fic records found'))
+  var meta
+  var epub = new Streampub()
+  fic.pipe(through(function (chapter, _, done) {
+    if (!meta) {
+      meta = {}
+      meta.title = chapter.workTitle
+      meta.author = chapter.author
+      meta.authorUrl = chapter.authorUrl
+      meta.started = chapter.started
+      meta.link = chapter.finalURL
+      meta.description = 'Fetched from ' + meta.link
+      meta.creation = chapter.started && new Date(chapter.started)
+      epub.emit('meta', meta)
+      epub.setTitle(meta.title)
+      epub.setAuthor(meta.author)
+      epub.setDescription(meta.description)
+      epub.setPublished(meta.creation)
+      epub.setSource(meta.link)
+      var title =
+        '<div style="text-align: center;">' +
+        '<h1>' + meta.title + '</h1>' +
+        '<h3>' + meta.author + '</h3>' +
+        '<p>URL: ' + '<a href="' + meta.link + '">' + meta.link + '</a></p>' +
+        '</div>'
+      this.push(newChapter(0, 'Title Page', 'top.xhtml', title))
     }
-  }
-  readMeta()
-  return result
+    var index = 1 + chapter.order
+    var name = chapter.name
+    var filename = filenameize('chapter-' + name) + '.xhtml'
+    var content = sanitizeHtml(deimage(chapter.content))
+    this.push(newChapter(index, name, filename, content))
+    done()
+  })).pipe(epub)
+
+  return epub
 }
 
-function desmiley (html) {
+function deimage (html) {
   var desmiled = html
     .replace(/<img[^>]* class="[^"]*mceSmilie1[^"]*"[^>]*>/g, '😀')
     .replace(/<img[^>]* alt="(:[)])"[^>]*>/g, '$1')
