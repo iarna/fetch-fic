@@ -133,8 +133,7 @@ function main () {
     gauge.show(name + ': Fetching chapters')
     return chapters
   })
-
-  var fic = getFic(fetchWithOpts, chapterList)
+  var fic = getFic(fetchWithOpts, chapterList, 1)
   var epubStream = ficToEpub(fic)
 
   epubStream.once('meta', function (meta) {
