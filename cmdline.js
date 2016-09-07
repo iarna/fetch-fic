@@ -37,17 +37,29 @@ var argv = require('yargs')
 var inMemory = {}
 main()
 
-function fetchWithCache (toFetch, opts) {
+function getUrlHash (toFetch) {
   var parsed = url.parse(toFetch)
   parsed.hash = null
   var normalized = url.format(parsed)
-  var urlHash = crypto.createHash('sha1').update(normalized).digest('hex')
+  return crypto.createHash('sha1').update(normalized).digest('hex')
+}
+
+function fetchWithCache (toFetch, opts) {
+  var urlHash = getUrlHash(toFetch)
   var cachePath = path.join(homedir(), '.xenforo-to-epub', urlHash.slice(0,1), urlHash.slice(0,2))
   var cacheFile = path.join(cachePath, urlHash + '.json')
   if (inMemory[urlHash]) {
     return Bluebird.resolve(inMemory[urlHash])
   }
-  return mkdirp(cachePath).then(function () {
+  return new Bluebird(function (resolve, reject) {
+    if (opts.cacheBreak) {
+      reject(new Error('skip cache'))
+    } else {
+      resolve()
+    }
+  }).then(function () {
+    return mkdirp(cachePath)
+  }).then(function () {
     return readFile(cacheFile, 'utf8')
   }).then(function (cached) {
     return inMemory[urlHash] = JSON.parse(cached)
@@ -56,8 +68,13 @@ function fetchWithCache (toFetch, opts) {
       toFetch = res.url
       return res.text()
     }).then(function (result) {
-      inMemory[urlHash] = [toFetch, result]
-      return writeFile(cacheFile, JSON.stringify(inMemory[urlHash])).then(function () {
+      var hashes = [urlHash]
+      var newHash = getUrlHash(toFetch)
+      if (newHash !== urlHash) hashes.push(newHash)
+      return Bluebird.each(hashes, function (hash) {
+        inMemory[hash] = [toFetch, result]
+        return writeFile(cacheFile, JSON.stringify(inMemory[hash]))
+      }).then(function () {
         return inMemory[urlHash]
       })
     })
@@ -76,6 +93,9 @@ function main () {
   if (cookie) {
     if (!fetchOpts.headers) fetchOpts.headers = {}
     fetchOpts.headers.Cookie = 'xf_session=' + cookie
+  }
+  if (chapterListOnly) {
+    fetchOpts.cacheBreak = true
   }
 
   var gauge = new Gauge()
