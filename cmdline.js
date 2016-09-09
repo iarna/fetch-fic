@@ -83,15 +83,18 @@ function fetchWithCache (toFetch, opts) {
 function main () {
   var toFetch = argv._[0]
   var cookie = argv.xf_session
+  var user = argv.xf_user
   var fromThreadmarks = !argv.scrape
   var fromScrape = argv.scrape || argv['and-scrape']
   var chapterListOnly = argv['chapter-list-only']
   var fromChapterList = argv['from-chapter-list']
-
   var fetchOpts = {}
   if (cookie) {
     if (!fetchOpts.headers) fetchOpts.headers = {}
     fetchOpts.headers.Cookie = 'xf_session=' + cookie
+    if (user) {
+      fetchOpts.headers.Cookie += '; xf_user=' + user
+    }
   }
   if (chapterListOnly) {
     fetchOpts.cacheBreak = true
