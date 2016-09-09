@@ -5,7 +5,12 @@ var cheerio = require('cheerio')
 
 function getChapter (fetch, chapter) {
   return fetch(chapter).spread(function (finalURL, html) {
-    var id = url.parse(finalURL).hash || url.parse(chapter).hash || ''
+    var parsed = url.parse(finalURL)
+    var id = parsed.hash || url.parse(chapter).hash || ''
+    if (id) {
+      parsed.hash = id
+      finalURL = url.format(parsed)
+    }
     var $ = cheerio.load(html)
     var content
     if (id !== '') {
