@@ -32,10 +32,13 @@ function getChapter (fetch, chapter) {
     var authorName = author.text()
     // sv, sb
     var workTitle = $('meta[property="og:title"]').attr('content')
-    var started = $('abbr.date-time')
+    var threadDate = $('abbr.DateTime')
     // qq
     if (!workTitle) workTitle = $('div.titleBar h1').text().replace(/^\[\w+\] /, '')
-    if (!started.length) started = $('span.DateTime')
+    if (!threadDate.length) threadDate = $('span.DateTime')
+    if (threadDate.length) {
+      var started = +($(threadDate).attr('data-time')) || $(threadDate).attr('datestring')
+    }
     return {
       chapterLink: chapter,
       finalURL: finalURL,
@@ -44,7 +47,7 @@ function getChapter (fetch, chapter) {
       author: authorName,
       authorUrl: authorUrl,
       content: content.html(),
-      started: started.length ? $(started[0]).text() : ''
+      started: started
     }
   })
 }
