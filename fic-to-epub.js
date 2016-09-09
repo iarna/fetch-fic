@@ -28,7 +28,7 @@ function ficToEpub (fic) {
       epub.setTitle(meta.title)
       epub.setAuthor(meta.author)
       epub.setDescription(meta.description)
-      epub.setPublished(meta.creation)
+      if (meta.creation) epub.setPublished(meta.creation)
       epub.setSource(meta.link)
       var title =
         '<div style="text-align: center;">' +
