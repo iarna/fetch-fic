@@ -51,14 +51,8 @@ function fetchWithCache (toFetch, opts) {
   if (inMemory[urlHash]) {
     return Bluebird.resolve(inMemory[urlHash])
   }
-  return new Bluebird(function (resolve, reject) {
-    if (opts.cacheBreak) {
-      reject(new Error('skip cache'))
-    } else {
-      resolve()
-    }
-  }).then(function () {
-    return mkdirp(cachePath)
+  return Bluebird.resolve().then(function () {
+    if (opts.cacheBreak) throw new Error('skip cache')
   }).then(function () {
     return readFile(cacheFile, 'utf8')
   }).then(function (cached) {
@@ -73,8 +67,13 @@ function fetchWithCache (toFetch, opts) {
       if (newHash !== urlHash) hashes.push(newHash)
       return Bluebird.each(hashes, function (hash) {
         inMemory[hash] = [toFetch, result]
-        return writeFile(cacheFile, JSON.stringify(inMemory[hash]))
       }).then(function () {
+        return mkdirp(cachePath)
+      }).then(function () {
+        return writeFile(cacheFile, JSON.stringify(inMemory[urlHash]))
+      }).then(function () {
+        return inMemory[urlHash]
+      }).catch(function (ex) {
         return inMemory[urlHash]
       })
     })
