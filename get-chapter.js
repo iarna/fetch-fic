@@ -5,8 +5,14 @@ var cheerio = require('cheerio')
 
 function getChapter (fetch, chapter) {
   return fetch(chapter).spread(function (finalURL, html) {
+    var chapterHash = url.parse(chapter).hash
     var parsed = url.parse(finalURL)
-    var id = parsed.hash || url.parse(chapter).hash || ''
+    var id
+    if (/^#post/.test(chapterHash)) {
+      id = chapterHash || parsed.hash || ''
+    } else {
+      id = parsed.hash || chapterHash || ''
+    }
     if (id) {
       parsed.hash = id
       finalURL = url.format(parsed)

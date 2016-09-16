@@ -26,6 +26,8 @@
     "sanitize-html": "^1.13.0",
     "streampub": "1.0.0",
     "through2": "^2.0.1",
+    "toml": "^2.3.0",
+    "tomlifer": "github:iarna/tomlifer#patch-1",
     "yargs": "^5.0.0"
   },
   "files": [
