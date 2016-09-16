@@ -34,7 +34,7 @@ function getChapter (fetch, chapter) {
     }
     var base = $('base').attr('href') || finalURL
     var author = $($('a.username')[0])
-    var authorUrl = author.attr('href')
+    var authorUrl = url.resolve(base, author.attr('href'))
     var authorName = author.text()
     // sv, sb
     var workTitle = $('meta[property="og:title"]').attr('content')
