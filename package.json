@@ -4,7 +4,8 @@
   "description": "",
   "main": "fic-to-epub.js",
   "bin": {
-    "xenforo-to-epub": "cmdline.js"
+    "fetch-fic": "fetch-fic.js",
+    "fetch-meta": "fetch-meta.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -15,10 +16,8 @@
   "dependencies": {
     "are-we-there-yet": "^1.1.2",
     "bluebird": "^3.4.2",
-    "call-limit": "^1.0.3",
     "cheerio": "^0.22.0",
     "gauge": "^2.6.0",
-    "listr": "^0.5.0",
     "mkdirp": "^0.5.1",
     "node-fetch": "^1.6.0",
     "os-homedir": "^1.0.1",
@@ -31,14 +30,17 @@
     "yargs": "^5.0.0"
   },
   "files": [
-    "cmdline.js",
     "fic-to-epub.js",
     "filenameize.js",
     "get-chapter-list.js",
     "get-chapter.js",
     "get-fic.js",
     "spin-with.js",
-    "thread-url.js"
+    "thread-url.js",
+    "fetch-fic.js",
+    "fetch-meta.js",
+    "simple-fetch.js",
+    "toml.js"
   ],
   "repository": {
     "type": "git",

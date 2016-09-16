@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 'use strict'
 var simpleFetch = require('./simple-fetch')
 var fs = require('fs')
