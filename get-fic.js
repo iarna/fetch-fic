@@ -30,15 +30,11 @@ function FicStream (options) {
   options.objectMode = true
   options.highWaterMark = 4
   Readable.call(this, options)
-  this.FicStream = { reading: false, chapterBuffer: [], seen: {} }
+  this.FicStream = { reading: false, chapterBuffer: [] }
 }
 inherits(FicStream, Readable)
 
 FicStream.prototype.queueChapter = function (chapter) {
-  if (chapter) {
-    if (this.FicStream.seen[chapter.finalURL]) return
-    this.FicStream.seen[chapter.finalURL] = true
-  }
   if (this.FicStream.reading) {
     this.FicStream.reading = this.push(chapter)
   } else {
