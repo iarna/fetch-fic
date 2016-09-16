@@ -10,10 +10,15 @@ var through = require('through2').obj
 
 var mime = 'application/xhtml+xml'
 
-function ficToEpub (fic) {
+function ficToEpub (meta, fic) {
+  if (!fic) {
+    fic = meta
+    meta = null
+  }
   var result = new PassThrough()
-  var meta
   var epub = new Streampub()
+  var sentTitlePage = false
+
   fic.pipe(through(function (chapter, _, done) {
     if (!meta) {
       meta = {}
@@ -25,6 +30,9 @@ function ficToEpub (fic) {
       meta.description = 'Fetched from ' + meta.link
       meta.creation = chapter.started && new Date(chapter.started)
       epub.emit('meta', meta)
+    }
+    if (!sentTitlePage) {
+      sentTitlePage = true
       epub.setTitle(meta.title)
       epub.setAuthor(meta.author)
       epub.setDescription(meta.description)
