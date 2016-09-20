@@ -64,6 +64,7 @@ function fetchWithCache (toFetch, opts) {
       if (newHash !== urlHash) hashes.push(newHash)
       return Bluebird.each(hashes, function (hash) {
         inMemory[hash] = [toFetch, result]
+        if (/errorPanel/.test(result)) throw new Error('SKIP')
       }).then(function () {
         return mkdirp(cachePath)
       }).then(function () {

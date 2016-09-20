@@ -40,7 +40,8 @@
     "fetch-fic.js",
     "fetch-meta.js",
     "simple-fetch.js",
-    "toml.js"
+    "toml.js",
+    "promisify.js"
   ],
   "repository": {
     "type": "git",
