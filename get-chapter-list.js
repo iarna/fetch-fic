@@ -28,13 +28,12 @@ function getChapterList (fetch, thread, threadMarks) {
     var base = $('base').attr('href') || thread.threadmarks
     var links = $('li.primaryContent.memberListItem > a')
     if (!threadMarks) threadMarks = new ChapterList()
-    return links.each(function () {
+    links.each(function () {
       var name = $(this).text().trim()
       var link = $(this).attr('href')
       threadMarks.addChapter(name, url.resolve(base, link))
-    }).then(function () {
-      return threadMarks
     })
+    return threadMarks
   })
 }
 
@@ -48,15 +47,14 @@ function scrapeChapterList (fetch, thread, scraped) {
     } else {
       scraped.addChapter('Index', chapter.finalURL)
     }
-    return links.each(function (_, link) {
+    links.each(function (_, link) {
       var $link = $(link)
       var href = url.resolve(chapter.base, $link.attr('href'))
       var name = $link.text().trim()
       if (/^[/]threads[/]|^[/]index.php[?]topic|^[/]posts[/]/.test(url.parse(href).path)) {
         scraped.addChapter(name, href)
       }
-    }).then(function () {
-      return scraped
     })
+    return scraped
   })
 }
