@@ -4,12 +4,17 @@ var homedir = require('os-homedir')
 var url = require('url')
 var crypto = require('crypto')
 var Bluebird = require('bluebird')
-var mkdirp = Bluebird.promisify(require('mkdirp'))
+var promisify = require('./promisify')
+var mkdirp = promisify(require('mkdirp'))
 var fetch = require('node-fetch')
 fetch.Promise = Bluebird
 var fs = require('fs')
-var readFile = Bluebird.promisify(fs.readFile)
-var writeFile = Bluebird.promisify(fs.writeFile)
+var readFile = promisify(fs.readFile)
+var writeFile = promisify(fs.writeFile)
+var unlink = promisify(fs.unlink)
+var zlib = require('zlib')
+var gzip = promisify(zlib.gzip)
+var gunzip = promisify(zlib.gunzip)
 
 fetch.Promise = Bluebird
 
@@ -35,12 +40,20 @@ function fetchWithCache (toFetch, opts) {
   if (inMemory[urlHash]) {
     return Bluebird.resolve(inMemory[urlHash])
   }
-  return Bluebird.resolve().then(function () {
-    if (opts.cacheBreak) throw new Error('skip cache')
-  }).then(function () {
-    return readFile(cacheFile, 'utf8')
+  var fromGzip = false
+  var useCache = opts.cacheBreak ? Bluebird.reject(new Error()) : Bluebird.resolve()
+  return useCache.then(function () {
+    return readFile(cacheFile + '.gz').then(function (buf) {
+      return zlib.gunzipSync(buf).toString('utf8')
+    }).catch(function () {
+      return readFile(cacheFile, 'utf8').tap(function (cached) {
+        return writeFile(cacheFile + '.gz', gzip(cached)).then(function () {
+          return unlink(cacheFile)
+        }).catchReturn(true)
+      })
+    })
   }).then(function (cached) {
-    return inMemory[urlHash] = JSON.parse(cached)
+    inMemory[urlHash] = JSON.parse(cached)
   }).catch(function (err) {
     return fetch(toFetch, opts).then(function (res) {
       toFetch = res.url
@@ -54,12 +67,10 @@ function fetchWithCache (toFetch, opts) {
       }).then(function () {
         return mkdirp(cachePath)
       }).then(function () {
-        return writeFile(cacheFile, JSON.stringify(inMemory[urlHash]))
-      }).then(function () {
-        return inMemory[urlHash]
-      }).catch(function (ex) {
-        return inMemory[urlHash]
-      })
+        return writeFile(cacheFile + '.gz', gzip(JSON.stringify(inMemory[urlHash])))
+      }).catchReturn(true)
     })
+  }).then(function (result) {
+    return inMemory[urlHash]
   })
 }
