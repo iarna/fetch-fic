@@ -8,12 +8,8 @@ function spinGauge (gauge) {
     if (++spinning === 1) {
       spinInterval = setInterval(function () { gauge.pulse() }, 50)
     }
-    return P.then(function (result) {
+    return P.tap(function (result) {
       if (--spinning === 0) clearInterval(spinInterval)
-      return result
-    }, function (err) {
-      if (--spinning === 0) clearInterval(spinInterval)
-      throw err
     })
   }
 }
