@@ -16,53 +16,47 @@ $ npm install -g xenforo-to-epub
 ## USAGE
 
 ```
-Usage: xenforo-to-epub <url> [options]
+Usage: fetch-meta <url> [options]
 
 Options:
-  --xf_session         value of your xf_session variable
+  --xf_user            value of your xf_user cookie
   --scrape             scrape the index instead of using threadmarks   [boolean]
   --and-scrape         pull chapters from BOTH the index AND the threadmarks
                                                                        [boolean]
-  --chapter-list-only  fetch only the chapterlist and print as JSON    [boolean]
-  --from-chapter-list  build an epub from a JSON chapterlist on disk    [string]
+<url> - The URL of the threads you want to epubize. These fetches are not cached so you're
+guaranteed an up-to-date index.  This writes a metadata file out with the
+extension `.fic.toml` for you to edit and pass to…
 
-<url> - The URL of the thread you want to epubize
+Usage: fetch-fic <fic(s)> [options] Options:
+  --xf_user            value of your xf_user cookie
+
+<fic(s)> - The `.fic.toml` file(s) you want to get epubs for.  You'll get
+one epub for each `.fic.toml`.  Epubs are fetch in sequence, not in
+parallel.
 ```
 
 ## EXAMPLE
 
 ```console
-$ xenforo-to-epub https://forums.example.com/threads/example.12345/
+$ fetch-meta https://forums.example.com/threads/example.12345/
+example.fic.toml
+$ fetch-fic example.fic.toml
 ⸨░░░░░░░░░░░░░░    ⸩ ⠋ example: Fetching chapters
 ```
 
-## TYPICAL USE
+## HINTS
 
-I usually pull down a chapter list:
-
-```console
-$ xenforo-to-epub --chapter-list-only https://forums.example.com/threads/example.12345/ > example.json
-```
-
-If there's stuff in the first post that's not threadmarked (usually Omake) I'll grab that too:
-
-```console
-$ xenforo-to-epub --chapter-list-only --and-scrape https://forums.example.com/threads/example.12345/ > example.json
-```
-
-And then edit that till it looks right.  If I do `--and-scrape` then editing
-it is usually mandatory as often there will be duplicates between what's
-scraped from the first post and the threadmarks.
-
-Once I'm happy with the result I pull down the epub:
-
-```console
-$ xenforo-to-epub --from-chapter-list example.json https://forums.example.com/threads/example.12345/
-```
-
-If the epub ends up not being right I can rerun that as much as I like and
-it'll be super fast as all of the raw pages fetched are cached so we won't
-be hitting the site again.
+* Use `--scrape` if the thread doesn't have threadmarks but has an index post.
+* Use `--and-scrape` if the thread has extra stuff in the index post that's
+  not threadmarked.  This is commonly where meta-fanfic goes (aka in some
+  communities as "omake").
+* The fic files are [TOML](https://github.com/toml-lang/toml), but just open
+  them up in an editor, they're pretty straightforward.
+* I often edit the fic files quite a bit.  The title determines the name of
+  the epub file.
+* If the resulting epub isn't quite right, feel free to reuse `fetch-fic` as much
+  as you need to. It'll be super fast as it'll be working from a local copy of
+  the theads. (Fast and no hammering your favorite forum site.)
 
 ## DETAIL
 
@@ -75,11 +69,16 @@ This is produced from the thread title.
 
 All of the arguments are optional
 
-### --xf_session <cookie>
+### --xf_user <cookie>
 
-You can optionally pass the value of your `xf_session` cookie if you want to
+You can optionally pass the value of your `xf_user` cookie if you want to
 download threads that are restricted to members of the site.  To get this
 cookie you'll have to look in your browser. It's a pain ¯\\\_(ツ)\_/¯
+
+### --xf_session <cookie>
+
+Alternatively, you can use the session cookie from your browser.  Unlike
+`xf_user` this will expire after some amount of inactivity.
 
 ### --scrape
 
@@ -91,20 +90,11 @@ URL you specified and count those as chapters.
 Fetch threadmarks AND slurp links from the URL you specified. Often results in
 duplicates but it's also often the only way to get _everything_.
 
-### --chapter-list-only
-
-Instead of producing an epub, print out the chapter list as JSON. If you put this
-in a file it can be used by `--from-chapter-list` below. If you specify this option
-the cache is always skipped and a fresh copy of the URL(s) involved downloaded.
-
-### --from-chapter-list <file.json>
-
-Will skip the threadmark/scrape step and read the chapter list from the file you specified.
-
 # WIP WIP WIP
 
 This is less work-in-progressy now, but it could have a smarter cache.  Also
-a web UI would be keen.
+a web UI would be keen.  On the other hand the shape of that UI is now
+actually kind of clear, what with chapter list editing and what not.
 
 ## LIMITED TESTING
 
