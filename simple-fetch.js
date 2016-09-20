@@ -54,6 +54,7 @@ function fetchWithCache (toFetch, opts) {
     })
   }).then(function (cached) {
     inMemory[urlHash] = JSON.parse(cached)
+    return null
   }).catch(function (err) {
     return fetch(toFetch, opts).then(function (res) {
       toFetch = res.url

@@ -66,6 +66,7 @@ function main () {
       var filename = filenameize(fic.title) + '.fic.toml'
       fs.writeFileSync(filename, TOML.stringify(fic))
       console.log(filename)
+      return null
     })
   })
 }
