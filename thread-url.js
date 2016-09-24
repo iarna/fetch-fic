@@ -3,17 +3,19 @@ module.exports = ThreadURL
 var url = require('url')
 
 var knownSites = {
-  'forums.sufficientvelocity.com': true,
-  'forums.spacebattles.com': true,
-  'forum.questionablequesting.com': true
+  'forums.sufficientvelocity.com': 'Sufficient Velocity',
+  'forums.spacebattles.com': 'Spacebattles',
+  'forum.questionablequesting.com': 'Questionable Questing'
 }
 
 function ThreadURL (thread) {
   this.raw = thread
   this.warnings = []
   var threadmarkURL = url.parse(thread)
+  this.publisher = knownSites[threadmarkURL.hostname]
   if (!knownSites[threadmarkURL.hostname]) {
     this.warnings.push('Has not yet been tested with ' + threadmarkURL.hostname + ', may not work.')
+    this.publisher = threadmarkURL.hostname
   }
   threadmarkURL.hash = ''
   var threadMatch = /^([/]threads[/][^/]+\.\d+)(?:[/].*)?$/

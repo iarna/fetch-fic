@@ -70,6 +70,7 @@ function main () {
         link: firstChapter.finalURL,
         description: 'Fetched from ' + firstChapter.finalURL + '\nTags: ' + tags.join(', '),
         tags: tags,
+        publisher: thread.publisher,
         chapters: chapters.map(function (x) { delete x.order; return x })
       }
       var filename = filenameize(fic.title) + '.fic.toml'
