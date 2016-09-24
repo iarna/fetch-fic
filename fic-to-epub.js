@@ -6,55 +6,37 @@ var newChapter = Streampub.newChapter
 var PassThrough = require('readable-stream').PassThrough
 var filenameize = require('./filenameize.js')
 var sanitizeHtml = require('sanitize-html')
-var through = require('through2').obj
+var ms = require('mississippi')
 
 var mime = 'application/xhtml+xml'
 
-function ficToEpub (meta, fic) {
-  if (!fic) {
-    fic = meta
-    meta = null
-  }
+function ficToEpub (meta) {
   var result = new PassThrough()
   var epub = new Streampub()
-  var sentTitlePage = false
 
-  fic.pipe(through(function (chapter, _, done) {
-    if (!meta) {
-      meta = {}
-      meta.title = chapter.workTitle
-      meta.author = chapter.author
-      meta.authorUrl = chapter.authorUrl
-      meta.started = chapter.started
-      meta.link = chapter.finalURL
-      meta.description = 'Fetched from ' + meta.link
-      meta.creation = chapter.started && new Date(chapter.started)
-      epub.emit('meta', meta)
-    }
-    if (!sentTitlePage) {
-      sentTitlePage = true
-      epub.setTitle(meta.title)
-      epub.setAuthor(meta.author)
-      epub.setDescription(meta.description)
-      if (meta.creation) epub.setPublished(meta.creation)
-      epub.setSource(meta.link)
-      var title =
-        '<div style="text-align: center;">' +
-        '<h1>' + meta.title + '</h1>' +
-        '<h3>' + meta.author + '</h3>' +
-        '<p>URL: ' + '<a href="' + meta.link + '">' + meta.link + '</a></p>' +
-        '</div>'
-      this.push(newChapter(0, 'Title Page', 'top.xhtml', title))
-    }
-    var index = 1 + chapter.order
-    var name = chapter.name
-    var filename = filenameize('chapter-' + name) + '.xhtml'
-    var content = sanitizeHtml(deimage(chapter.content))
-    this.push(newChapter(index, name, filename, content))
-    done()
-  })).pipe(epub)
+  epub.setTitle(meta.title)
+  epub.setAuthor(meta.author)
+  epub.setDescription(meta.description)
+  if (meta.creation) epub.setPublished(meta.creation)
+  epub.setSource(meta.link)
+  var title =
+    '<div style="text-align: center;">' +
+    '<h1>' + meta.title + '</h1>' +
+    '<h3>' + meta.author + '</h3>' +
+    '<p>URL: ' + '<a href="' + meta.link + '">' + meta.link + '</a></p>' +
+    '</div>'
+  epub.write(newChapter(0, 'Title Page', 'top.xhtml', title))
 
-  return epub
+  return ms.pipeline.obj(ms.through.obj(transformChapter), epub)
+}
+
+function transformChapter (chapter, _, done) {
+  var index = 1 + chapter.order
+  var name = chapter.name
+  var filename = filenameize('chapter-' + name) + '.xhtml'
+  var content = sanitizeHtml(deimage(chapter.content))
+  this.push(newChapter(index, name, filename, content))
+  done()
 }
 
 function deimage (html) {

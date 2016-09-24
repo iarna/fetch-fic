@@ -12,6 +12,8 @@ var Tracker = require('are-we-there-yet').Tracker
 var spinWith = require('./spin-with.js')
 var TOML = require('./toml.js')
 var filenameize = require('./filenameize.js')
+var ms = require('mississippi')
+var pipe = Bluebird.promisify(ms.pipe)
 var argv = require('yargs')
   .usage('Usage: $0 <fic> [--xf_session=<sessionid>] [--xf_user=<userid>]')
   .demand(1, '<fic> - A fic metadata file to fetch a fic for. Typically ends in .fic.toml')
@@ -61,11 +63,11 @@ function main () {
     var filename = filenameize(fic.title) + '.epub'
     tracker.addWork(fic.chapters.length)
 
-    return new Bluebird(function (resolve, reject) {
-      ficToEpub(fic, getFic(fetchWithOpts, fic.chapters, 1)).pipe(fs.createWriteStream(filename))
-        .once('finish', resolve)
-        .once('error', reject)
-    }).tap(function () {
+    return pipe(
+      getFic(fetchWithOpts, fic.chapters, 1),
+      ficToEpub(fic),
+      fs.createWriteStream(filename)
+    ).tap(function () {
       tracker.finish()
       gauge.hide()
       console.log(filename)
