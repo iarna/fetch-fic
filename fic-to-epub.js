@@ -19,6 +19,7 @@ function ficToEpub (meta) {
   epub.setDescription(meta.description)
   if (meta.creation) epub.setPublished(meta.creation)
   epub.setSource(meta.link)
+  if (meta.tags && meta.tags.length) epub.setSubject(meta.tags.join(','))
   var title =
     '<div style="text-align: center;">' +
     '<h1>' + meta.title + '</h1>' +

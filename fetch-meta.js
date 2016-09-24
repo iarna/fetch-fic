@@ -54,13 +54,22 @@ function main () {
   chapterList.then(function (chapters) {
     fetchOpts.cacheBreak = false
     return getChapter(fetch, chapters[0].link).then(function (firstChapter) {
+      var title = firstChapter.workTitle
+      var tags = []
+      var tagExp = /[\[(](.*?)[\])]/
+      var tagMatch = title.match(tagExp)
+      if (tagMatch) {
+        title = title.replace(tagExp, '').trim()
+        tags = tagMatch[1].split('/').map(function (tag) { return tag.trim() })
+      }
       var fic = {
-        title: firstChapter.workTitle,
+        title: title,
         author: firstChapter.author,
         authorUrl: firstChapter.authorUrl,
         started: firstChapter.started,
         link: firstChapter.finalURL,
-        description: 'Fetched from ' + firstChapter.finalURL,
+        description: 'Fetched from ' + firstChapter.finalURL + '\nTags: ' + tags.join(', '),
+        tags: tags,
         chapters: chapters.map(function (x) { delete x.order; return x })
       }
       var filename = filenameize(fic.title) + '.fic.toml'
