@@ -16,6 +16,7 @@ function ficToEpub (meta) {
 
   epub.setTitle(meta.title)
   epub.setAuthor(meta.author)
+  if (meta.authorUrl) epub.setAuthorUrl(meta.authorUrl)
   epub.setDescription(meta.description)
   if (meta.creation) epub.setPublished(meta.creation)
   epub.setSource(meta.link)
