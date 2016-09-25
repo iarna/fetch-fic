@@ -10,7 +10,6 @@ var Gauge = require('gauge')
 var TrackerGroup = require('are-we-there-yet').TrackerGroup
 var Tracker = require('are-we-there-yet').Tracker
 var spinWith = require('./spin-with.js')
-var TOML = require('./toml.js')
 var filenameize = require('./filenameize.js')
 var ms = require('mississippi')
 var pipe = Bluebird.promisify(ms.pipe)
