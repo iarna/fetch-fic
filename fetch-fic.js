@@ -48,6 +48,7 @@ function main () {
 
   function fetchFic (ficFile, ii) {
     var fic = TOML.parse(fs.readFileSync(ficFile, 'utf8'))
+    fic.description = fic.description.replace(/\\n/, String.fromCharCode(10))
     fic.chapters.forEach(function (chapter, ii) {
       chapter.order = ii
     })
