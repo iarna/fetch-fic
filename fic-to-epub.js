@@ -1,17 +1,12 @@
 'use strict'
 module.exports = ficToEpub
-var url = require('url')
 var Streampub = require('streampub')
 var newChapter = Streampub.newChapter
-var PassThrough = require('readable-stream').PassThrough
 var filenameize = require('./filenameize.js')
 var sanitizeHtml = require('sanitize-html')
 var ms = require('mississippi')
 
-var mime = 'application/xhtml+xml'
-
 function ficToEpub (meta) {
-  var result = new PassThrough()
   var epub = new Streampub()
 
   epub.setTitle(meta.title)

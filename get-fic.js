@@ -45,9 +45,10 @@ FicStream.prototype.queueChapter = function (chapter) {
   } else {
     if (this.readyP) return this.readyP
     var self = this
-    return this.readyP = new Bluebird(function (resolve) {
+    this.readyP = new Bluebird(function (resolve) {
       self.readyR = resolve
     })
+    return this.readyP
   }
 }
 

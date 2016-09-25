@@ -14,7 +14,6 @@ var writeFile = promisify(fs.writeFile)
 var unlink = promisify(fs.unlink)
 var zlib = require('zlib')
 var gzip = promisify(zlib.gzip)
-var gunzip = promisify(zlib.gunzip)
 
 fetch.Promise = Bluebird
 
@@ -35,12 +34,11 @@ var inMemory = {}
 
 function fetchWithCache (toFetch, opts) {
   var urlHash = getUrlHash(toFetch)
-  var cachePath = path.join(homedir(), '.xenforo-to-epub', urlHash.slice(0,1), urlHash.slice(0,2))
+  var cachePath = path.join(homedir(), '.xenforo-to-epub', urlHash.slice(0, 1), urlHash.slice(0, 2))
   var cacheFile = path.join(cachePath, urlHash + '.json')
   if (inMemory[urlHash]) {
     return Bluebird.resolve(inMemory[urlHash])
   }
-  var fromGzip = false
   var useCache = opts.cacheBreak ? Bluebird.reject(new Error()) : Bluebird.resolve()
   return useCache.then(function () {
     return readFile(cacheFile + '.gz').then(function (buf) {
@@ -55,7 +53,7 @@ function fetchWithCache (toFetch, opts) {
   }).then(function (cached) {
     inMemory[urlHash] = JSON.parse(cached)
     return null
-  }).catch(function (err) {
+  }).catch(function (_) {
     return fetch(toFetch, opts).then(function (res) {
       toFetch = res.url
       return res.text()

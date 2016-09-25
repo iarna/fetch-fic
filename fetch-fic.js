@@ -8,7 +8,6 @@ var getFic = require('./get-fic.js')
 var ficToEpub = require('./fic-to-epub.js')
 var Gauge = require('gauge')
 var TrackerGroup = require('are-we-there-yet').TrackerGroup
-var Tracker = require('are-we-there-yet').Tracker
 var spinWith = require('./spin-with.js')
 var filenameize = require('./filenameize.js')
 var ms = require('mississippi')
@@ -35,7 +34,6 @@ function main () {
     fetchOpts.headers.Cookie += '; xf_user=' + user
   }
   var fetchWithCache = simpleFetch(fetchOpts)
-  var fetch = simpleFetch(fetchOpts)
   var gauge = new Gauge()
   var trackerGroup = new TrackerGroup()
   trackerGroup.on('change', function (name, completed) {
