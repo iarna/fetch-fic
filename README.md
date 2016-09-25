@@ -90,6 +90,37 @@ URL you specified and count those as chapters.
 Fetch threadmarks AND slurp links from the URL you specified. Often results in
 duplicates but it's also often the only way to get _everything_.
 
+## WHAT FIC FILES LOOK LIKE
+
+`fetch-meta` produces `.fic.toml` files…
+
+If the original thread name was:
+
+```
+My great threadname (Example1/Example2)
+```
+
+then:
+
+```
+title="My great threadname"
+author="Example Author"
+authorUrl="https://forums.example.com/members/example-author.123/"
+started="2016-09-25T01:11:36Z"
+
+link="https://forums.example.com/threads/example.12345/"
+description="Fetched from https://forums.example.com/threads/example.12345/\n\nTags: Example1, Example2"
+tags=["Example1", "Example2"]
+
+[[chapters]]
+name="1"
+link="https://forums.example.com/threads/example.12345/#post-7890"
+
+[[chapters]]
+name="2"
+link="https://forums.example.com/threads/example.12345/page-2#post-9783"
+```
+
 # WIP WIP WIP
 
 This is less work-in-progressy now, but it could have a smarter cache.  Also
