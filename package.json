@@ -26,12 +26,8 @@
     "sanitize-html": "^1.13.0",
     "streampub": "^1.1.0",
     "toml": "^2.3.0",
-    "tomlifer": "github:iarna/tomlifer#patch-2",
     "yargs": "^5.0.0"
   },
-  "bundleDependencies": [
-    "tomlifer"
-  ],
   "files": [
     "fic-to-epub.js",
     "filenameize.js",
@@ -45,7 +41,7 @@
     "simple-fetch.js",
     "toml.js",
     "promisify.js",
-    "npm-shrinkwrap.json"
+    "toml-stringify.js"
   ],
   "repository": {
     "type": "git",
