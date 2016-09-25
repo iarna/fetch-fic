@@ -53,7 +53,7 @@ function getChapter (fetch, chapter) {
       author: authorName,
       authorUrl: authorUrl,
       content: content.html(),
-      started: started
+      started: new Date(started || Date.now())
     }
   })
 }
