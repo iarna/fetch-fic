@@ -83,7 +83,7 @@ TOMLifer.fn.dumpObject = function (value, context, inArray) {
     }
 
     var index = -1;
-    while (++i < value.length) {
+    while (++index < value.length) {
       bracket += this.dump(value[index], context, true);
       if (context.length === 0) {
         bracket += ', ';
