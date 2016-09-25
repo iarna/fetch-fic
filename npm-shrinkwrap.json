@@ -1,0 +1,20 @@
+{
+  "name": "xenforo-to-epub",
+  "version": "1.0.0",
+  "dependencies": {
+    "tomlifer": {
+      "from": "github:nanyuantingfeng/tomlifer#45eba6dbd950b178222f88d95c90bdb7363e59b4",
+      "resolved": "git://github.com/nanyuantingfeng/tomlifer.git#45eba6dbd950b178222f88d95c90bdb7363e59b4",
+      "dependencies": {
+        "nclass": {
+          "version": "1.7.3",
+          "from": "nclass@^1.7.3"
+        },
+        "nfix": {
+          "version": "1.3.1",
+          "from": "nfix@^1.3.1"
+        }
+      }
+    }
+  }
+}
