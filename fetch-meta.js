@@ -68,7 +68,7 @@ function main () {
         authorUrl: firstChapter.authorUrl,
         started: firstChapter.started,
         link: firstChapter.finalURL,
-        description: 'Fetched from ' + firstChapter.finalURL + '\nTags: ' + tags.join(', '),
+        description: 'Fetched from ' + firstChapter.finalURL + (tags.length ? '\nTags: ' + tags.join(', ') : ''),
         tags: tags,
         publisher: thread.publisher,
         chapters: chapters.map(function (x) { delete x.order; return x })
