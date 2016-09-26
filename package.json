@@ -7,9 +7,6 @@
     "fetch-fic": "fetch-fic.js",
     "fetch-meta": "fetch-meta.js"
   },
-  "scripts": {
-    "test": "standard && tap test/"
-  },
   "keywords": [],
   "author": "Rebecca Turner <me@re-becca.org> (http://re-becca.org/)",
   "license": "ISC",
@@ -25,7 +22,7 @@
     "readable-stream": "^2.1.5",
     "sanitize-html": "^1.13.0",
     "streampub": "^1.1.0",
-    "toml": "^2.3.0",
+    "@iarna/toml": "^1.0.1",
     "yargs": "^5.0.0"
   },
   "files": [
@@ -50,9 +47,5 @@
   "bugs": {
     "url": "https://github.com/iarna/xenforo-to-epub/issues"
   },
-  "homepage": "https://github.com/iarna/xenforo-to-epub",
-  "devDependencies": {
-    "standard": "^8.0.0",
-    "tap": "^7.1.2"
-  }
+  "homepage": "https://github.com/iarna/xenforo-to-epub"
 }
