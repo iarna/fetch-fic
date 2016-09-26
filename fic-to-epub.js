@@ -23,8 +23,7 @@ function ficToEpub (meta) {
     '<h3>' + meta.author + '</h3>' +
     '<p>URL: ' + '<a href="' + meta.link + '">' + meta.link + '</a></p>' +
     '</div>'
-  epub.write(newChapter(0, 'Title Page', 'top.xhtml', title))
-
+  epub.write(newChapter('Title Page', title, 0, 'top.xhtml'))
   return ms.pipeline.obj(ms.through.obj(transformChapter), epub)
 }
 
@@ -33,7 +32,7 @@ function transformChapter (chapter, _, done) {
   var name = chapter.name
   var filename = filenameize('chapter-' + name) + '.xhtml'
   var content = sanitizeHtml(deimage(chapter.content))
-  this.push(newChapter(index, name, filename, content))
+  this.push(newChapter(name, content, index, filename))
   done()
 }
 
