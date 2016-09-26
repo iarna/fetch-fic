@@ -5,10 +5,33 @@ var getChapter = require('./get-chapter.js')
 var Readable = require('readable-stream').Readable
 var inherits = require('util').inherits
 
+function concurrently (todo, concurrency, forEach) {
+  var active = 0
+  var aborted = false
+  return new Bluebird(function (resolve, reject) {
+    function runNext () {
+      if (aborted) return
+      if (active === 0 && todo.length === 0) return resolve()
+      while (active < concurrency && todo.length) {
+        ++active
+        forEach(todo.shift()).then(function () {
+          --active
+          runNext()
+        }).catch(function (err) {
+          aborted = true
+          reject(err)
+          return
+        })
+      }
+    }
+    runNext()
+  })
+}
+
 function getFic (fetch, chapterList, maxConcurrency) {
   if (!maxConcurrency) maxConcurrency = 4
-  var fic = new FicStream({highWaterMark: maxConcurrency})
-  Bluebird.each(chapterList, function (chapterInfo, ii) {
+  var fic = new FicStream({highWaterMark: maxConcurrency * 2})
+  concurrently(chapterList, maxConcurrency, function (chapterInfo) {
     return getChapter(fetch, chapterInfo.link).then(function (chapter) {
       chapter.order = chapterInfo.order
       chapter.name = chapterInfo.name
@@ -16,7 +39,7 @@ function getFic (fetch, chapterList, maxConcurrency) {
     }).catch(function (err) {
       console.error(err.message)
     })
-  }, {concurrency: maxConcurrency}).finally(function () {
+  }).finally(function () {
     return fic.queueChapter(null)
   })
   return fic
