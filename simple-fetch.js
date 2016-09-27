@@ -18,7 +18,8 @@ var gzip = promisify(zlib.gzip)
 fetch.Promise = Bluebird
 
 module.exports = function (opts) {
-  return function (url) {
+  return function (url, noCache) {
+    if (noCache) opts.noCache = true
     return fetchWithCache(url, opts)
   }
 }
@@ -36,10 +37,10 @@ function fetchWithCache (toFetch, opts) {
   var urlHash = getUrlHash(toFetch)
   var cachePath = path.join(homedir(), '.xenforo-to-epub', urlHash.slice(0, 1), urlHash.slice(0, 2))
   var cacheFile = path.join(cachePath, urlHash + '.json')
-  if (inMemory[urlHash]) {
+  if (!opts.noCache && inMemory[urlHash]) {
     return Bluebird.resolve(inMemory[urlHash])
   }
-  var useCache = opts.cacheBreak ? Bluebird.reject(new Error()) : Bluebird.resolve()
+  var useCache = opts.noCache || opts.cacheBreak ? Bluebird.reject(new Error()) : Bluebird.resolve()
   return useCache.then(function () {
     return readFile(cacheFile + '.gz').then(function (buf) {
       return zlib.gunzipSync(buf).toString('utf8')

@@ -3,8 +3,8 @@ module.exports = getChapter
 var url = require('url')
 var cheerio = require('cheerio')
 
-function getChapter (fetch, chapter) {
-  return fetch(chapter).spread(function (finalURL, html) {
+function getChapter (fetch, chapter, noCache) {
+  return fetch(chapter, noCache).spread(function (finalURL, html) {
     var chapterHash = url.parse(chapter).hash
     var parsed = url.parse(finalURL)
     var id
@@ -27,7 +27,11 @@ function getChapter (fetch, chapter) {
     if (content.length === 0) {
       var error = $('div.errorPanel')
       if (error.length === 0) {
-        throw new Error('No chapter found at ' + chapter)
+        if (noCache) {
+          throw new Error('No chapter found at ' + chapter)
+        } else {
+          return getChapter(fetch, chapter, true)
+        }
       } else {
         throw new Error('Error fetching ' + chapter + ': ' + error.text().trim())
       }

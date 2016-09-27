@@ -53,8 +53,8 @@ function main () {
 
     var tracker = trackers[ii]
     gauge.show(fic.title + ': Fetching fic')
-    var fetchWithOpts = function (url) {
-      return spin(fetchWithCache(url)).tap(function () {
+    var fetchWithOpts = function (url, noCache) {
+      return spin(fetchWithCache(url, noCache)).tap(function () {
         tracker.completeWork(1)
       })
     }

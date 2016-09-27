@@ -17,10 +17,10 @@ function concurrently (todo, concurrency, forEach) {
         forEach(todo.shift()).then(function () {
           --active
           runNext()
+          return null
         }).catch(function (err) {
           aborted = true
           reject(err)
-          return
         })
       }
     }
