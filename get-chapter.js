@@ -2,6 +2,7 @@
 module.exports = getChapter
 var url = require('url')
 var cheerio = require('cheerio')
+var xenforoDateTime = require('./datetime.js')
 
 function getChapter (fetch, chapter, noCache) {
   return fetch(chapter, noCache).spread(function (finalURL, html) {
@@ -45,19 +46,14 @@ function getChapter (fetch, chapter, noCache) {
     var threadDate = $('abbr.DateTime')
     // qq
     if (!workTitle) workTitle = $('div.titleBar h1').text().replace(/^\[\w+\] /, '')
-    if (!threadDate.length) threadDate = $('span.DateTime')
-    if (threadDate.length) {
-      var started = +($(threadDate).attr('data-time')) || $(threadDate).attr('datestring')
-    }
+    var threadDate = xenforoDateTime($('.DateTime'))
     return {
       chapterLink: chapter,
       finalURL: finalURL,
       base: base,
-      workTitle: workTitle || '',
       author: authorName,
       authorUrl: authorUrl,
-      content: content.html(),
-      started: new Date(started || Date.now())
+      started: started
     }
   })
 }
