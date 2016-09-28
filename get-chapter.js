@@ -19,41 +19,38 @@ function getChapter (fetch, chapter, noCache) {
       finalURL = url.format(parsed)
     }
     var $ = cheerio.load(html)
-    var content
+    var $message
     if (id !== '') {
-      content = $(id + ' article')
+      $message = $('li.message#' + id.slice(1))
     } else {
-      content = $($('article')[0])
+      $message = $($('li.message')[0])
     }
-    if (content.length === 0) {
-      var error = $('div.errorPanel')
-      if (error.length === 0) {
+    var $content = $message.find('article')
+    if ($content.length === 0) {
+      var $error = $('div.errorPanel')
+      if ($error.length === 0) {
         if (noCache) {
           throw new Error('No chapter found at ' + chapter)
         } else {
           return getChapter(fetch, chapter, true)
         }
       } else {
-        throw new Error('Error fetching ' + chapter + ': ' + error.text().trim())
+        throw new Error('Error fetching ' + chapter + ': ' + $error.text().trim())
       }
     }
     var base = $('base').attr('href') || finalURL
-    var author = $($('a.username')[0])
-    var authorUrl = url.resolve(base, author.attr('href'))
-    var authorName = author.text()
-    // sv, sb
-    var workTitle = $('meta[property="og:title"]').attr('content')
-    var threadDate = $('abbr.DateTime')
-    // qq
-    if (!workTitle) workTitle = $('div.titleBar h1').text().replace(/^\[\w+\] /, '')
-    var threadDate = xenforoDateTime($('.DateTime'))
+    var $author = $($message.find('a.username')[0])
+    var authorUrl = url.resolve(base, $author.attr('href'))
+    var authorName = $author.text()
+    var messageDate = xenforoDateTime($message.find('a.datePermalink .DateTime'))
     return {
       chapterLink: chapter,
       finalURL: finalURL,
       base: base,
       author: authorName,
       authorUrl: authorUrl,
-      started: started
+      created: messageDate,
+      content: $content.html(),
     }
   })
 }
