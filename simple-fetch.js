@@ -33,15 +33,23 @@ function getUrlHash (toFetch) {
 
 var inMemory = {}
 
+var inFlight = {}
+
 function fetchWithCache (toFetch, opts) {
+  if (inFlight[toFetch]) return inFlight[toFetch]
+  var finish
+  inFlight[toFetch] = new Bluebird(function (resolve) { finish = resolve }).finally(function () {
+    delete inFlight[toFetch]
+  })
   var urlHash = getUrlHash(toFetch)
   var cachePath = path.join(homedir(), '.xenforo-to-epub', urlHash.slice(0, 1), urlHash.slice(0, 2))
   var cacheFile = path.join(cachePath, urlHash + '.json')
   if (!opts.noCache && inMemory[urlHash]) {
-    return Bluebird.resolve(inMemory[urlHash])
+    finish(inMemory[urlHash])
+    return inFlight[toFetch]
   }
   var useCache = opts.noCache || opts.cacheBreak ? Bluebird.reject(new Error()) : Bluebird.resolve()
-  return useCache.then(function () {
+  finish(useCache.then(function () {
     return readFile(cacheFile + '.gz').then(function (buf) {
       return zlib.gunzipSync(buf).toString('utf8')
     }).catch(function () {
@@ -73,5 +81,6 @@ function fetchWithCache (toFetch, opts) {
     })
   }).then(function (result) {
     return inMemory[urlHash]
-  })
+  }))
+  return inFlight[toFetch]
 }
