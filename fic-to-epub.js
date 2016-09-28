@@ -14,7 +14,9 @@ function ficToEpub (meta) {
     description: meta.description,
     source: meta.link,
     tags: meta.tags && meta.tags.length && meta.tags.join(','),
-    publisher: meta.publisher
+    publisher: meta.publisher,
+    published: meta.started || meta.created,
+    modified: meta.modified
   })
 
   var title =
