@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 'use strict'
+var Bluebird = require('bluebird')
 var simpleFetch = require('./simple-fetch')
 var getChapterList = require('./get-chapter-list.js').getChapterList
 var scrapeChapterList = require('./get-chapter-list.js').scrapeChapterList
@@ -8,6 +9,7 @@ var filenameize = require('./filenameize.js')
 var ThreadURL = require('./thread-url.js')
 var fs = require('fs')
 var TOML = require('@iarna/toml')
+var cheerio = require('cheerio')
 var argv = require('yargs')
   .usage('Usage: $0 <url> [--xf_session=<sessionid>] [--xf_user=<userid>]')
   .demand(1, '<url> - The URL of the thread you want to epubize')
@@ -53,8 +55,10 @@ function main () {
   }
   chapterList.then(function (chapters) {
     fetchOpts.cacheBreak = false
-    return getChapter(fetch, chapters[0].link).then(function (firstChapter) {
-      var title = firstChapter.workTitle
+    var first = getChapter(fetch, chapters[0].link)
+    var last = getChapter(fetch, chapters[chapters.length - 1].link)
+    return Bluebird.all([first, last]).spread(function (firstChapter, lastChapter) {
+      var title = chapters.workTitle || chapters[0].name
       var tags = []
       var tagExp = /[\[(](.*?)[\])]/
       var tagMatch = title.match(tagExp)
@@ -62,20 +66,23 @@ function main () {
         title = title.replace(tagExp, '').trim()
         tags = tagMatch[1].split('/').map(function (tag) { return tag.trim() })
       }
+      var $ = cheerio.load(firstChapter.content)
+      var firstPara = $.text().trim().replace(/^([^\n]+)[\s\S]*?$/, '$1')
       var fic = {
         title: title,
         author: firstChapter.author,
         authorUrl: firstChapter.authorUrl,
-        started: firstChapter.started,
+        created: chapters.created || firstChapter.created,
+        modified: chapters.modified || lastChapter.created,
         link: firstChapter.finalURL,
-        description: 'Fetched from ' + firstChapter.finalURL + (tags.length ? '\nTags: ' + tags.join(', ') : ''),
+        description: firstPara,
         tags: tags,
         publisher: thread.publisher,
         chapters: chapters.map(function (x) { delete x.order; return x })
       }
       var filename = filenameize(fic.title) + '.fic.toml'
       fs.writeFileSync(filename, TOML.stringify(fic))
-      console.log(filename)
+      process.stdout.write(filename + '\n')
       return null
     })
   })

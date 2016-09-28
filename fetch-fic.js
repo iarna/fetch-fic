@@ -49,6 +49,7 @@ function main () {
     fic.chapters.forEach(function (chapter, ii) {
       chapter.order = ii
     })
+    if (!fic.modified) fic.modified = fic.chapters[fic.chapters.length - 1].created
 
     var tracker = trackers[ii]
     gauge.show(fic.title + ': Fetching fic')
