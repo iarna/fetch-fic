@@ -7,16 +7,16 @@ var sanitizeHtml = require('sanitize-html')
 var ms = require('mississippi')
 
 function ficToEpub (meta) {
-  var epub = new Streampub()
+  var epub = new Streampub({
+    title: meta.title,
+    author: meta.author,
+    authorUrl: meta.authorUrl,
+    description: meta.description,
+    source: meta.link,
+    tags: meta.tags && meta.tags.length && meta.tags.join(','),
+    publisher: meta.publisher
+  })
 
-  epub.setTitle(meta.title)
-  epub.setAuthor(meta.author)
-  if (meta.authorUrl) epub.setAuthorUrl(meta.authorUrl)
-  epub.setDescription(meta.description)
-  if (meta.creation) epub.setPublished(meta.creation)
-  epub.setSource(meta.link)
-  if (meta.tags && meta.tags.length) epub.setSubject(meta.tags.join(','))
-  if (meta.publisher) epub.setPublisher(meta.publisher)
   var title =
     '<div style="text-align: center;">' +
     '<h1>' + meta.title + '</h1>' +
