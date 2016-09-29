@@ -13,7 +13,7 @@ function ficToEpub (meta) {
     authorUrl: meta.authorUrl,
     description: meta.description,
     source: meta.link,
-    tags: meta.tags && meta.tags.length && meta.tags.join(','),
+    subject: meta.tags && meta.tags.length && meta.tags.join(','),
     publisher: meta.publisher,
     published: meta.started || meta.created,
     modified: meta.modified
