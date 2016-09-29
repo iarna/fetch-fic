@@ -50,7 +50,8 @@ function getChapter (fetch, chapter, noCache) {
       author: authorName,
       authorUrl: authorUrl,
       created: messageDate,
-      content: $content.html(),
+      raw: html,
+      content: $content.html().replace(/<span style="color: #ffffff">([\s\S]*?)<\/span>/g, '<strong>$1</strong>')
     }
   })
 }

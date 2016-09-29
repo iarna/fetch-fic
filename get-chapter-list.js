@@ -60,19 +60,20 @@ function getChapterList (fetch, thread, threadMarks) {
 
 function scrapeChapterList (fetch, thread, scraped) {
   return getChapter(fetch, thread.raw).then(function (chapter) {
-    var $ = cheerio.load(chapter.content)
+    var $ = cheerio.load(chapter.raw)
     if (!scraped) scraped = new ChapterList()
     if (!scraped.created) scraped.created = xenforoDateTime($('.DateTime'))
-    if (!scraped.workTitle) threadMarks.workTitle = getWorkTitle($)
+    if (!scraped.workTitle) scraped.workTitle = getWorkTitle($)
 
-    var links = $('a') // a.internalLink (not just internal links, allow external omake)
+    var $content = cheerio.load(chapter.content)
+    var links = $content('a') // a.internalLink (not just internal links, allow external omake)
     if (links.length === 0) {
-      scraped.addChapter(chapter.title, chapter.finalURL)
+      scraped.addChapter(chapter.title || scraped.workTitle, chapter.finalURL, chapter.created)
     } else {
-      scraped.addChapter('Index', chapter.finalURL)
+      scraped.addChapter('Index', chapter.finalURL, chapter.created)
     }
     links.each(function (_, link) {
-      var $link = $(link)
+      var $link = $content(link)
       var href = url.resolve(chapter.base, $link.attr('href'))
       var name = $link.text().trim()
       if (/^[/]threads[/]|^[/]index.php[?]topic|^[/]posts[/]/.test(url.parse(href).path)) {
