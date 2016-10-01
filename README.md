@@ -44,8 +44,17 @@ $ fetch-fic example.fic.toml
 ⸨░░░░░░░░░░░░░░    ⸩ ⠋ example: Fetching chapters
 ```
 
+… time passes …
+```console
+$ fetch-meta example.fic.toml
+Added 2 new chapters
+Updated fic last udpate time from 2016-09-29T22:37:15Z to 2016-09-30T17:33:20Z
+example.fic.toml
+```
+
 ## HINTS
 
+* Running `fetch-fic` with a fic file as an argument will update it.
 * Use `--scrape` if the thread doesn't have threadmarks but has an index post.
 * Use `--and-scrape` if the thread has extra stuff in the index post that's
   not threadmarked.  This is commonly where meta-fanfic goes (aka in some
