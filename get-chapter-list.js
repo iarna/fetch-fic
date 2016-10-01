@@ -6,6 +6,7 @@ var getChapter = require('./get-chapter.js')
 var cheerio = require('cheerio')
 var inherits = require('util').inherits
 var xenforoDateTime = require('./datetime.js')
+var normalizeLink = require('./normalize-link.js')
 
 function ChapterList () {
   Array.call(this, arguments)
@@ -52,14 +53,14 @@ function getChapterList (fetch, thread, threadMarks) {
       var name = $link.text().trim()
       var link = $link.attr('href')
       var created = xenforoDateTime($this.find('.DateTime'))
-      threadMarks.addChapter(name, url.resolve(base, link), created)
+      threadMarks.addChapter(name, normalizeLink(link, thread, base), created)
     })
     return threadMarks
   })
 }
 
 function scrapeChapterList (fetch, thread, scraped) {
-  return getChapter(fetch, thread.raw).then(function (chapter) {
+  return getChapter(fetch, normalizeLink(thread.raw, thread)).then(function (chapter) {
     var $ = cheerio.load(chapter.raw)
     if (!scraped) scraped = new ChapterList()
     if (!scraped.created) scraped.created = xenforoDateTime($('.DateTime'))
@@ -67,14 +68,15 @@ function scrapeChapterList (fetch, thread, scraped) {
 
     var $content = cheerio.load(chapter.content)
     var links = $content('a') // a.internalLink (not just internal links, allow external omake)
+    var indexLink = normalizeLink(chapter.finalURL, thread)
     if (links.length === 0) {
-      scraped.addChapter(chapter.title || scraped.workTitle, chapter.finalURL, chapter.created)
+      scraped.addChapter(chapter.title || scraped.workTitle, indexLink, chapter.created)
     } else {
-      scraped.addChapter('Index', chapter.finalURL, chapter.created)
+      scraped.addChapter('Index', indexLink, chapter.created)
     }
     links.each(function (_, link) {
       var $link = $content(link)
-      var href = url.resolve(chapter.base, $link.attr('href'))
+      var href = normalizeLink($link.attr('href'), thread, chapter.base)
       var name = $link.text().trim()
       if (/^[/]threads[/]|^[/]index.php[?]topic|^[/]posts[/]/.test(url.parse(href).path)) {
         scraped.addChapter(name, href)
