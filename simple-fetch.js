@@ -14,6 +14,7 @@ var writeFile = promisify(fs.writeFile)
 var unlink = promisify(fs.unlink)
 var zlib = require('zlib')
 var gzip = promisify(zlib.gzip)
+var util = require('util')
 
 fetch.Promise = Bluebird
 
@@ -63,6 +64,7 @@ function fetchWithCache (toFetch, opts) {
     inMemory[urlHash] = JSON.parse(cached)
     return null
   }).catch(function (_) {
+    if (opts.noNetwork) throw new Error('Not found in cache: ' + toFetch + ' ' + util.inspect(opts))
     return fetch(toFetch, opts).then(function (res) {
       toFetch = res.url
       return res.text()
