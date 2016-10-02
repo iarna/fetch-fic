@@ -109,7 +109,7 @@ function main () {
           })
           if (!match || !match.length) return
           match.forEach(function (newChapter) {
-            if (newChapter.created && newChapter.created != chapter.created) {
+            if (newChapter.created && newChapter.created.toISOString() !== chapter.created.toISOString()) {
               chapter.created = newChapter.created
               actions.push('Updated creation date for chapter ' + newChapter.name)
             }
