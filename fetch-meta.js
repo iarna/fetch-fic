@@ -124,7 +124,7 @@ function main () {
       } else {
         fic.chapters = newChapters
       }
-      if (!actions.length) return null
+      if (!actions.length && filename) return null
       if (!filename) filename = filenameize(fic.title) + '.fic.toml'
       fs.writeFileSync(filename, TOML.stringify(fic))
       process.stdout.write(filename + '\n')
