@@ -109,14 +109,14 @@ function main () {
           })
           if (!match || !match.length) return
           match.forEach(function (newChapter) {
-            if (newChapter.created && newChapter.created.toISOString() !== chapter.created.toISOString()) {
+            if (newChapter.created && !dateEqual(newChapter.created, chapter.created)) {
               chapter.created = newChapter.created
               actions.push('Updated creation date for chapter ' + newChapter.name)
             }
           })
         })
         fic.chapters.push.apply(fic.chapters, toAdd)
-        if (fic.modified.toISOString() !== lastChapter.created.toISOString()) {
+        if (lastChapter.created && !dateEqual(fic.modified, lastChapter.created)) {
           actions.push('Updated fic last update time from ' + fic.modified + ' to ' + lastChapter.created)
           fic.modified = lastChapter.created
         }
@@ -141,4 +141,10 @@ function andChapterEquals (chapterA) {
 
 function chapterEqual (chapterA, chapterB) {
   return chapterA.link === chapterB.link
+}
+
+function dateEqual (dateA, dateB) {
+  var dateAStr = dateA && dateA.toISOString()
+  var dateBStr = dateB && dateB.toISOString()
+  return dateAStr === dateBStr
 }
