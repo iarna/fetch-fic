@@ -54,7 +54,7 @@ example.fic.toml
 
 ## HINTS
 
-* Running `fetch-fic` with a fic file as an argument will update it.
+* Running `fetch-meta` with a fic file as an argument will update it.
 * Use `--scrape` if the thread doesn't have threadmarks but has an index post.
 * Use `--and-scrape` if the thread has extra stuff in the index post that's
   not threadmarked.  This is commonly where meta-fanfic goes (aka in some
