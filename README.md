@@ -146,7 +146,7 @@ actually kind of clear, what with chapter list editing and what not.
 
 ## LIMITED TESTING
 
-While in principle this should work with most any XenForum site, it's only
+While in principle this should work with most any XenForo site, it's only
 been tested with the following:
 
 * https://forums.sufficientvelocity.com
