@@ -111,7 +111,7 @@ My great threadname (Example1/Example2)
 
 then:
 
-```
+```toml
 title = "My great threadname"
 author = "Example Author"
 authorUrl = "https://forums.example.com/members/example-author.123/"
