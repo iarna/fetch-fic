@@ -112,22 +112,30 @@ My great threadname (Example1/Example2)
 then:
 
 ```
-title="My great threadname"
-author="Example Author"
-authorUrl="https://forums.example.com/members/example-author.123/"
-started="2016-09-25T01:11:36Z"
-
-link="https://forums.example.com/threads/example.12345/"
-description="Fetched from https://forums.example.com/threads/example.12345/\n\nTags: Example1, Example2"
-tags=["Example1", "Example2"]
+title = "My great threadname"
+author = "Example Author"
+authorUrl = "https://forums.example.com/members/example-author.123/"
+created = 2016-09-25T01:11:36Z
+modified = 2016-10-02T03:17:23Z
+link = "https://forums.example.com/threads/example.12345/"
+description = """
+This is an example taken from the long and great tradition of examples.
+What this actually is, is the first paragraph from the fic.  If we're very
+lucky the it'll be a summary to sell folks on reading it.  Most of the time
+it's the fic title or something else equally unhelpful.  Still.  It's better
+than what used to be here.
+"""
+tags = ["Example1", "Example2"]
 
 [[chapters]]
-name="1"
-link="https://forums.example.com/threads/example.12345/#post-7890"
+name = "1"
+link = "https://forums.example.com/threads/example.12345/#post-7890"
+created = 2016-09-25T01:11:36Z
 
 [[chapters]]
-name="2"
-link="https://forums.example.com/threads/example.12345/page-2#post-9783"
+name = "2"
+link = "https://forums.example.com/threads/example.12345/page-2#post-9783"
+created = 2016-10-02T03:17:23Z
 ```
 
 # WIP WIP WIP
