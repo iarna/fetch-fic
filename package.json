@@ -26,19 +26,19 @@
     "yargs": "^5.0.0"
   },
   "files": [
+    "datetime.js",
+    "fetch-fic.js",
+    "fetch-meta.js",
     "fic-to-epub.js",
     "filenameize.js",
     "get-chapter-list.js",
     "get-chapter.js",
     "get-fic.js",
-    "spin-with.js",
-    "thread-url.js",
-    "fetch-fic.js",
-    "fetch-meta.js",
-    "simple-fetch.js",
-    "toml.js",
+    "normalize-link.js",
     "promisify.js",
-    "toml-stringify.js"
+    "simple-fetch.js",
+    "spin-with.js",
+    "thread-url.js"
   ],
   "repository": {
     "type": "git",
