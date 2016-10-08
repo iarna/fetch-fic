@@ -2,11 +2,10 @@
 module.exports = ficToEpub
 var Streampub = require('streampub')
 var newChapter = Streampub.newChapter
-var filenameize = require('./filenameize.js')
+var chapterFilename = require('./chapter-filename.js')
 var sanitizeHtml = require('sanitize-html')
 var ms = require('mississippi')
 var url = require('url')
-
 
 function ficToEpub (meta) {
   var epub = new Streampub({
@@ -37,8 +36,8 @@ function andMatches (pattern) {
 
 function transformChapter (chapter, _, done) {
   var index = 1 + chapter.order
-  var name = chapter.name
-  var filename = filenameize('chapter-' + name) + '.xhtml'
+  var name = chapter.name || "Chapter " + index
+  var filename = chapterFilename(chapter)
   var content = sanitizeHtml(
     '<title>' + name.replace(/&/g,'&amp;').replace(/</g, '&lt;') + '</title>' +
     chapter.content, sanitizeHtmlConfig(this, chapter))
@@ -72,19 +71,8 @@ function sanitizeHtmlConfig (stream, chapter) {
       lowerCaseAttributeNames: true
     },
     transformTags: {
-      a: andCleanLinks(stream, chapter),
       img: andCleanImages(stream, chapter)
     }
-  }
-}
-
-function andCleanLinks (stream, chapter) {
-  return function (tagName, attribs) {
-    if (attribs.href) {
-      attribs.href = url.resolve(chapter.base, attribs.href)
-    }
-    //todo: check href against chapter list and if found, create an internal link
-    return {tagName: tagName, attribs: attribs}
   }
 }
 

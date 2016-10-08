@@ -26,6 +26,7 @@
     "yargs": "^5.0.0"
   },
   "files": [
+    "chapter-filename.js",
     "datetime.js",
     "fetch-fic.js",
     "fetch-meta.js",

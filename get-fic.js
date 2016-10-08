@@ -2,6 +2,7 @@
 module.exports = getFic
 var Bluebird = require('bluebird')
 var getChapter = require('./get-chapter.js')
+var localizeLinks = require('./localize-links.js')
 var Readable = require('readable-stream').Readable
 var inherits = require('util').inherits
 
@@ -35,6 +36,7 @@ function getFic (fetch, chapterList, maxConcurrency) {
     return getChapter(fetch, chapterInfo.link).then(function (chapter) {
       chapter.order = chapterInfo.order
       chapter.name = chapterInfo.name
+      localizeLinks(chapterList, chapter)
       return fic.queueChapter(chapter)
     }).catch(function (err) {
       console.error(err.message)

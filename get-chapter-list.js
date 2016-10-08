@@ -78,6 +78,22 @@ function scrapeChapterList (fetch, thread, scraped) {
       var $link = $content(link)
       var href = normalizeLink($link.attr('href'), thread, chapter.base)
       var name = $link.text().trim()
+      // if the name is a link, try to find one elsewhere
+      if (/^https?:[/][/]/.test(name)) {
+        var next = $link[0].prev
+        var nextText = $content(next).text().trim()
+        if (next.type === 'text' && nextText === '') {
+          next = next.prev
+          nextText = $content(next).text().trim()
+        }
+        if (next.type !== 'text') {
+          next = next.prev
+          nextText = $content(next).text().trim()
+        }
+        if (next.type == 'text') {
+          name = nextText
+        }
+      }
       if (/^[/]threads[/]|^[/]index.php[?]topic|^[/]posts[/]/.test(url.parse(href).path)) {
         scraped.addChapter(name, href)
       }
