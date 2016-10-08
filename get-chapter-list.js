@@ -33,7 +33,7 @@ function getWorkTitle ($) {
   } catch (_) {
     // qq
     try {
-      return threadMarks.workTitle = $('div.titleBar h1').text().replace(/^\[\w+\] /, '')
+      return $('div.titleBar h1').text().replace(/^\[\w+\] /, '')
     } catch (_) {
       return
     }
