@@ -11,5 +11,6 @@ function normalizeLink (href, thread, base) {
   // normalize post urls  
   href = href.replace(/[/]threads[/][^/]+[/](?:page-\d+)?#post-(\d+)$/,'/posts/$1')
              .replace(/([/]posts[/][^/]+)[/]$/, '$1')
+             .replace(/[/]goto[/]post[?]id=(\d+).*?$/, '/posts/$1')
   return href
 }
