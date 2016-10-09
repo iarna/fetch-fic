@@ -67,7 +67,7 @@ function scrapeChapterList (fetch, thread, scraped) {
     if (!scraped.workTitle) scraped.workTitle = getWorkTitle($)
 
     var $content = cheerio.load(chapter.content)
-    var links = $content('a') // a.internalLink (not just internal links, allow external omake)
+    var links = $content('a')
     var indexLink = normalizeLink(chapter.finalURL, thread)
     if (links.length === 0) {
       scraped.addChapter(chapter.title || scraped.workTitle, indexLink, chapter.created)

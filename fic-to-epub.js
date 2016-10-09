@@ -1,7 +1,6 @@
 'use strict'
 module.exports = ficToEpub
 var Streampub = require('streampub')
-var newChapter = Streampub.newChapter
 var chapterFilename = require('./chapter-filename.js')
 var sanitizeHtml = require('sanitize-html')
 var ms = require('mississippi')
@@ -26,7 +25,7 @@ function ficToEpub (meta) {
     '<h3>' + meta.author + '</h3>' +
     '<p>URL: ' + '<a href="' + meta.link + '">' + meta.link + '</a></p>' +
     '</div>'
-  epub.write(newChapter('Title Page', title, 0, 'top.xhtml'))
+  epub.write(Streampub.newChapter('Title Page', title, 0, 'top.xhtml'))
   return ms.pipeline.obj(ms.through.obj(transformChapter), epub)
 }
 
@@ -35,17 +34,21 @@ function andMatches (pattern) {
 }
 
 function transformChapter (chapter, _, done) {
-  var index = 1 + chapter.order
-  var name = chapter.name || "Chapter " + index
+  if (chapter.image) {
+    this.push(Streampub.newFile(chapter.filename, chapter.content))
+    return done()
+  }
+  var index = chapter.order != null && (1 + chapter.order)
+  var name = chapter.name || chapter.order && "Chapter " + index
   var filename = chapterFilename(chapter)
   var content = sanitizeHtml(
-    '<title>' + name.replace(/&/g,'&amp;').replace(/</g, '&lt;') + '</title>' +
-    chapter.content, sanitizeHtmlConfig(this, chapter))
-  this.push(newChapter(name, content, index, filename))
+    (name ? '<title>' + name.replace(/&/g,'&amp;').replace(/</g, '&lt;') + '</title>' : '') +
+    '<article>' + chapter.content + '</article>', sanitizeHtmlConfig())
+  this.push(Streampub.newChapter(name, content, index, filename))
   done()
 }
 
-function sanitizeHtmlConfig (stream, chapter) {
+function sanitizeHtmlConfig () {
   return {
     // from: https://www.amazon.com/gp/feature.html/ref=amb_link_357754562_1?ie=UTF8&docId=1000729901&pf_rd_m=ATVPDKIKX0DER&pf_rd_s=center-10&pf_rd_r=P6ATRSS3E2FJJ5ME5QR2&pf_rd_t=1401&pf_rd_p=1343223442&pf_rd_i=1000729511
     allowedTags: [
@@ -71,12 +74,20 @@ function sanitizeHtmlConfig (stream, chapter) {
       lowerCaseAttributeNames: true
     },
     transformTags: {
-      img: andCleanImages(stream, chapter)
+      a: cleanLinks,
+      img: andCleanImages()
     }
   }
 }
 
-function andCleanImages (stream, chapter) {
+function cleanLinks (tagName, attribs) {
+  if (/^(mailto|ftp):/i.test(attribs.href)) {
+    return {tagName: 'span'}
+  }
+  return {tagName: tagName, attribs: attribs}
+}
+
+function andCleanImages () {
   return function (tagName, attribs) {
     if (attribs.class) {
       var classes = attribs.class.trim().split(/\s+/)
@@ -106,10 +117,8 @@ function andCleanImages (stream, chapter) {
         return {tagName: 'span', text: text}
       }
     }
-    if (attribs.src) {
-      attribs.src = url.resolve(chapter.base, attribs.src)
-      // todo: queue this for fetching and set src to point at a local
-      // resource.
+    if (!attribs.src || /^http/.test(attribs.src)) {
+      return {tagName: 'span', text: ''}
     }
     return {tagName: tagName, attribs: attribs}
   }

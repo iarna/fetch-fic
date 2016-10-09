@@ -38,6 +38,10 @@ function getChapter (fetch, chapter, noCache) {
         throw new Error('Error fetching ' + chapter + ': ' + $error.text().trim())
       }
     }
+    $content.find('.quoteExpand').remove()
+    var $spoiler = $content.find('.bbCodeSpoilerContainer')
+    $spoiler.attr('style', 'border: solid black 1px')
+    $spoiler.find('.bbCodeSpoilerButton').remove()
     var base = $('base').attr('href') || finalURL
     var $author = $($message.find('a.username')[0])
     var authorUrl = url.resolve(base, $author.attr('href'))

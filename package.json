@@ -21,7 +21,7 @@
     "os-homedir": "^1.0.1",
     "readable-stream": "^2.1.5",
     "sanitize-html": "^1.13.0",
-    "streampub": "^1.1.0",
+    "streampub": "^1.4.0",
     "@iarna/toml": "^1.0.1",
     "yargs": "^5.0.0"
   },

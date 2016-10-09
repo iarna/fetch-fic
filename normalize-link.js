@@ -1,11 +1,13 @@
 'use strict'
 var url = require('url')
+var ThreadURL = require('./thread-url.js')
 
 module.exports = normalizeLink
 
 function normalizeLink (href, thread, base) {
+  if (!thread) thread = new ThreadURL(href)
   // force ssl
-  if (thread && thread.publisher) href = href.replace(/^http:/, 'https:')
+  if (thread && thread.known) href = href.replace(/^http:/, 'https:')
   // resolve base url
   if (base) href = url.resolve(base, href)
   // normalize post urls  

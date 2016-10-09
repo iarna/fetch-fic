@@ -13,18 +13,22 @@ function ThreadURL (thread) {
   this.warnings = []
   var threadmarkURL = url.parse(thread)
   this.publisher = knownSites[threadmarkURL.hostname]
-  if (!knownSites[threadmarkURL.hostname]) {
+  if (knownSites[threadmarkURL.hostname]) {
+    this.known = true
+  } else {
+    this.known = false
     this.warnings.push('Has not yet been tested with ' + threadmarkURL.hostname + ', may not work.')
     this.publisher = threadmarkURL.hostname
   }
   threadmarkURL.hash = ''
   var threadMatch = /^([/]threads[/][^/]+\.\d+)(?:[/].*)?$/
-  if (threadMatch.test(threadmarkURL.pathname)) {
+  this.path = threadmarkURL.pathname || threadmarkURL.path
+  if (threadMatch.test(this.path)) {
     threadmarkURL.pathname = threadmarkURL.pathname.replace(threadMatch, '$1/threadmarks')
   } else {
     this.warnings.push("This does not appear to be a thread URL, can't find threadmarks: ", threadmarkURL)
   }
   this.threadmarks = url.format(threadmarkURL)
-  var nameMatch = threadmarkURL.pathname.match(/^[/]threads[/]([^.]+)/)
+  var nameMatch = (this.path || '').match(/^[/]threads[/]([^.]+)/)
   this.name = nameMatch && nameMatch[1]
 }

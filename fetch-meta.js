@@ -73,7 +73,7 @@ function main () {
     var first = getChapter(fetchWithOpts, chapters[0].link)
     var last = getChapter(fetchWithOpts, chapters[chapters.length - 1].link)
     return Bluebird.all([first, last]).spread(function (firstChapter, lastChapter) {
-      var title = chapters.workTitle || chapters[0].name || firstChapter.tit
+      var title = chapters.workTitle || chapters[0].name || firstChapter.title || 'unknown'
       var tags = []
       var tagExp = /[\[(](.*?)[\])]/
       var tagMatch = title.match(tagExp)

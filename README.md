@@ -3,6 +3,21 @@
 Package up XenForo threadmarked threads up into epub ebooks ready for
 reading in your ereader of choice.
 
+## NOTABLE FEATURES
+
+* Images are brought into the final ebook. (This includes smilies.)
+* Threads without threadmarks can be used.
+* Links in the source content become links to the included chapters in the ebook.
+* External links to other supported sites will be added automatically as
+  appendices and the links updated to stay in the ebook.
+* Content is aggressively cleaned for broad compatibility and for quality of
+  display in ereards.
+  * Spoiler boxes are styled as boxes w/o the "Spoiler" button.
+  * Quoted text is styled without the "Expand/Collapse" buttons.
+  * White-text is de-whited.
+  * mailto: links are delinked.
+
+
 ## INSTALLATION
 
 You'll need [Node.js](https://nodejs.org) to use this tool.  Once you have
@@ -129,20 +144,68 @@ tags = ["Example1", "Example2"]
 
 [[chapters]]
 name = "1"
-link = "https://forums.example.com/threads/example.12345/#post-7890"
+link = "https://forums.example.com/posts/7890"
 created = 2016-09-25T01:11:36Z
 
 [[chapters]]
 name = "2"
-link = "https://forums.example.com/threads/example.12345/page-2#post-9783"
+link = "https://forums.example.com/posts/9783"
 created = 2016-10-02T03:17:23Z
 ```
 
+Sometimes you might have a single thread that contains muliple stories.
+While `fetch-meta` will never produce a file like this, `fetch-fic` will
+produce multiple separate epubs if you give it something like this:
+
+```toml
+title = "My great ideas thread"
+author = "Example Threadcreator"
+authorUrl = "https://forums.example.com/members/example-author.123/"
+created = 2016-09-25T01:11:36Z
+modified = 2016-10-02T03:17:23Z
+link = "https://forums.example.com/threads/example.12345/"
+description = ""
+
+
+[[fics]]
+title = "This first story"
+author = "Example Author"
+
+    [[fics.chapters]]
+    name = "1"
+    link = "https://forums.example.com/posts/7890"
+    created = 2016-09-25T01:11:36Z
+
+    [[fics.chapters]]
+    name = "2"
+    link = "https://forums.example.com/posts/9783"
+    created = 2016-10-02T03:17:23Z
+
+[[fics]]
+title = "A second story"
+author = "Another Author"
+
+    [[fics.chapters]]
+    name = "1"
+    link = "https://forums.example.com/posts/32433"
+    created = 2016-09-25T01:11:36Z
+
+    [[fics.chapters]]
+    name = "2"
+    link = "https://forums.example.com/posts/838233"
+    created = 2016-10-02T03:17:23Z
+
+```
+
+
 # WIP WIP WIP
 
-This is less work-in-progressy now, but it could have a smarter cache.  Also
-a web UI would be keen.  On the other hand the shape of that UI is now
-actually kind of clear, what with chapter list editing and what not.
+Stuff I'd like to see:
+
+* A web UI
+* More formatting rewriting (eg, invisitext)
+* Add author to chapter metadata. Being able to fetch this implies also being
+  able to get timestamps for scraped chapters.
 
 ## LIMITED TESTING
 
@@ -165,3 +228,5 @@ couple of specific features however:
 * It can't scrape indexes w/o threadmarks.
 * It has no facility for editing the chapter list before ebook creation.
 * Is not as aggressive about cleaning up the HTML that goes in the epubs.
+* It doesn't know how to split a single thread into multiple books.
+* It doesn't bring in images or maintain intrachapter linking.

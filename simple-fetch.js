@@ -18,9 +18,11 @@ var util = require('util')
 
 fetch.Promise = Bluebird
 
-module.exports = function (opts) {
-  return function (url, noCache) {
+module.exports = function (_opts) {
+  return function (url, noCache, binary) {
+    var opts = Object.assign({}, _opts)
     if (noCache) opts.noCache = true
+    if (binary) opts.binary = true
     return fetchWithCache(url, opts)
   }
 }
@@ -57,7 +59,9 @@ function fetchWithCache (toFetch, opts) {
       return readFile(cacheFile, 'utf8').tap(function (cached) {
         return writeFile(cacheFile + '.gz', gzip(cached)).then(function () {
           return unlink(cacheFile)
-        }).catchReturn(true)
+        }).reflect(function () {
+          return cached
+        })
       })
     })
   }).then(function (cached) {
@@ -67,13 +71,19 @@ function fetchWithCache (toFetch, opts) {
     if (opts.noNetwork) throw new Error('Not found in cache: ' + toFetch + ' ' + util.inspect(opts))
     return fetch(toFetch, opts).then(function (res) {
       toFetch = res.url
-      return res.text()
+      return res.buffer()
     }).then(function (result) {
       var hashes = [urlHash]
       var newHash = getUrlHash(toFetch)
       if (newHash !== urlHash) hashes.push(newHash)
       return Bluebird.each(hashes, function (hash) {
-        inMemory[hash] = [toFetch, result]
+        inMemory[hash] = [toFetch]
+        if (opts.binary) {
+          inMemory[hash][1] = result.toString('base64')
+          inMemory[hash][2] = 'base64'
+        } else {
+          inMemory[hash][1] = result.toString('utf8')
+        }
         if (/errorPanel/.test(result)) throw new Error('SKIP')
       }).then(function () {
         return mkdirp(cachePath)
@@ -81,8 +91,12 @@ function fetchWithCache (toFetch, opts) {
         return writeFile(cacheFile + '.gz', gzip(JSON.stringify(inMemory[urlHash])))
       }).catchReturn(true)
     })
-  }).then(function (result) {
-    return inMemory[urlHash]
+  }).then(function () {
+    var result = inMemory[urlHash]
+    if (result[2]) {
+      result[1] = Buffer.from ? Buffer.from(result[1], result[2]) : new Buffer(result[1], result[2])
+    }
+    return result
   }))
   return inFlight[toFetch]
 }
