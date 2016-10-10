@@ -8,7 +8,7 @@ function spinGauge (gauge) {
     if (++spinning === 1) {
       spinInterval = setInterval(function () { gauge.pulse() }, 50)
     }
-    return P.tap(function (result) {
+    return P.finally(function (result) {
       if (--spinning === 0) clearInterval(spinInterval)
     })
   }

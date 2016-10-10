@@ -51,7 +51,7 @@ function main () {
     var fics = [topFic].concat(topFic.fics||[])
     var tracker = trackers[ficNum]
     var fetchWithOpts = function (url, noCache, binary) {
-      return spin(fetchWithCache(url, noCache, binary)).tap(function () {
+      return spin(fetchWithCache(url, noCache, binary)).finally(function () {
         tracker.completeWork(1)
       })
     }
@@ -73,7 +73,7 @@ function main () {
     })
    
     return Bluebird.each(fics, fetchFic(fetchWithOpts))
-      .tap(function () {
+      .finally(function () {
         tracker.finish()
         gauge.hide()
       })
