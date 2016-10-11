@@ -72,7 +72,7 @@ function scrapeChapterList (fetch, thread, scraped) {
     if (links.length === 0) {
       scraped.addChapter(chapter.title || scraped.workTitle, indexLink, chapter.created)
     } else {
-      scraped.addChapter('Index', indexLink, chapter.created)
+      scraped.addChapter('Table of Contents', indexLink, chapter.created)
     }
     links.each(function (_, link) {
       var $link = $content(link)
