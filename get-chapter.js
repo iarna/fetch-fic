@@ -57,6 +57,9 @@ function getChapter (fetch, chapter, noCache) {
       raw: html,
       content: $content.html()
         .replace(/<span style="color: #ffffff">([\s\S]*?)<\/span>/g, '<strong>$1</strong>')
+        .replace(/<span style="color: #ffcc99">([\s\S]*?)<\/span>/g, '<em>$1</em>')
+        .replace(/<span style="color: #99ffff">([\s\S]*?)<\/span>/g, '<em>$1</em>')
+        .replace(/<span style="color: #9999ff">([\s\S]*?)<\/span>/g, '<span style="font-family: fantasy;font-style: italic">$1</span>')
         .replace(/^\s*<blockquote[^>]*>([\s\S]+)<[/]blockquote>\s*$/, '$1')
     }
   })
