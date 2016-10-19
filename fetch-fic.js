@@ -31,7 +31,12 @@ function main () {
   }
   if (user) {
     if (!fetchOpts.headers) fetchOpts.headers = {}
-    fetchOpts.headers.Cookie += '; xf_user=' + user
+    if (fetchOpts.headers.Cookie) {
+      fetchOpts.headers.Cookie += '; '
+    } else {
+      fetchOpts.headers.Cookie = ''
+    }
+    fetchOpts.headers.Cookie += 'xf_user=' + user
   }
   var fetchWithCache = simpleFetch(fetchOpts)
   var gauge = new Gauge()
