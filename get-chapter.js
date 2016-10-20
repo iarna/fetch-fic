@@ -3,6 +3,7 @@ module.exports = getChapter
 var url = require('url')
 var cheerio = require('cheerio')
 var xenforoDateTime = require('./datetime.js')
+var color = require('color-ops')
 
 function getChapter (fetch, chapter, noCache) {
   return fetch(chapter, noCache).spread(function (finalURL, html) {
@@ -47,6 +48,52 @@ function getChapter (fetch, chapter, noCache) {
     var authorUrl = url.resolve(base, $author.attr('href'))
     var authorName = $author.text()
     var messageDate = xenforoDateTime($message.find('a.datePermalink .DateTime'))
+    var baseLightness = 0
+    if (/spacebattles/.test(chapter)) {
+      baseLightness = color.lightness(color.rgb(204,204,204))
+    }
+    else if (/questionablequesting/.test(chapter)) {
+      baseLightness = color.lightness(color.rgb(86,86,86))
+    }
+    else if (/sufficientvelocity/.test(chapter)) {
+      baseLightness = color.lightness(color.rgb(230,230,230))
+    }
+    $content.find('[style *= color]').each(function (ii, vv) {
+      var style = $(vv).attr('style')
+      var ns = ''
+      var colorMatch = style.match(/color: #(\S\S)(\S\S)(\S\S)/)
+      var opacity = 1
+      if (colorMatch) {
+        var r = Number('0x' + colorMatch[1])
+        var g = Number('0x' + colorMatch[2])
+        var b = Number('0x' + colorMatch[3])
+        var lightness = color.lightness(color.rgb(r, g, b))
+        opacity = lightness / baseLightness
+        if (baseLightness < 0.5) opacity = 1 - opacity
+        if (opacity < 0.25) opacity = 0.25
+        ns = 'opacity: ' +  opacity + ';'
+      } else if (style === 'color: transparent') {
+        opacity = 0.25
+        ns = 'text-decoration: line-through; font-style: oblique; opacity: 0.25;'
+      }
+      if (opacity > 1) {
+        ns += 'font-weight: bolder;'
+      }
+      if (style === 'color: #ffcc99') {
+        ns += 'font-style: italic;'
+      } else if (style === 'color: #99ffff') {
+        ns += 'font-style: italic;'
+      } else if (style === 'color: #9999ff') {
+        ns += 'font-family: fantasy; font-style: italic;'
+      } else if (style === 'color: #4d4dff') {
+        ns += 'border-style: hidden dashed;'
+      } else if (style === 'color: #b3b300') {
+        ns += 'border-style: hidden double;'
+      } else if (style === 'color: #b30000') {
+        ns += 'border-style: hidden solid;'
+      }
+      $(vv).attr('style', ns)
+    })
     return {
       chapterLink: chapter,
       finalURL: finalURL,
@@ -56,10 +103,6 @@ function getChapter (fetch, chapter, noCache) {
       created: messageDate,
       raw: html,
       content: $content.html()
-        .replace(/<span style="color: #ffffff">([\s\S]*?)<\/span>/g, '<strong>$1</strong>')
-        .replace(/<span style="color: #ffcc99">([\s\S]*?)<\/span>/g, '<em>$1</em>')
-        .replace(/<span style="color: #99ffff">([\s\S]*?)<\/span>/g, '<em>$1</em>')
-        .replace(/<span style="color: #9999ff">([\s\S]*?)<\/span>/g, '<span style="font-family: fantasy;font-style: italic">$1</span>')
         .replace(/^\s*<blockquote[^>]*>([\s\S]+)<[/]blockquote>\s*$/, '$1')
     }
   })

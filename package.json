@@ -14,6 +14,7 @@
     "are-we-there-yet": "^1.1.2",
     "bluebird": "^3.4.2",
     "cheerio": "^0.22.0",
+    "color-ops": "^2.0.0",
     "gauge": "^2.6.0",
     "mississippi": "^1.2.0",
     "mkdirp": "^0.5.1",
