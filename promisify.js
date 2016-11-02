@@ -11,3 +11,12 @@ function promisify (fn) {
     })
   }
 }
+
+promisify.sync = function (fn) {
+  return function () {
+    var self = this
+    return Bluebird.all(arguments).spread(function () {
+      return fn.apply(self, arguments)
+    })
+  }
+}
