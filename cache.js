@@ -6,11 +6,14 @@ var Bluebird = require('bluebird')
 var promisify = require('./promisify')
 var path = require('path')
 var pathDirname = promisify.sync(path.dirname)
+var pathRelative = promisify.sync(path.relative)
 var mkdirp = promisify(require('mkdirp'))
 var fs = require('fs')
 var fsReadFile = promisify(fs.readFile)
 var fsWriteFile = promisify(fs.writeFile)
 var fsUnlink = promisify(fs.unlink)
+var fsSymlink = promisify(fs.symlink)
+var fsReadlink = promisify(fs.readlink)
 var zlib = require('zlib')
 var zlibGzip = promisify(zlib.gzip)
 var zlibGunzip = promisify(zlib.gunzip)
@@ -62,10 +65,7 @@ function writeFile (filename, content) {
 
 function clearFile (filename) {
   var cacheFile = cacheFilename(filename)
-  return fsUnlink(cacheFile).catch(function (er) {
-    if (er.code === 'ENOENT') return er
-    throw er
-  })
+  return ignoreENOENT(fsUnlink(cacheFile))
 }
 
 function readJSON (filename, onMiss) {
@@ -156,9 +156,45 @@ function readURL (fetchURL, onMiss) {
       return Bluebird.reject(non404)
     }
     return readJSON(metafile, function () { return meta }).then(function (meta) {
-      return [meta, result]
+      return linkURL(meta).thenReturn([meta, result])
     })
   }
+}
+
+function ignoreENOENT (p) {
+  return p.catch(function (er) {
+    if (er.code === 'ENOENT') return
+    throw er
+  })
+}
+
+function linkURL (meta) {
+  if (meta.startURL === meta.finalURL) return Bluebird.resolve()
+  var startm = cacheFilename(cacheURLMetaName(meta.startURL))
+  var startc = cacheFilename(cacheURLContentName(meta.startURL))
+  var finalm = cacheFilename(cacheURLMetaName(meta.finalURL))
+  var finalc = cacheFilename(cacheURLContentName(meta.finalURL))
+  return Bluebird.all([
+    pathDirname(finalm),
+    ignoreENOENT(fsReadlink(finalm)),
+    ignoreENOENT(fsReadlink(finalc)),
+    startm,
+    startc
+  ]).spread(function(fd, fm, fc, sc, sm) {
+    var rfm = fm && path.resolve(fd, fm)
+    var rfc = fc && path.resolve(fd, fc)
+    if (sm === rfm && sc === rfc) return Bluebird.resolve()
+    return Bluebird.all([
+      ignoreENOENT(fsUnlink(finalm)),
+      ignoreENOENT(fsUnlink(finalc)),
+      mkdirp(pathDirname(finalm))
+    ]).then(function () {
+      return Bluebird.all([
+        fsSymlink(pathRelative(pathDirname(finalm), startm), finalm),
+        fsSymlink(pathRelative(pathDirname(finalc), startc), finalc)
+      ])
+    })
+  })
 }
 
 function clearURL (fetchURL) {
