@@ -114,7 +114,7 @@ function getFic (fetch, fic, maxConcurrency) {
       rewriteLinks(chapter, function (href, $a) {
         return linklocalChapters(chapters, externals)(href, $a, function (href) {
           var thread = new ThreadURL(href)
-          if (!thread.known || /[/]members[/]/.test(href)) return
+          if (thread.known.unknown || /[/]members[/]/.test(href)) return
           if (thread.path === '/') return
           externals[href] = {
             name: $a.text(),
