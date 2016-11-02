@@ -8,7 +8,12 @@ var ThreadURL = require('./thread-url.js')
 
 function getChapter (fetch, chapter, noCache) {
   return fetch(chapter, noCache).catch(function (err) {
-    throw new Error('Error fetching ' + chapter + ': ' + err.meta.status + ' ' + err.meta.statusText)
+    if (err.meta) {
+      var msg = err.meta ? err.meta.status + ' ' + err.meta.statusText : err.stack
+      throw new Error('Error fetching ' + chapter + ': ' + msg)
+    } else {
+      throw err
+    }
   }).spread(function (finalURL, html) {
     var chapterURL = new ThreadURL(finalURL)
     if (chapterURL.known.type === 'xenforo') {
