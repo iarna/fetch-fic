@@ -192,7 +192,10 @@ function linkURL (meta) {
       return Bluebird.all([
         fsSymlink(pathRelative(pathDirname(finalm), startm), finalm),
         fsSymlink(pathRelative(pathDirname(finalc), startc), finalc)
-      ])
+      ]).catch(function (er) {
+        if (er.code === 'EEXIST') return
+        throw er
+      })
     })
   })
 }
