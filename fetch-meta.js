@@ -68,12 +68,14 @@ function main () {
   var chapterList
   if (!thread) thread = new ThreadURL(toFetch)
   if (fromThreadmarks) {
-    chapterList = getChapterList(fetchWithOpts, thread, chapterList).then(function (chapters) {
+    chapterList = getChapterList(fetchWithOpts, thread).then(function (chapters) {
       if (chapters.length === 0 || fromScrape) {
         return scrapeChapterList(fetchWithOpts, thread, chapters.length && chapters)
       } else {
         return chapters
       }
+    }).catch(function () {
+      return scrapeChapterList(fetchWithOpts, thread)
     })
   } else {
     chapterList = scrapeChapterList(fetchWithOpts, thread)
