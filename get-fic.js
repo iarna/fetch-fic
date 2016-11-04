@@ -8,6 +8,7 @@ var ThreadURL = require('./thread-url.js')
 var chapterFilename = require('./chapter-filename.js')
 var Readable = require('readable-stream').Readable
 var inherits = require('util').inherits
+var FicStream = require('./fic-stream.js')
 
 function concurrently (_todo, concurrency, forEach) {
   var todo = Object.assign([], _todo)
@@ -162,46 +163,4 @@ function getFic (fetch, fic, maxConcurrency) {
     console.error('Error in get fic ' + err)
   })
   return stream
-}
-
-function FicStream (options) {
-  if (!options) options = {}
-  options.objectMode = true
-  if (!options.highWaterMark) options.highWaterMark = 4
-  Readable.call(this, options)
-  this.FicStream = { reading: false, chapterBuffer: [] }
-  this.readyP = null
-  this.readyR = null
-}
-inherits(FicStream, Readable)
-
-FicStream.prototype.queueChapter = function (chapter) {
-  if (this.FicStream.reading) {
-    this.FicStream.reading = this.push(chapter)
-    if (chapter == null) return Bluebird.resolve()
-  } else {
-    this.FicStream.chapterBuffer.push(chapter)
-  }
-  if (this.FicStream.reading) {
-    return null
-  } else {
-    if (this.readyP) return this.readyP
-    var self = this
-    this.readyP = new Bluebird(function (resolve) {
-      self.readyR = resolve
-    })
-    return this.readyP
-  }
-}
-
-FicStream.prototype._read = function (size) {
-  this.FicStream.reading = true
-  while (this.FicStream.reading && this.FicStream.chapterBuffer.length) {
-    var chapter = this.FicStream.chapterBuffer.shift()
-    this.FicStream.reading = this.push(chapter)
-  }
-  if (this.FicStream.reading && this.readyP) {
-    this.readyR()
-    this.readyR = this.readyP = null
-  }
 }

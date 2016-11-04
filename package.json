@@ -27,10 +27,12 @@
     "yargs": "^5.0.0"
   },
   "files": [
+    "cache.js",
     "chapter-filename.js",
     "datetime.js",
     "fetch-fic.js",
     "fetch-meta.js",
+    "fic-stream.js",
     "fic-to-epub.js",
     "filenameize.js",
     "get-chapter-list.js",
