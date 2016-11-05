@@ -17,10 +17,12 @@ var argv = require('yargs')
   .demand(1, '<fic> - A fic metadata file to fetch a fic for. Typically ends in .fic.toml')
   .describe('xf_session', 'value of your xf_session variable')
   .describe('xf_user', 'value of your xf_session variable')
-  .boolean('no-cache')
-  .describe('no-cache', 'fetch from the network even if we have it cached')
-  .boolean('no-network')
-  .describe('no-network', 'avoid hitting the network, ever')
+  .boolean('cache')
+  .default('cache', true)
+  .describe('cache', 'fetch from the network even if we have it cached')
+  .boolean('network')
+  .default('network', true)
+  .describe('network', 'allow network access; when false, cache-misses are errors')
   .argv
 
 main()
@@ -28,7 +30,7 @@ main()
 function main () {
   var cookie = argv.xf_session
   var user = argv.xf_user
-  var fetchOpts = {cacheBreak: argv['no-cache'], noNetwork: argv['no-nework']}
+  var fetchOpts = {cacheBreak: !argv['cache'], noNetwork: !argv['network']}
   if (cookie) {
     if (!fetchOpts.headers) fetchOpts.headers = {}
     fetchOpts.headers.Cookie = 'xf_session=' + cookie

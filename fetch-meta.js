@@ -22,11 +22,12 @@ var argv = require('yargs')
   .describe('scrape', 'scrape the index instead of using threadmarks')
   .boolean('and-scrape')
   .describe('and-scrape', 'pull chapters from BOTH the index AND the threadmarks')
-  .boolean('no-cache')
-  .default('no-cache', true)
-  .describe('no-cache', 'fetch from the network even if we have it cached')
-  .boolean('no-network')
-  .describe('no-network', 'avoid hitting the network, ever')
+  .boolean('cache')
+  .default('cache', false)
+  .describe('cache', 'use the cache for metadata loookups')
+  .boolean('network')
+  .default('network', true)
+  .describe('network', 'allow network access; when false, cache-misses are errors')
   .argv
 
 main()
@@ -38,7 +39,7 @@ function main () {
   var user = argv.xf_user
   var fromThreadmarks = !argv.scrape
   var fromScrape = argv.scrape || argv['and-scrape']
-  var fetchOpts = {cacheBreak: argv['no-cache'], noNetwork: argv['no-network']}
+  var fetchOpts = {cacheBreak: !argv['cache'], noNetwork: !argv['network']}
   if (cookie) {
     if (!fetchOpts.headers) fetchOpts.headers = {}
     fetchOpts.headers.Cookie = 'xf_session=' + cookie

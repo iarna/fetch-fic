@@ -3,6 +3,7 @@ var cache = require('./cache.js')
 var Bluebird = require('bluebird')
 var promisify = require('./promisify')
 var fetch = require('node-fetch')
+var util = require('util')
 fetch.Promise = Bluebird
 
 module.exports = function (_opts) {
@@ -13,9 +14,6 @@ module.exports = function (_opts) {
     return fetchWithCache(url, opts)
   }
 }
-
-var CacheBreak = new Error('CACHEBREAK')
-CacheBreak.code = 'CACHEBREAK'
 
 function NoNetwork (toFetch, opts) {
   var err = new Error(`Not found in cache: ${toFetch} ${util.inspect(opts)}`)
