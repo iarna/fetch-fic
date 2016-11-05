@@ -11,6 +11,7 @@ var normalizeLink = require('./normalize-link.js')
 var fs = require('fs')
 var TOML = require('@iarna/toml')
 var cheerio = require('cheerio')
+var Fic = require('./fic.js')
 var argv = require('yargs')
   .usage('Usage: $0 [options] <url> [<fic>]')
   .demand(1, '<url> - The URL of the thread you want to epubize')
@@ -51,71 +52,74 @@ function main () {
     }
     fetchOpts.headers.Cookie += 'xf_user=' + user
   }
-  var fic = {}
-  if (filename) fic = TOML.parse(fs.readFileSync(filename))
-  if (!filename) {
+  var fic = new Fic()
+  if (filename) {
+    var existingFic = new Fic()
+    existingFic.importFromJSON(TOML.parse(fs.readFileSync(filename)))
+  } else {
     try {
-      fic = TOML.parse(fs.readFileSync(toFetch))
+      var ficFile = fs.readFileSync(toFetch)
+    } catch (_) {
+    }
+    if (ficFile) {
+      var existingFic = new Fic()
+      existingFic.importFromJSON(TOML.parse(ficFile))
       filename = toFetch
-      toFetch = fic.link
-      var thread = new ThreadURL(toFetch)
-      fic.chapters.forEach(function (chapter) {
-        chapter.link = normalizeLink(chapter.link, thread)
-      })
-    } catch (_) {}
+      fic.link = existingFic.link
+    } else {
+      fic.link = toFetch
+    }
   }
   var fetchWithOpts = simpleFetch(fetchOpts)
   var chapterList
-  if (!thread) thread = new ThreadURL(toFetch)
+  var thread = new ThreadURL(fic.link)
   if (fromThreadmarks) {
-    chapterList = getChapterList(fetchWithOpts, thread).then(function (chapters) {
+    chapterList = getChapterList(fetchWithOpts, thread, fic).then(function () {
       if (chapters.length === 0 || fromScrape) {
-        return scrapeChapterList(fetchWithOpts, thread, chapters.length && chapters)
+        return scrapeChapterList(fetchWithOpts, thread, fic)
       } else {
         return chapters
       }
     }).catch(function () {
-      return scrapeChapterList(fetchWithOpts, thread)
+      return scrapeChapterList(fetchWithOpts, thread, fic)
     })
   } else {
-    chapterList = scrapeChapterList(fetchWithOpts, thread)
+    chapterList = scrapeChapterList(fetchWithOpts, thread, fic)
   }
-  chapterList.then(function (chapters) {
+  chapterList.then(function () {
     fetchOpts.cacheBreak = false
-    var first = getChapter(fetchWithOpts, chapters[0].link)
-    var last = getChapter(fetchWithOpts, chapters[chapters.length - 1].link)
-    return Bluebird.all([first, last]).spread(function (firstChapter, lastChapter) {
-      var title = chapters.workTitle || chapters[0].name || firstChapter.title || 'unknown'
+    var first = getChapter(fetchWithOpts, fic.chapters[0].link)
+    var lastCreated = fic.chapters.filter(chapter => chapter.created).sort().slice(-1).created
+//    var last = getChapter(fetchWithOpts, fic.chapters[fic.chapters.length - 1].link)
+    return Bluebird.all([first]).spread(function (firstChapter) {
+      var outFic = existingFic || fic
       var tags = []
       var tagExp = /[\[(](.*?)[\])]/
-      var tagMatch = title.match(tagExp)
+      var tagMatch = outFic.title.match(tagExp)
       if (tagMatch) {
-        title = title.replace(tagExp, '').trim()
+        outFic.title = outFic.title.replace(tagExp, '').trim()
         tags = tagMatch[1].split('/').map(function (tag) { return tag.trim() })
       }
       var $ = cheerio.load(firstChapter.content)
       var firstPara = $.text().trim().replace(/^([^\n]+)[\s\S]*?$/, '$1')
-      if (fic.title == null) fic.title = title
-      if (!filename && fic.author == null) fic.author = firstChapter.author
-      if (!filename && fic.authorUrl == null) fic.authorUrl = firstChapter.authorUrl
-      if (fic.started) delete fic.started
-      if (fic.created == null) fic.created = chapters.created || firstChapter.created
-      if (fic.modified == null) fic.modified = chapters.modified || lastChapter.created
-      if (fic.link == null) fic.link = firstChapter.finalURL
-      if (fic.description == null || /^Fetched from/.test(fic.description)) fic.description = firstPara
-      if (fic.tags == null) fic.tags = tags
-      if (!fic.publisher) fic.publisher = thread.publisher
-      var newChapters = chapters.map(function (x) { delete x.order; return x })
+      if (!filename && outFic.author == null) outFic.author = firstChapter.author
+      if (!filename && outFic.authorUrl == null) outFic.authorUrl = firstChapter.authorUrl
+      if (outFic.created == null) outFic.created = fic.created || firstChapter.created
+      if (outFic.modified == null) outFic.modified = fic.modified || lastCreated
+      if (outFic.link == null) outFic.link = firstChapter.finalURL
+      if (outFic.description == null) outFic.description = firstPara
+      if (outFic.tags == null) outFic.tags = tags
+      if (!outFic.publisher) outFic.publisher = thread.publisher
       var actions = []
-      if (fic.chapters && fic.chapters.length) {
+      if (existingFic) {
         var toAdd = []
-        for (var ii = newChapters.length - 1; ii>=0; --ii) {
-          var newChapter = newChapters[ii]
-          if (fic.chapters.some(andChapterEquals(newChapter))) break
+        for (var ii = fic.chapters.length - 1; ii>=0; --ii) {
+          var newChapter = fic.chapters[ii]
+          if (outFic.chapterExists(newChapter.link)) break
           toAdd.unshift(newChapter)
         }
         fic.chapters.forEach(function (chapter) {
-          var match = newChapters.filter(andChapterEquals(chapter)).filter(function (newChapter) {
+          var match = fic.chapters.filter(andChapterEquals(chapter)).filter(function (newChapter) {
             // the new chapter has our new metadata
             return !!newChapter.created
           })
@@ -127,18 +131,16 @@ function main () {
             }
           })
         })
-        fic.chapters.push.apply(fic.chapters, toAdd)
-        if (lastChapter.created && !dateEqual(fic.modified, lastChapter.created)) {
-          actions.push('Updated fic last update time from ' + fic.modified + ' to ' + lastChapter.created)
-          fic.modified = lastChapter.created
+        if (lastCreated && !dateEqual(outFic.modified, lastCreated)) {
+          actions.push('Updated fic last update time from ' + outFic.modified + ' to ' + lastCreated)
+          outFic.modified = lastCreated
         }
+        outFic.chapters.push.apply(outFic.chapters, toAdd)
         if (toAdd.length) actions.push('Added ' + toAdd.length + ' new chapters')
-      } else {
-        fic.chapters = newChapters
       }
       if (!actions.length && filename) process.exit(1)
-      if (!filename) filename = filenameize(fic.title) + '.fic.toml'
-      fs.writeFileSync(filename, TOML.stringify(fic))
+      if (!filename) filename = filenameize(outFic.title) + '.fic.toml'
+      fs.writeFileSync(filename, TOML.stringify(outFic))
       process.stdout.write(filename + '\n')
       if (actions.length) process.stdout.write('    ' + actions.join('\n    ') + '\n')
 
@@ -156,7 +158,7 @@ function chapterEqual (chapterA, chapterB) {
 }
 
 function dateEqual (dateA, dateB) {
-  var dateAStr = dateA && dateA.toISOString()
-  var dateBStr = dateB && dateB.toISOString()
+  var dateAStr = dateA && dateA.toISOString && dateA.toISOString()
+  var dateBStr = dateB && dateB.toISOString && dateB.toISOString()
   return dateAStr === dateBStr
 }

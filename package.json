@@ -11,6 +11,7 @@
   "author": "Rebecca Turner <me@re-becca.org> (http://re-becca.org/)",
   "license": "ISC",
   "dependencies": {
+    "@iarna/toml": "^1.1.0",
     "are-we-there-yet": "^1.1.2",
     "bluebird": "^3.4.2",
     "cheerio": "^0.22.0",
@@ -23,7 +24,6 @@
     "readable-stream": "^2.1.5",
     "sanitize-html": "^1.13.0",
     "streampub": "^1.4.0",
-    "@iarna/toml": "^1.0.1",
     "yargs": "^5.0.0"
   },
   "files": [
@@ -32,6 +32,7 @@
     "datetime.js",
     "fetch-fic.js",
     "fetch-meta.js",
+    "fic.js",
     "fic-stream.js",
     "fic-to-epub.js",
     "filenameize.js",
@@ -40,6 +41,7 @@
     "get-fic.js",
     "normalize-link.js",
     "promisify.js",
+    "qw.js",
     "simple-fetch.js",
     "spin-with.js",
     "thread-url.js"
