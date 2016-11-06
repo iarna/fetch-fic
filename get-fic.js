@@ -38,6 +38,10 @@ function rewriteLinks (site, chapter, handleLink) {
   $('a').each((ii, a) => {
     var $a = $(a)
     var startAs = $a.attr('href')
+    if (!startAs) {
+      $a.remove()
+      return
+    }
     var href = site.normalizeLink(startAs, chapter.base)
     var newHref = handleLink(href, $a)
     $a.attr('href', newHref || href)
