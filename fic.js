@@ -26,7 +26,8 @@ class Fic {
   }
 
   getChapter (fetch, link) {
-    return this.site.getChapter(fetch, link)
+    var site = Site.fromUrl(link)
+    return site.getChapter(fetch, link)
   }
 
   addChapter (name, link, created) {
