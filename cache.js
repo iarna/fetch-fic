@@ -134,10 +134,10 @@ function readURL (fetchURL, onMiss) {
 
   function thenReadMetadata (result) {
     if (meta.status && meta.status !== 200) {
-      const non404 = new Error('Got status: ' + meta.status + ' ' + meta.statusText + ' for ' + fetchURL)
-      non404.meta = meta
-      non404.result = result
-      return Bluebird.reject(non404)
+      const non200 = new Error('Got status: ' + meta.status + ' ' + meta.statusText + ' for ' + fetchURL)
+      non200.meta = meta
+      non200.result = result
+      return Bluebird.reject(non200)
     }
     return readJSON(metafile, () => meta).then(meta => {
       return linkURL(meta).thenReturn([meta, result])
