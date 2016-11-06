@@ -53,27 +53,26 @@ function main () {
     }
     fetchOpts.headers.Cookie += 'xf_user=' + user
   }
-  var fic = new Fic()
+  var existingFic
   if (filename) {
-    var existingFic = new Fic()
-    existingFic.importFromJSON(TOML.parse(fs.readFileSync(filename)))
+    existingFic = Fic.fromJSON(TOML.parse(fs.readFileSync(filename)))
   } else {
+    var ficFile
     try {
-      var ficFile = fs.readFileSync(toFetch)
+      ficFile = fs.readFileSync(toFetch)
     } catch (_) {
     }
     if (ficFile) {
-      var existingFic = new Fic()
-      existingFic.importFromJSON(TOML.parse(ficFile))
+      existingFic = Fic.fromJSON(TOML.parse(ficFile))
       filename = toFetch
-      fic.link = existingFic.link
-    } else {
-      fic.link = toFetch
+      toFetch = existingFic.link
     }
   }
+  var fic = new Fic()
+  fic.link = toFetch
   var fetchWithOpts = simpleFetch(fetchOpts)
   var chapterList
-  var thread = new ThreadURL(fic.link)
+  var thread = new ThreadURL(toFetch)
   if (fromThreadmarks) {
     chapterList = getChapterList(fetchWithOpts, thread, fic).then(function () {
       if (chapters.length === 0 || fromScrape) {
