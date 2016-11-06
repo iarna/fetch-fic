@@ -67,6 +67,6 @@ Site.registered = []
 
 module.exports = Site
 
-for (const site of ['./site-xenforo.js', './site-fanfictionnet.js', './site-deviantart.js']) {
+for (const site of ['./site-xenforo.js', './site-fanfictionnet.js', './site-deviantart.js', './site-ao3.js']) {
   Site.register(require(site))
 }
