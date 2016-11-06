@@ -50,12 +50,12 @@ class Fic {
     var fic = new this(fetch)
     fic.site = Site.fromUrl(link)
     fic.link = fic.site.link
-    return fic.site.getFicMetadata(fic.fetch, fic).then(thenMaybeFallback, thenMaybeFallback).thenReturn(fic)
+    return fic.site.getFicMetadata(fetch, fic).then(thenMaybeFallback, thenMaybeFallback).thenReturn(fic)
     function thenMaybeFallback (err) {
       if (err && (!err.meta || err.meta.status !== 404)) throw err
       // no chapters in the threadmarks, fallback to fetching
       if (fic.chapters.length === 0) {
-        return fic.site.scrapeFicMetadata(fic.fetch, fic)
+        return fic.site.scrapeFicMetadata(fetch, fic)
       }
     }
   }
@@ -64,8 +64,8 @@ class Fic {
     var fic = new this(fetch)
     fic.site = Site.fromUrl(link)
     fic.link = fic.site.link
-    return fic.site.getFicMetadata(fic.fetch, fic).then(() => {
-      return fic.site.scrapeFicMetadata(fic.fetch, fic).thenReturn(fic)
+    return fic.site.getFicMetadata(fetch, fic).then(() => {
+      return fic.site.scrapeFicMetadata(fetch, fic).thenReturn(fic)
     })
   }
 
@@ -73,7 +73,7 @@ class Fic {
     var fic = new this()
     fic.site = Site.fromUrl(link)
     fic.link = fic.site.link
-    return fic.site.scrapeFicMetadata(fic.fetch, fic).thenReturn(fic)
+    return fic.site.scrapeFicMetadata(fetch, fic).thenReturn(fic)
   }
 
   static fromJSON (raw) {
