@@ -29,22 +29,21 @@
   "files": [
     "cache.js",
     "chapter-filename.js",
-    "datetime.js",
     "fetch-fic.js",
     "fetch-meta.js",
     "fic.js",
     "fic-stream.js",
     "fic-to-epub.js",
     "filenameize.js",
-    "get-chapter-list.js",
-    "get-chapter.js",
     "get-fic.js",
-    "normalize-link.js",
     "promisify.js",
     "qw.js",
     "simple-fetch.js",
-    "spin-with.js",
-    "thread-url.js"
+    "site.js",
+    "site-deviantart.js",
+    "site-fanfictionnet.js",
+    "site-xenforo.js",
+    "spin-with.js"
   ],
   "repository": {
     "type": "git",

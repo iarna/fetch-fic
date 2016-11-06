@@ -22,8 +22,8 @@ const inFlight = require('./in-flight.js')
 
 exports.readFile = readFile
 exports.clearFile = clearFile
-exports.readURL = readURL
-exports.clearURL = clearURL
+exports.readUrl = readUrl
+exports.clearUrl = clearUrl
 
 function resolveCall () {
   return Bluebird.all(arguments).then(args => {
@@ -92,55 +92,66 @@ function getUrlHash (toFetch) {
   })
 }
 
-function cacheURLBase (fetchURL) {
-  return Bluebird.all([fetchURL, getUrlHash(fetchURL)]).spread((fetchURL, urlHash) => {
-    const fetchP = url.parse(fetchURL)
+function cacheUrlBase (fetchUrl) {
+  return Bluebird.all([fetchUrl, getUrlHash(fetchUrl)]).spread((fetchUrl, urlHash) => {
+    const fetchP = url.parse(fetchUrl)
     return path.join('urls', fetchP.hostname, urlHash.slice(0, 1), urlHash.slice(1, 2), urlHash)
   })
 }
-function cacheURLMetaName (fetchURL) {
-  return cacheURLBase(fetchURL).then(cacheURL => cacheURL + '.json')
+function cacheUrlMetaName (fetchUrl) {
+  return cacheUrlBase(fetchUrl).then(cacheUrl => cacheUrl + '.json')
 }
-function cacheURLContentName (fetchURL) {
-  return Bluebird.resolve(fetchURL).then((fetchURL) => {
-    const fetchP = url.parse(fetchURL)
+function cacheUrlContentName (fetchUrl) {
+  return Bluebird.resolve(fetchUrl).then((fetchUrl) => {
+    const fetchP = url.parse(fetchUrl)
     const ext = path.parse(fetchP.pathname).ext || '.data'
-    return cacheURLBase(fetchURL).then(cacheURL => cacheURL + ext + '.gz')
+    return cacheUrlBase(fetchUrl).then(cacheUrl => cacheUrl + ext + '.gz')
   })
 }
 
-function readURL (fetchURL, onMiss) {
-  const metafile = cacheURLMetaName(fetchURL)
-  const content = cacheURLContentName(fetchURL)
+function readUrl (fetchUrl, onMiss) {
+  const metafile = cacheUrlMetaName(fetchUrl)
+  const content = cacheUrlContentName(fetchUrl)
+  const fetchedAt = Date.now()
   const meta = {
-    startURL: fetchURL,
-    finalURL: null
+    startUrl: fetchUrl,
+    finalUrl: null
   }
-  return inFlight(fetchURL, thenReadContent)
+  return inFlight(fetchUrl, thenReadContent)
 
   function thenReadContent () {
-    return readGzipFile(content, orFetchURL).then(thenReadMetadata)
+    return readGzipFile(content, orFetchUrl).then(thenReadMetadata)
   }
 
-  function orFetchURL () {
-    return resolveCall(onMiss, fetchURL).then(res => {
-      meta.finalURL   = res.url
+  function orFetchUrl () {
+    return resolveCall(onMiss, fetchUrl).then(res => {
+      if (meta.status && meta.status !== 200) {
+        const non200 = new Error('Got status: ' + meta.status + ' ' + meta.statusText + ' for ' + fetchUrl)
+        non200.meta = meta
+        non200.result = result
+        return Bluebird.reject(non200)
+      }
+      meta.finalUrl   = res.url
       meta.status     = res.status
       meta.statusText = res.statusText
       meta.headers    = res.headers.raw()
+      meta.fetchedAt  = fetchedAt
       return res.buffer()
     })
   }
 
   function thenReadMetadata (result) {
-    if (meta.status && meta.status !== 200) {
-      const non200 = new Error('Got status: ' + meta.status + ' ' + meta.statusText + ' for ' + fetchURL)
-      non200.meta = meta
-      non200.result = result
-      return Bluebird.reject(non200)
-    }
     return readJSON(metafile, () => meta).then(meta => {
-      return linkURL(meta).thenReturn([meta, result])
+      meta.fromCache = meta.fetchedAt !== fetchedAt
+      if (meta.startURL) {
+        meta.startUrl = meta.startURL
+        delete meta.startURL
+      }
+      if (meta.finalURL) {
+        meta.finalUrl = meta.finalURL
+        delete meta.finalURL
+      }
+      return linkUrl(meta).thenReturn([meta, result])
     })
   }
 }
@@ -152,12 +163,12 @@ function ignoreHarmlessErrors (p) {
   })
 }
 
-function linkURL (meta) {
-  if (meta.startURL === meta.finalURL) return Bluebird.resolve()
-  const startm = cacheFilename(cacheURLMetaName(meta.startURL))
-  const startc = cacheFilename(cacheURLContentName(meta.startURL))
-  const finalm = cacheFilename(cacheURLMetaName(meta.finalURL))
-  const finalc = cacheFilename(cacheURLContentName(meta.finalURL))
+function linkUrl (meta) {
+  if (meta.startUrl === meta.finalUrl) return Bluebird.resolve()
+  const startm = cacheFilename(cacheUrlMetaName(meta.startUrl))
+  const startc = cacheFilename(cacheUrlContentName(meta.startUrl))
+  const finalm = cacheFilename(cacheUrlMetaName(meta.finalUrl))
+  const finalc = cacheFilename(cacheUrlContentName(meta.finalUrl))
   return Bluebird.all([
     pathDirname(finalm),
     ignoreHarmlessErrors(fsReadlink(finalm)),
@@ -184,8 +195,8 @@ function linkURL (meta) {
   })
 }
 
-function clearURL (fetchURL) {
-  const metafile = cacheURLMetaName(fetchURL)
-  const content = cacheURLContentName(fetchURL)
+function clearUrl (fetchUrl) {
+  const metafile = cacheUrlMetaName(fetchUrl)
+  const content = cacheUrlContentName(fetchUrl)
   return Bluebird.all([clearFile(metafile), clearFile(content)])
 }

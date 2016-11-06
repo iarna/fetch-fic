@@ -7,10 +7,9 @@ var util = require('util')
 fetch.Promise = Bluebird
 
 module.exports = function (_opts) {
-  return function (url, noCache, binary) {
+  return function (url, noCache) {
     var opts = Object.assign({}, _opts)
-    if (noCache) opts.noCache = true
-    if (binary) opts.binary = true
+    if (noCache != null) opts.cacheBreak = noCache
     return fetchWithCache(url, opts)
   }
 }
@@ -23,13 +22,13 @@ function NoNetwork (toFetch, opts) {
 
 function fetchWithCache (toFetch, opts) {
   return Bluebird.resolve(opts).then(function (opts) {
-    if (opts.noCache || opts.cacheBreak) return cache.clearURL(toFetch)
+    if (opts.noCache || opts.cacheBreak) return cache.clearUrl(toFetch)
   }).then(function () {
-    return cache.readURL(toFetch, function (toFetch) {
+    return cache.readUrl(toFetch, function (toFetch) {
       if (opts.noNetwork) throw NoNetwork(toFetch, opts)
       return fetch(toFetch, opts)
     })
   }).spread(function (meta, content) {
-    return [meta.finalURL, content]
+    return [meta, content]
   })
 }

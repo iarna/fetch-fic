@@ -1,10 +1,8 @@
 'use strict'
 module.exports = getFic
 var Bluebird = require('bluebird')
-var getChapter = require('./get-chapter.js')
+var Site = require('./site.js')
 var cheerio = require('cheerio')
-var normalizeLink = require('./normalize-link.js')
-var ThreadURL = require('./thread-url.js')
 var chapterFilename = require('./chapter-filename.js')
 var Readable = require('readable-stream').Readable
 var inherits = require('util').inherits
@@ -15,17 +13,17 @@ function concurrently (_todo, concurrency, forEach) {
   var run = 0
   var active = 0
   var aborted = false
-  return new Bluebird(function (resolve, reject) {
+  return new Bluebird((resolve, reject) => {
     function runNext () {
       if (aborted) return
       if (active === 0 && todo.length === 0) return resolve()
       while (active < concurrency && todo.length) {
         ++active
-        forEach(todo.shift(), run++).then(function () {
+        forEach(todo.shift(), run++).then(() => {
           --active
           runNext()
           return null
-        }).catch(function (err) {
+        }).catch(err => {
           aborted = true
           reject(err)
         })
@@ -35,25 +33,25 @@ function concurrently (_todo, concurrency, forEach) {
   })
 }
 
-function rewriteLinks (chapter, handleLink) {
+function rewriteLinks (site, chapter, handleLink) {
   var $ = cheerio.load(chapter.content)
-  $('a').each(function (ii, a) {
+  $('a').each((ii, a) => {
     var $a = $(a)
     var startAs = $a.attr('href')
-    var href = normalizeLink(startAs, null, chapter.base)
+    var href = site.normalizeLink(startAs, chapter.base)
     var newHref = handleLink(href, $a)
     $a.attr('href', newHref || href)
   })
   chapter.content = $.html()
 }
 
-function rewriteImages (chapter, handleImage) {
+function rewriteImages (site, chapter, handleImage) {
   var $ = cheerio.load(chapter.content)
-  $('img').each(function (ii, img) {
+  $('img').each((ii, img) => {
     var $img = $(img)
     var startAs = $img.attr('src')
     if (!startAs) return
-    var src = normalizeLink(startAs, null, chapter.base)
+    var src = site.normalizeLink(startAs, chapter.base)
     var newsrc = handleImage(src, $img)
     $img.attr('src', newsrc || src)
   })
@@ -61,12 +59,12 @@ function rewriteImages (chapter, handleImage) {
 }
 
 function findChapter (href, chapters) {
-  var matching = chapters.filter(function (index) { return index.link === href })
+  var matching = chapters.filter(index => index.link === href)
   return matching && matching[0]
 }
 
 function inlineImages (images) {
-  return function (src, $img) {
+  return (src, $img) => {
     if (/clear[.]png$/.test(src)) return
     if (!images[src]) {
       var ext = src.match(/([.](?:jpe?g|gif|png))/)
@@ -81,8 +79,8 @@ function inlineImages (images) {
 }
 
 function linklocalChapters (chapters, externals) {
-  return function (href, $a, orElse) {
-    if (!orElse) orElse = function () { }
+  return (href, $a, orElse) => {
+    if (!orElse) orElse = () => { }
     if ($a.text() === '↑') {
       $a.remove()
       return
@@ -104,19 +102,19 @@ function getFic (fetch, fic, maxConcurrency) {
   var externals = {}
   var images = {}
   var chapters = fic.chapters
-  if (chapters.length === 0) throw new Error("HRM")
 
-
-  concurrently(chapters, maxConcurrency, function (chapterInfo) {
-    return getChapter(fetch, chapterInfo.link).then(function (chapter) {
+  concurrently(chapters, maxConcurrency, (chapterInfo) => {
+    return fic.getChapter(fetch, chapterInfo.link).then((chapter) => {
       chapter.order = chapterInfo.order
       chapter.name = chapterInfo.name
-      rewriteImages(chapter, inlineImages(images))
-      rewriteLinks(chapter, function (href, $a) {
-        return linklocalChapters(chapters, externals)(href, $a, function (href) {
-          var thread = new ThreadURL(href)
-          if (thread.known.unknown || /[/]members[/]/.test(href)) return
-          if (thread.path === '/') return
+      rewriteImages(fic.site, chapter, inlineImages(images))
+      rewriteLinks(fic.site, chapter, (href, $a) => {
+        return linklocalChapters(chapters, externals)(href, $a, (href) => {
+          try {
+            var site = Site.fromUrl(href)
+          } catch (ex) {
+            return
+          }
           externals[href] = {
             name: $a.text(),
             filename: 'external-' + (Object.keys(externals).length + 1) + '.xhtml'
@@ -125,19 +123,19 @@ function getFic (fetch, fic, maxConcurrency) {
         })
       })
       return stream.queueChapter(chapter)
-    }).catch(function (err) {
+    }).catch((err) => {
       console.error('Error while fetching chapter', chapterInfo, err.stack)
     })
-  }).finally(function () {
-    return concurrently(Object.keys(externals), maxConcurrency, function (href, exterNum) {
-      return getChapter(fetch, href).then(function (external) {
+  }).finally(() => {
+    return concurrently(Object.keys(externals), maxConcurrency, (href, exterNum) => {
+      return fic.getChapter(fetch, href).then((external) => {
         external.order = 9000 + exterNum
         external.name = 'External Reference #' + exterNum + ': ' + externals[href].name
         external.filename = externals[href].filename
-        rewriteImages(external, inlineImages(images))
-        rewriteLinks(external, linklocalChapters(chapters, externals))
+        rewriteImages(fic.site, external, inlineImages(images))
+        rewriteLinks(fic.site, external, linklocalChapters(chapters, externals))
         return stream.queueChapter(external)
-      }).catch(function (err) {
+      }).catch((err) => {
         console.error('Warning, skipping external ' + href + ': ' + err)
         return stream.queueChapter({
           order: 9000 + exterNum,
@@ -147,19 +145,19 @@ function getFic (fetch, fic, maxConcurrency) {
         })
       })
     })
-  }).finally(function () {
-    return concurrently(Object.keys(images), maxConcurrency, function (src, imageNum) {
-      return fetch(src, null, true).then(function (imageData) {
+  }).finally(() => {
+    return concurrently(Object.keys(images), maxConcurrency, (src, imageNum) => {
+      return fetch(src).spread((meta, imageData) => {
         return stream.queueChapter({
           image: true,
           filename: images[src].filename,
-          content: imageData[1]
+          content: imageData
         })
       })
     })
-  }).finally(function () {
+  }).finally(() => {
     return stream.queueChapter(null)
-  }).catch(function (err) {
+  }).catch(err => {
     console.error('Error in get fic ' + err)
   })
   return stream

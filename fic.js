@@ -1,8 +1,10 @@
 'use strict'
 const qw = require('./qw.js')
+const Site = require('./site.js')
 
 class Fic {
-  constructor () {
+  constructor (fetch) {
+    this.fetch = fetch
     this.title = null
     this.link = null
     this.author = null
@@ -11,19 +13,27 @@ class Fic {
     this.modified = null
     this.publisher = null
     this.description = null
+    this.site = null
     this.tags = []
     this.fics = []
     this.chapters = new ChapterList()
   }
+
   chapterExists (link) {
     if (this.chapters.chapterExists(link)) return true
     if (this.fics.some(fic => fic.chapterExists(link))) return true
     return false
   }
+
+  getChapter (fetch, link) {
+    return this.site.getChapter(fetch, link)
+  }
+
   addChapter (name, link, created) {
     if (this.chapterExists(link)) return
     return this.chapters.addChapter(name, link, created)
   }
+
   importFromJSON (raw) {
     for (let prop of qw`link title author authorUrl created modified description tags publisher`) {
       this[prop] = raw[prop]
@@ -32,12 +42,45 @@ class Fic {
     if (raw.fics) {
       raw.fics.forEach(fic => this.fics.push(SubFic.fromJSON(this, fic)))
     }
+    this.site = Site.fromUrl(this.link)
     return this
   }
+
+  static fromUrl (fetch, link) {
+    var fic = new this(fetch)
+    fic.site = Site.fromUrl(link)
+    fic.link = fic.site.link
+    return fic.site.getFicMetadata(fic.fetch, fic).then(thenMaybeFallback, thenMaybeFallback).thenReturn(fic)
+    function thenMaybeFallback (err) {
+      if (err && (!err.meta || err.meta.status !== 404)) throw err
+      // no chapters in the threadmarks, fallback to fetching
+      if (fic.chapters.length === 0) {
+        return fic.site.scrapeFicMetadata(fic.fetch, fic)
+      }
+    }
+  }
+
+  static fromUrlAndScrape (fetch, link) {
+    var fic = new this(fetch)
+    fic.site = Site.fromUrl(link)
+    fic.link = fic.site.link
+    return fic.site.getFicMetadata(fic.fetch, fic).then(() => {
+      return fic.site.scrapeFicMetadata(fic.fetch, fic).thenReturn(fic)
+    })
+  }
+
+  static scrapeFromUrl (fetch, link) {
+    var fic = new this()
+    fic.site = Site.fromUrl(link)
+    fic.link = fic.site.link
+    return fic.site.scrapeFicMetadata(fic.fetch, fic).thenReturn(fic)
+  }
+
   static fromJSON (raw) {
     const fic = new this()
     return fic.importFromJSON(raw)
   }
+
   toJSON () {
     var result = {}
     for (let prop of qw`title link author authorUrl created modified publisher description tags fics chapters`) {
@@ -101,7 +144,7 @@ class ChapterList extends Array {
       name = baseName + ' (' + ++ctr + ')'
     }
     if (created && !this.created) this.created = created
-    const chapter = new Chapter({length: this.length, name, link, created})
+    const chapter = new Chapter({order: this.length, name, link, created})
     this.push(chapter)
     return chapter
   }
