@@ -1,13 +1,21 @@
 {
   "name": "fetch-fic",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "Package up delicious, delicious fanfic from various sources into epub ebooks ready for reading in your ereader of choice.",
   "main": "fic-to-epub.js",
   "bin": {
     "fetch-fic": "fetch-fic.js",
     "fetch-meta": "fetch-meta.js"
   },
-  "keywords": [ "fanfic", "epub", "xenforo", "ao3", "ffnet", "fanfiction.net", "archiveofourown" ],
+  "keywords": [
+    "fanfic",
+    "epub",
+    "xenforo",
+    "ao3",
+    "ffnet",
+    "fanfiction.net",
+    "archiveofourown"
+  ],
   "author": "Rebecca Turner <me@re-becca.org> (http://re-becca.org/)",
   "license": "ISC",
   "dependencies": {
