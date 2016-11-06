@@ -22,7 +22,7 @@ class Fic {
   }
   addChapter (name, link, created) {
     if (this.chapterExists(link)) return
-    this.chapters.addChapter(name, link, created)
+    return this.chapters.addChapter(name, link, created)
   }
   importFromJSON (raw) {
     for (let prop of qw`link title author authorUrl created modified description tags publisher`) {
@@ -32,11 +32,11 @@ class Fic {
     if (raw.fics) {
       raw.fics.forEach(fic => this.fics.push(SubFic.fromJSON(this, fic)))
     }
+    return this
   }
   static fromJSON (raw) {
     const fic = new this()
-    fic.importFromJSON(raw)
-    return fic
+    return fic.importFromJSON(raw)
   }
   toJSON () {
     var result = {}
@@ -101,7 +101,9 @@ class ChapterList extends Array {
       name = baseName + ' (' + ++ctr + ')'
     }
     if (created && !this.created) this.created = created
-    this.push(new Chapter({length: this.length, name, link, created}))
+    const chapter = new Chapter({length: this.length, name, link, created})
+    this.push(chapter)
+    return chapter
   }
   importFromJSON (raw) {
     raw.chapters.forEach(chapter => this.push(Chapter.fromJSON(this.length, chapter)))
