@@ -1,13 +1,13 @@
 {
-  "name": "xenforo-to-epub",
+  "name": "fetch-fic",
   "version": "2.2.0",
-  "description": "Package up XenForo threadmarked threads up into epub ebooks ready for reading in your ereader of choice.",
+  "description": "Package up delicious, delicious fanfic from various sources into epub ebooks ready for reading in your ereader of choice.",
   "main": "fic-to-epub.js",
   "bin": {
     "fetch-fic": "fetch-fic.js",
     "fetch-meta": "fetch-meta.js"
   },
-  "keywords": [],
+  "keywords": [ "fanfic", "epub", "xenforo", "ao3", "ffnet", "fanfiction.net", "archiveofourown" ],
   "author": "Rebecca Turner <me@re-becca.org> (http://re-becca.org/)",
   "license": "ISC",
   "dependencies": {
@@ -47,10 +47,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/iarna/xenforo-to-epub"
+    "url": "https://github.com/iarna/fetch-fic"
   },
   "bugs": {
-    "url": "https://github.com/iarna/xenforo-to-epub/issues"
+    "url": "https://github.com/iarna/fetch-fic/issues"
   },
-  "homepage": "https://github.com/iarna/xenforo-to-epub"
+  "homepage": "https://github.com/iarna/fetch-fic"
 }

@@ -1,13 +1,22 @@
-# xenforo-to-epub
+# fetch-fic
 
-Package up XenForo threadmarked threads up into epub ebooks ready for
+Package up delicious, delicious fanfic from various sources into epub ebooks ready for
 reading in your ereader of choice.
+
+## SITES SUPPORTED
+
+* Any Xenforo based forum, like: spacebattles.com, sufficientvelicity.com, questionablequesting.com
+* Archive of Our Own
+* Fanfiction.Net
+* Deviant Art (for linked fanart)
 
 ## NOTABLE FEATURES
 
-* Images are brought into the final ebook. (This includes smilies.)
-* Threads without threadmarks can be used.
-* Links in the source content become links to the included chapters in the ebook.
+* Images are brought into the final ebook.  (This includes smilies on
+  Xenforo sites.)
+* Threads without threadmarks can be used.  (We scrape the page for links
+  and you pic the ones that are actually chapters.)
+* Links between chapters are kept and become links within the ebook itself.
 * External links to other supported sites will be added automatically as
   appendices and the links updated to stay in the ebook.
 * Content is aggressively cleaned for broad compatibility and for quality of
@@ -15,6 +24,7 @@ reading in your ereader of choice.
   * Spoiler boxes are styled as boxes w/o the "Spoiler" button.
   * Quoted text is styled without the "Expand/Collapse" buttons.
   * White-text is de-whited.
+  * Invisitext is shown
   * mailto: links are delinked.
 
 
@@ -24,24 +34,41 @@ You'll need [Node.js](https://nodejs.org) to use this tool.  Once you have
 dit installation is pretty simple:
 
 ```console
-$ npm install -g xenforo-to-epub
+$ npm install -g fetch-fic
 ```
 
 
 ## USAGE
+
+The tool is split into two commands, one which reads all the info about your
+fic and stores that in a file (that you can edit), and a second that reads
+that file, fetches everything and creates the epub for you. The first tool
+can also UPDATE a fic instead of downloading it anew.
 
 ```
 Usage: fetch-meta <url> [options]
 
 Options:
   --xf_user            value of your xf_user cookie
-  --scrape             scrape the index instead of using threadmarks   [boolean]
+  --scrape             scrape the index instead of using threadmarks
   --and-scrape         pull chapters from BOTH the index AND the threadmarks
-                                                                       [boolean]
 <url> - The URL of the threads you want to epubize. These fetches are not cached so you're
 guaranteed an up-to-date index.  This writes a metadata file out with the
 extension `.fic.toml` for you to edit and pass to…
+```
 
+```
+Usage: fetch-meta <fanfiction.fic.toml> [options]
+
+Options:
+  --xf_user            value of your xf_user cookie
+  --scrape             scrape the index instead of using threadmarks
+  --and-scrape         pull chapters from BOTH the index AND the threadmarks
+
+<fanfiction.fic.toml> - This will update an existing metadata file with the latest chapters.
+```
+
+```
 Usage: fetch-fic <fic(s)> [options] Options:
   --xf_user            value of your xf_user cookie
 
@@ -70,8 +97,8 @@ example.fic.toml
 ## HINTS
 
 * Running `fetch-meta` with a fic file as an argument will update it.
-* Use `--scrape` if the thread doesn't have threadmarks but has an index post.
-* Use `--and-scrape` if the thread has extra stuff in the index post that's
+* Xenforo: Use `--scrape` if the thread doesn't have threadmarks but has an index post.
+* Xenforo: Use `--and-scrape` if the thread has extra stuff in the index post that's
   not threadmarked.  This is commonly where meta-fanfic goes (aka in some
   communities as "omake").
 * The fic files are [TOML](https://github.com/toml-lang/toml), but just open
@@ -221,12 +248,14 @@ Currently it will warn if you use it with another site.
 ## PRIOR ART
 
 [FanFicFare](https://fanficfare.appspot.com/) ([as Calibre plugin](http://www.mobileread.com/forums/showthread.php?t=259221))
-knows how to talk to the sites
-this has been tested with.  It's a great general tool.  It's missing a
-couple of specific features however:
+is a great general tool.  It can talk to everything `fetch-fic` can with the
+exception of Deviant Art.  It also supports a whole slew of sites that
+`fetch-fic` likely never will.  It's missing a couple of specific features
+however:
 
-* It can't scrape indexes w/o threadmarks.
 * It has no facility for editing the chapter list before ebook creation.
 * Is not as aggressive about cleaning up the HTML that goes in the epubs.
 * It doesn't know how to split a single thread into multiple books.
 * It doesn't bring in images or maintain intrachapter linking.
+* It is substantially slower.
+* Xenforo: It can't scrape indexes w/o threadmarks.
