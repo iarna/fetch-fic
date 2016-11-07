@@ -7,6 +7,7 @@ var chapterFilename = require('./chapter-filename.js')
 var Readable = require('readable-stream').Readable
 var inherits = require('util').inherits
 var FicStream = require('./fic-stream.js')
+var path = require('path')
 
 function concurrently (_todo, concurrency, forEach) {
   var todo = Object.assign([], _todo)
@@ -42,9 +43,9 @@ function rewriteLinks (fic, chapter, handleLink) {
       $a.remove()
       return
     }
-    var href = fic.normalizeLink(startAs, chapter.base)
-    var newHref = handleLink(href, $a)
-    $a.attr('href', newHref || href)
+    var src = path.relative(startAs, chapter.base)
+    var newHref = handleLink(fic.normalizeLink(src, chapter.base), $a)
+    $a.attr('href', newHref || src)
   })
   chapter.content = $.html()
 }
@@ -55,8 +56,9 @@ function rewriteImages (fic, chapter, handleImage) {
     var $img = $(img)
     var startAs = $img.attr('src')
     if (!startAs) return
-    var src = fic.normalizeLink(startAs, chapter.base)
-    var newsrc = handleImage(src, $img)
+    var src = path.relative(startAs, chapter.base)
+    if (!path.parse(src).hostname) return
+    var newsrc = handleImage(fic.normalizeLink(src, chapter.base), $img)
     $img.attr('src', newsrc || src)
   })
   chapter.content = $.html()
