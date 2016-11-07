@@ -64,6 +64,8 @@ function main () {
     var fetchWithOpts = (url, noCache, binary) => {
       return spin(fetchWithCache(url, noCache, binary)).finally(() => tracker.completeWork(1))
     }
+    fetchWithOpts.gauge = gauge
+    fetchWithOpts.tracker = tracker
     fics = fics.filter((fic, ficNum) => {
       if (topFic === fic && topFic.fics && !topFic.chapters) return false
       for (let key of Object.keys(topFic)) {

@@ -110,6 +110,7 @@ function getFic (fetch, fic, maxConcurrency) {
   var images = {}
   var chapters = fic.chapters
 
+  fetch.gauge.show('Fetching chapters…')
   concurrently(chapters, maxConcurrency, (chapterInfo) => {
     return fic.getChapter(fetch, chapterInfo.link).then((chapter) => {
       chapter.order = chapterInfo.order
@@ -135,6 +136,8 @@ function getFic (fetch, fic, maxConcurrency) {
       console.error('Error while fetching chapter', chapterInfo, err.stack)
     })
   }).finally(() => {
+    fetch.tracker.addWork(Object.keys(externals).length)
+    fetch.gauge.show('Fetching externals…')
     return concurrently(Object.keys(externals), maxConcurrency, (href, exterNum) => {
       return fic.getChapter(fetch, href).then((external) => {
         external.order = 9000 + exterNum
@@ -154,7 +157,10 @@ function getFic (fetch, fic, maxConcurrency) {
       })
     })
   }).finally(() => {
-    return concurrently(Object.keys(images), maxConcurrency, (src, imageNum) => {
+    fetch.tracker.addWork(Object.keys(images).length)
+    fetch.gauge.show('Fetching images…')
+    // Images we can fetch with arbitrary concurrency as they won't eff up chapter order
+    return concurrently(Object.keys(images), 30, (src, imageNum) => {
       return fetch(src).spread((meta, imageData) => {
         return stream.queueChapter({
           image: true,
