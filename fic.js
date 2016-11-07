@@ -26,6 +26,15 @@ class Fic {
     return false
   }
 
+  normalizeLink (link) {
+    try {
+      var site = Site.fromUrl(link)
+      return site.normalizeLink(link)
+    } catch (_) {
+      return link
+    }
+  }
+
   getChapter (fetch, link) {
     var site = Site.fromUrl(link)
     return site.getChapter(fetch, link)
