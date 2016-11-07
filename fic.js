@@ -21,7 +21,7 @@ class Fic {
   }
 
   chapterExists (link) {
-    if (this.chapters.chapterExists(link)) return true
+    if (this.chapters.chapterExists(link, this)) return true
     if (this.fics.some(fic => fic.chapterExists(link))) return true
     return false
   }
@@ -41,7 +41,7 @@ class Fic {
   }
 
   addChapter (name, link, created) {
-    if (this.chapterExists(link)) return
+    if (this.chapterExists(link, this)) return
     return this.chapters.addChapter(name, link, created)
   }
 
@@ -107,8 +107,8 @@ class SubFic extends Fic {
     delete this.fics
     this.parent = parentFic
   }
-  chapterExists (link) {
-    return this.chapters.chapterExists(link)
+  chapterExists (link, fic) {
+    return this.chapters.chapterExists(link, fic)
   }
   static fromJSON (parent, raw) {
     const fic = new this(parent)
@@ -150,8 +150,12 @@ class SubFic extends Fic {
 }
 
 class ChapterList extends Array {
-  chapterExists (link) {
-    return this.some(chap => chap.link === link)
+  chapterExists (link, fic) {
+    if (fic) {
+      return this.some(chap => fic.normalizeLink(chap.link) === fic.normalizeLink(link))
+    } else {
+      return this.some(chap => chap.link === link)
+    }
   }
   addChapter (baseName, link, created) {
     if (this.chapterExists(link)) return

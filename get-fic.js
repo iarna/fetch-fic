@@ -62,8 +62,8 @@ function rewriteImages (fic, chapter, handleImage) {
   chapter.content = $.html()
 }
 
-function findChapter (href, chapters) {
-  var matching = chapters.filter(index => index.link === href)
+function findChapter (href, fic) {
+  var matching = fic.chapters.filter(index => fic.normalizeLink(index.link) === fic.normalizeLink(href))
   return matching && matching[0]
 }
 
@@ -82,14 +82,14 @@ function inlineImages (images) {
   }
 }
 
-function linklocalChapters (chapters, externals) {
+function linklocalChapters (fic, externals) {
   return (href, $a, orElse) => {
     if (!orElse) orElse = () => { }
     if ($a.text() === '↑') {
       $a.remove()
       return
     }
-    var linkedChapter = findChapter(href, chapters)
+    var linkedChapter = findChapter(href, fic)
     if (linkedChapter) {
       return chapterFilename(linkedChapter)
     } else if (externals[href]) {
@@ -113,7 +113,7 @@ function getFic (fetch, fic, maxConcurrency) {
       chapter.name = chapterInfo.name
       rewriteImages(fic, chapter, inlineImages(images))
       rewriteLinks(fic, chapter, (href, $a) => {
-        return linklocalChapters(chapters, externals)(href, $a, (href) => {
+        return linklocalChapters(fic, externals)(href, $a, (href) => {
           try {
             var site = Site.fromUrl(href)
           } catch (ex) {
@@ -137,7 +137,7 @@ function getFic (fetch, fic, maxConcurrency) {
         external.name = 'External Reference #' + exterNum + ': ' + externals[href].name
         external.filename = externals[href].filename
         rewriteImages(fic.site, external, inlineImages(images))
-        rewriteLinks(fic.site, external, linklocalChapters(chapters, externals))
+        rewriteLinks(fic.site, external, linklocalChapters(fic, externals))
         return stream.queueChapter(external)
       }).catch((err) => {
         console.error('Warning, skipping external ' + href + ': ' + err)
