@@ -33,7 +33,7 @@ function concurrently (_todo, concurrency, forEach) {
   })
 }
 
-function rewriteLinks (site, chapter, handleLink) {
+function rewriteLinks (fic, chapter, handleLink) {
   var $ = cheerio.load(chapter.content)
   $('a').each((ii, a) => {
     var $a = $(a)
@@ -42,20 +42,20 @@ function rewriteLinks (site, chapter, handleLink) {
       $a.remove()
       return
     }
-    var href = site.normalizeLink(startAs, chapter.base)
+    var href = fic.normalizeLink(startAs, chapter.base)
     var newHref = handleLink(href, $a)
     $a.attr('href', newHref || href)
   })
   chapter.content = $.html()
 }
 
-function rewriteImages (site, chapter, handleImage) {
+function rewriteImages (fic, chapter, handleImage) {
   var $ = cheerio.load(chapter.content)
   $('img').each((ii, img) => {
     var $img = $(img)
     var startAs = $img.attr('src')
     if (!startAs) return
-    var src = site.normalizeLink(startAs, chapter.base)
+    var src = fic.normalizeLink(startAs, chapter.base)
     var newsrc = handleImage(src, $img)
     $img.attr('src', newsrc || src)
   })
@@ -111,8 +111,8 @@ function getFic (fetch, fic, maxConcurrency) {
     return fic.getChapter(fetch, chapterInfo.link).then((chapter) => {
       chapter.order = chapterInfo.order
       chapter.name = chapterInfo.name
-      rewriteImages(fic.site, chapter, inlineImages(images))
-      rewriteLinks(fic.site, chapter, (href, $a) => {
+      rewriteImages(fic, chapter, inlineImages(images))
+      rewriteLinks(fic, chapter, (href, $a) => {
         return linklocalChapters(chapters, externals)(href, $a, (href) => {
           try {
             var site = Site.fromUrl(href)
