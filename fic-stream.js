@@ -28,7 +28,7 @@ class FicStream extends Readable {
     } else {
       if (state.readyP) return state.readyP
       state.readyP = new Bluebird(resolve => {
-        this.FicStream.readyR = resolve
+        state.readyR = resolve
       })
       return state.readyP
     }
@@ -42,7 +42,7 @@ class FicStream extends Readable {
     }
     if (state.reading && state.readyP) {
       state.readyR()
-      state.readyR = this.readyP = null
+      state.readyR = state.readyP = null
     }
   }
 }
