@@ -71,7 +71,7 @@ function inlineImages (images) {
   return (src, $img) => {
     if (/clear[.]png$/.test(src)) return
     if (!images[src]) {
-      var ext = src.match(/([.](?:jpe?g|gif|png))/)
+      var ext = src.match(/([.](?:jpe?g|gif|png|svg))/)
       ext = ext && ext[1]
       if (ext === '.jpeg') ext = '.jpg'
       images[src] = {
