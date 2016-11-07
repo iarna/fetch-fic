@@ -93,7 +93,7 @@ function linklocalChapters (chapters, externals) {
     if (linkedChapter) {
       return chapterFilename(linkedChapter)
     } else if (externals[href]) {
-      return externals[href]
+      return externals[href].filename
     } else {
       return orElse(href) || href
     }
