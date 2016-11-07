@@ -124,6 +124,12 @@ class SubFic extends Fic {
   set publisher (value) {
     return this._publisher = value
   }
+  get link () {
+    return this._link || this.parent.link
+  }
+  set link (value) {
+    return this._link = value
+  }
   toJSON () {
     var result = {}
     for (let prop of qw`title link _author _authorUrl created modified _publisher description tags chapters`) {
