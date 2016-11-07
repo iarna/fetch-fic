@@ -26,6 +26,7 @@ const argv = require('yargs')
   .describe('network', 'allow network access; when false, cache-misses are errors')
   .argv
 
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
 main()
 
 function main () {
