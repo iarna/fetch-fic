@@ -5,6 +5,7 @@ var chapterFilename = require('./chapter-filename.js')
 var sanitizeHtml = require('sanitize-html')
 var ms = require('mississippi')
 var url = require('url')
+var fs = require('fs')
 
 function ficToEpub (meta) {
   var epub = new Streampub({
@@ -19,13 +20,17 @@ function ficToEpub (meta) {
     modified: meta.modified
   })
 
-  var title =
-    '<div style="text-align: center;">' +
-    '<h1>' + meta.title + '</h1>' +
-    '<h3>' + meta.author + '</h3>' +
-    '<p>URL: ' + '<a href="' + meta.link + '">' + meta.link + '</a></p>' +
-    '</div>'
-  epub.write(Streampub.newChapter('Title Page', title, 0, 'top.xhtml'))
+  if (meta.cover) {
+    epub.write(Streampub.newCoverImage(fs.createReadStream(meta.cover)))
+  } else {
+    var title =
+      '<div style="text-align: center;">' +
+      '<h1>' + meta.title + '</h1>' +
+      '<h3>' + meta.author + '</h3>' +
+      '<p>URL: ' + '<a href="' + meta.link + '">' + meta.link + '</a></p>' +
+      '</div>'
+    epub.write(Streampub.newChapter('Title Page', title, 0, 'top.xhtml'))
+  }
   return ms.pipeline.obj(ms.through.obj(transformChapter), epub)
 }
 

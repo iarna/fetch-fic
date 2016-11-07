@@ -13,10 +13,11 @@ class Fic {
     this.modified = null
     this.publisher = null
     this.description = null
-    this.site = null
+    this.cover = null
     this.tags = []
     this.fics = []
     this.chapters = new ChapterList()
+    this.site = null
   }
 
   chapterExists (link) {
@@ -36,7 +37,7 @@ class Fic {
   }
 
   importFromJSON (raw) {
-    for (let prop of qw`link title author authorUrl created modified description tags publisher`) {
+    for (let prop of qw`link title author authorUrl created modified description tags publisher cover`) {
       this[prop] = raw[prop]
     }
     this.chapters.importFromJSON(raw)
@@ -84,7 +85,7 @@ class Fic {
 
   toJSON () {
     var result = {}
-    for (let prop of qw`title link author authorUrl created modified publisher description tags fics chapters`) {
+    for (let prop of qw`title link author authorUrl created modified publisher cover description tags fics chapters`) {
       if (this[prop] != null && (!Array.isArray(this[prop]) || this[prop].length)) result[prop] = this[prop]
     }
     return result
