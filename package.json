@@ -61,6 +61,7 @@
     "site-generic-image.js",
     "site-gravatar.js",
     "site-wikipedia.js",
+    "site-worm.js",
     "site-wp-facebook.js",
     "site-xenforo.js",
     "site-youtube.js",
