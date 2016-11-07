@@ -89,6 +89,7 @@ function linklocalChapters (fic, externals) {
       $a.remove()
       return
     }
+    if ($a.attr('external') === 'false') return
     var linkedChapter = findChapter(href, fic)
     if (linkedChapter) {
       return chapterFilename(linkedChapter)
