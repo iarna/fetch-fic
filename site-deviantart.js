@@ -1,5 +1,4 @@
 'use strict'
-const url = require('url')
 const Site = require('./site.js')
 const cheerio = require('cheerio')
 const Bluebird = require('bluebird')
