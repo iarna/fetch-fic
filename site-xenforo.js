@@ -99,12 +99,12 @@ class Xenforo extends Site {
       links.each((_, link) => {
         const $link = $content(link)
         const href = this.normalizeLink($link.attr('href'), chapter.base)
-        const name = $link.text().trim()
+        let name = $link.text().trim()
         if (name === '↑') return // don't add links to quoted text as chapters
         // if the name is a link, try to find one elsewhere
         if (/^https?:[/][/]/.test(name)) {
-          const next = $link[0].prev
-          const nextText = $content(next).text().trim()
+          let next = $link[0].prev
+          let nextText = $content(next).text().trim()
           if (next.type === 'text' && nextText === '') {
             next = next.prev
             nextText = $content(next).text().trim()
