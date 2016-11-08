@@ -43,7 +43,7 @@ class Xenforo extends Site {
       if (!fic.tags.length) {
         fic.tags = tat.tags
       }
-      const chapters = $('li.primaryContent.memberListItem')
+      const chapters = $('li.threadmarkItem')
       let leastRecent
       let mostRecent
       chapters.each((ii, chapter) => {
