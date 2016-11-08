@@ -11,8 +11,8 @@ class Site {
     this.registered.push(site)
   }
   static fromUrl (rawUrl) {
-    for (const site of this.registered) {
-      if (site.matches(rawUrl)) return new site(rawUrl)
+    for (const SpecificSite of this.registered) {
+      if (SpecificSite.matches(rawUrl)) return new SpecificSite(rawUrl)
     }
     throw new Error('Could not find site handler for ' + rawUrl)
   }
