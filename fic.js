@@ -182,6 +182,7 @@ class Chapter {
     this.created = opts.created
     this.modified = opts.modified
     this.author = opts.author
+    this.authorUrl = opts.authorUrl
     this.tags = opts.tags
     this.externals = opts.externals != null ? opts.externals : true
   }
@@ -190,6 +191,7 @@ class Chapter {
       name: this.name,
       link: this.link,
       author: this.author,
+      authorUrl: this.authorUrl,
       created: this.created,
       modified: this.modified,
       tags: this.tags,
