@@ -8,6 +8,7 @@ var Readable = require('readable-stream').Readable
 var inherits = require('util').inherits
 var FicStream = require('./fic-stream.js')
 var path = require('path')
+var url = require('url')
 
 function concurrently (_todo, concurrency, forEach) {
   var todo = Object.assign([], _todo)
@@ -43,7 +44,7 @@ function rewriteLinks (fic, chapter, handleLink) {
       $a.remove()
       return
     }
-    var src = path.relative(startAs, chapter.base)
+    var src = url.resolve(chapter.base, startAs)
     var newHref = handleLink(fic.normalizeLink(src, chapter.base), $a)
     $a.attr('href', newHref || src)
   })
@@ -54,10 +55,10 @@ function rewriteImages (fic, chapter, handleImage) {
   var $ = cheerio.load(chapter.content)
   $('img').each((ii, img) => {
     var $img = $(img)
-    var startAs = $img.attr('src')
+    var startAs = $img.attr('src').replace(/(https?:[/])([^/])/, '$1/$2')
     if (!startAs) return
-    var src = path.relative(startAs, chapter.base)
-    if (!path.parse(src).hostname) return
+    var src = url.resolve(chapter.base, startAs)
+    if (!url.parse(src).hostname) return
     var newsrc = handleImage(fic.normalizeLink(src, chapter.base), $img)
     $img.attr('src', newsrc || src)
   })
