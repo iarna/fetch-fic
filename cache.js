@@ -185,8 +185,8 @@ function linkUrl (meta) {
       mkdirp(pathDirname(finalm))
     ]).then(() => {
       return Bluebird.all([
-        fsSymlink(pathRelative(pathDirname(finalm), startm), finalm),
-        fsSymlink(pathRelative(pathDirname(finalc), startc), finalc)
+//        fsSymlink(pathRelative(pathDirname(finalm), startm), finalm),
+//        fsSymlink(pathRelative(pathDirname(finalc), startc), finalc)
       ]).catch((er) => {
         if (er.code === 'EEXIST') return
         throw er
