@@ -1,5 +1,5 @@
 'use strict'
-const qw = require('./qw.js')
+const qw = require('qw')
 const Site = require('./site.js')
 
 class Fic {
