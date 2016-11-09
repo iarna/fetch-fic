@@ -115,6 +115,7 @@ function getFic (fetch, fic, maxConcurrency) {
     return fic.getChapter(fetch, chapterInfo.link).then((chapter) => {
       chapter.order = chapterInfo.order
       chapter.name = chapterInfo.name
+      if (fic.chapterHeadings || chapterInfo.heading) chapter.content = '<h2>' + chapter.name + '</h2>' + chapter.content
       rewriteImages(fic, chapter, inlineImages(images))
       rewriteLinks(fic, chapter, (href, $a) => {
         return linklocalChapters(fic, externals)(href, $a, (href) => {

@@ -14,6 +14,7 @@ class Fic {
     this.publisher = null
     this.description = null
     this.cover = null
+    this.chapterHeadings = null
     this.tags = []
     this.fics = []
     this.chapters = new ChapterList()
@@ -46,7 +47,10 @@ class Fic {
   }
 
   importFromJSON (raw) {
-    for (let prop of qw`link title author authorUrl created modified description tags publisher cover`) {
+    for (let prop of qw`
+         link title author authorUrl created modified description tags
+         publisher cover chapterHeadings
+       `) {
       this[prop] = raw[prop]
     }
     this.chapters.importFromJSON(raw)
@@ -94,7 +98,10 @@ class Fic {
 
   toJSON () {
     var result = {}
-    for (let prop of qw`title link author authorUrl created modified publisher cover description tags fics chapters`) {
+    for (let prop of qw`
+         title link author authorUrl created modified publisher cover
+         description tags fics chapters chapterHeadings
+       `) {
       if (this[prop] != null && (!Array.isArray(this[prop]) || this[prop].length)) result[prop] = this[prop]
     }
     return result
@@ -139,9 +146,18 @@ class SubFic extends Fic {
   set link (value) {
     return this._link = value
   }
+  get chapterHeadings () {
+    return this._chapterHeadings || this.parent.chapterHeadings
+  }
+  set chapterHeadings (value) {
+    return this._chapterHeadings = value
+  }
   toJSON () {
     var result = {}
-    for (let prop of qw`title link _author _authorUrl created modified _publisher description tags chapters`) {
+    for (let prop of qw`
+         title _link _author _authorUrl created modified _publisher
+         description tags chapters _chapterHeadings
+         `) {
       var assignTo = prop[0] === '_' ? prop.slice(1) : prop
       if (this[prop] && (this[prop].length == null || this[prop].length)) result[assignTo] = this[prop]
     }
