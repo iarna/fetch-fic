@@ -175,7 +175,7 @@ function linkUrl (meta) {
     ignoreHarmlessErrors(fsReadlink(finalc)),
     startm,
     startc
-  ]).spread((fd, fm, fc, sc, sm) => {
+  ]).spread((fd, fm, fc, sm, sc) => {
     const rfm = fm && path.resolve(fd, fm)
     const rfc = fc && path.resolve(fd, fc)
     if (sm === rfm && sc === rfc) return Bluebird.resolve()
