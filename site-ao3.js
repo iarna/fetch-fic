@@ -95,7 +95,9 @@ class ArchiveOfOurOwn extends Site {
       const notes = $('#notes').find('p').html()
       const endNotes = $('div.end').find('p').html()
       let content = ''
-      if (notes) content += '<div style="border: solid black 1px; padding: 1em">' + notes + '</div>'
+      if (notes && !/\(See the end of the chapter for.*notes.*.\)/.test(notes)) {
+        content += '<div style="border: solid black 1px; padding: 1em">' + notes + '</div>'
+      }
       content += $content.html()
       if (endNotes) content += '<div style="border: solid black 1px; padding: 1em">' + endNotes + '</div>'
       return {
