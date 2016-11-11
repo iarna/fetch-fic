@@ -71,10 +71,6 @@ function readJSON (filename, onMiss) {
   }
 }
 
-function writeJSON (filename, value) {
-  return Bluebird.resolve(value).then(value => writeFile(filename, JSON.stringify(value, null, 2)))
-}
-
 function readGzipFile (filename, onMiss) {
   return readFile(filename, gzipOnMiss).then(buf => zlibGunzip(buf))
 
