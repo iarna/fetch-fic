@@ -121,7 +121,7 @@ function readUrl (fetchUrl, onMiss) {
 
   function orFetchUrl () {
     return resolveCall(onMiss, fetchUrl).then(res => {
-      meta.finalUrl   = res.url
+      meta.finalUrl   = res.url || meta.startUrl
       meta.status     = res.status
       meta.statusText = res.statusText
       meta.headers    = res.headers.raw()
@@ -146,6 +146,7 @@ function readUrl (fetchUrl, onMiss) {
         meta.finalUrl = meta.finalURL
         delete meta.finalURL
       }
+      if (!meta.finalUrl) meta.finalUrl = meta.startUrl
       return linkUrl(meta).thenReturn([meta, result])
     })
   }
