@@ -138,7 +138,7 @@ function readUrl (fetchUrl, onMiss) {
 
   function thenReadMetadata (result) {
     return readJSON(metafile, () => meta).then(meta => {
-      meta.fromCache = meta.fetchedAt !== fetchedAt
+      meta.fromCache = meta.fetchedAt !== fetchedAt ? metafile : null
       if (meta.startURL) {
         meta.startUrl = meta.startURL
         delete meta.startURL
