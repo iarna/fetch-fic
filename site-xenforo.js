@@ -102,7 +102,7 @@ class Xenforo extends Site {
         let name = $link.text().trim()
         if (name === '↑') return // don't add links to quoted text as chapters
         // if the name is a link, try to find one elsewhere
-        if (/^https?:[/][/]/.test(name)) {
+        if (/^https?:[/][/]/.test(name) || / \| Page \d+$/.test(name)) {
           let next = $link[0].prev
           let nextText = $content(next).text().trim()
           if (next.type === 'text' && nextText === '') {
