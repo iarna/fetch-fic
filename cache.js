@@ -121,17 +121,16 @@ function readUrl (fetchUrl, onMiss) {
 
   function orFetchUrl () {
     return resolveCall(onMiss, fetchUrl).then(res => {
-      if (meta.status && meta.status !== 200) {
-        const non200 = new Error('Got status: ' + meta.status + ' ' + meta.statusText + ' for ' + fetchUrl)
-        non200.meta = meta
-        non200.result = result
-        return Bluebird.reject(non200)
-      }
       meta.finalUrl   = res.url
       meta.status     = res.status
       meta.statusText = res.statusText
       meta.headers    = res.headers.raw()
       meta.fetchedAt  = fetchedAt
+      if (meta.status && meta.status !== 200) {
+        const non200 = new Error('Got status: ' + meta.status + ' ' + meta.statusText + ' for ' + fetchUrl)
+        non200.meta = meta
+        return Bluebird.reject(non200)
+      }
       return res.buffer()
     })
   }
