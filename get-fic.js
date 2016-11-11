@@ -169,7 +169,7 @@ function getFic (fetch, fic, maxConcurrency) {
           filename: images[src].filename,
           content: imageData
         })
-      })
+      }).catch(err => console.error('Error while fetching image ' + src + ': ' + require('util').inspect(err)))
     })
   }).finally(() => {
     return stream.queueChapter(null)
