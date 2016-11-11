@@ -116,7 +116,12 @@ function readUrl (fetchUrl, onMiss) {
   return inFlight(fetchUrl, thenReadContent)
 
   function thenReadContent () {
-    return readGzipFile(content, orFetchUrl).then(thenReadMetadata)
+    return readGzipFile(content, orFetchUrl).catch(err => {
+      if (err.code !== 'Z_DATA_ERROR') throw err
+      return clearUrl(fetchUrl).then(() => {
+        return readGzipFile(content, orFetchUrl)
+      })
+    }).then(thenReadMetadata)
   }
 
   function orFetchUrl () {
