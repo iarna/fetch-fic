@@ -55,7 +55,7 @@ function rewriteImages (fic, chapter, handleImage) {
   var $ = cheerio.load(chapter.content)
   $('img').each((ii, img) => {
     var $img = $(img)
-    var startAs = $img.attr('src').replace(/(https?:[/])([^/])/, '$1/$2')
+    var startAs = ($img.attr('src') || '').replace(/(https?:[/])([^/])/, '$1/$2')
     if (!startAs) return
     var src = url.resolve(chapter.base, startAs)
     if (!url.parse(src).hostname) return
