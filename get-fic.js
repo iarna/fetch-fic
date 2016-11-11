@@ -111,7 +111,7 @@ function getFic (fetch, fic, maxConcurrency) {
   var images = {}
   var chapters = fic.chapters
 
-  fetch.gauge.show('Fetching chapters…')
+  fetch.gauge.show('Fetching chapters (' + chapters.length + ')…')
   concurrently(chapters, maxConcurrency, (chapterInfo) => {
     return fic.getChapter(fetch, chapterInfo.link).then((chapter) => {
       chapter.order = chapterInfo.order
@@ -139,7 +139,7 @@ function getFic (fetch, fic, maxConcurrency) {
     })
   }).finally(() => {
     fetch.tracker.addWork(Object.keys(externals).length)
-    fetch.gauge.show('Fetching externals…')
+    fetch.gauge.show('Fetching externals (' + Object.keys(externals).length + ')…')
     return concurrently(Object.keys(externals), maxConcurrency, (href, exterNum) => {
       return fic.getChapter(fetch, href).then((external) => {
         external.order = 9000 + exterNum
@@ -160,7 +160,7 @@ function getFic (fetch, fic, maxConcurrency) {
     })
   }).finally(() => {
     fetch.tracker.addWork(Object.keys(images).length)
-    fetch.gauge.show('Fetching images…')
+    fetch.gauge.show('Fetching images (' + Object.keys(images).length + ')…')
     // Images we can fetch with arbitrary concurrency as they won't eff up chapter order
     return concurrently(Object.keys(images), 30, (src, imageNum) => {
       return fetch(src).spread((meta, imageData) => {
