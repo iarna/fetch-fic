@@ -149,7 +149,7 @@ function getFic (fetch, fic, maxConcurrency) {
         rewriteLinks(fic.site, external, linklocalChapters(fic, externals))
         return stream.queueChapter(external)
       }).catch((err) => {
-        console.error('Warning, skipping external ' + href + ': ' + err)
+        console.error('Warning, skipping external ' + href + ': ' + err.stack)
         return stream.queueChapter({
           order: 9000 + exterNum,
           name: 'External Reference #' + exterNum + ': ' + externals[href].name,
@@ -174,7 +174,7 @@ function getFic (fetch, fic, maxConcurrency) {
   }).finally(() => {
     return stream.queueChapter(null)
   }).catch(err => {
-    console.error('Error in get fic ' + err)
+    console.error('Error in get fic ' + err.stack)
   })
   return stream
 }
