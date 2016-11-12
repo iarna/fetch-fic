@@ -1,7 +1,7 @@
 {
   "name": "xenforo-to-epub",
   "version": "2.2.0",
-  "description": "Package up XenForo threadmarked threads up into epub ebooks ready for reading in your ereader of choice.",
+  "description": "RENAMED: fetch-fic",
   "main": "fic-to-epub.js",
   "bin": {
     "fetch-fic": "fetch-fic.js",
