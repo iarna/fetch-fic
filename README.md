@@ -5,7 +5,7 @@ reading in your ereader of choice.
 
 ## SITES SUPPORTED
 
-* Any Xenforo based forum, like: [spacebattles.com](https://forums.spacebattles.com/), [sufficientvelicity.com](https://forums.sufficientvelocity.com/)), [questionablequesting.com](https://questionablequesting.com)
+* Any Xenforo based forum, like: [spacebattles.com](https://forums.spacebattles.com/), [sufficientvelicity.com](https://forums.sufficientvelocity.com/), [questionablequesting.com](https://questionablequesting.com)
 * [Archive of Our Own](https://archiveofourown.org/)
 * [Fanfiction.Net](https://www.fanfiction.net/)
 * [Deviant Art](https://www.deviantart.com/) (for linked fanart)
