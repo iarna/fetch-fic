@@ -120,7 +120,7 @@ function getFic (fetch, fic, maxConcurrency) {
       rewriteImages(fic, chapter, inlineImages(images))
       rewriteLinks(fic, chapter, (href, $a) => {
         return linklocalChapters(fic, externals)(href, $a, (href) => {
-          if (!chapterInfo.externals) return
+          if (!chapterInfo.externals || !fic.externals) return
           try {
             var site = Site.fromUrl(href)
           } catch (ex) {

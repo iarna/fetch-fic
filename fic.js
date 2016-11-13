@@ -15,6 +15,7 @@ class Fic {
     this.description = null
     this.cover = null
     this.chapterHeadings = null
+    this.externals = null
     this.tags = []
     this.fics = []
     this.chapters = new ChapterList()
@@ -58,6 +59,7 @@ class Fic {
       raw.fics.forEach(fic => this.fics.push(SubFic.fromJSON(this, fic)))
     }
     this.site = Site.fromUrl(this.link)
+    this.externals = raw.externals != null ? raw.externals : true
     return this
   }
 
@@ -151,6 +153,12 @@ class SubFic extends Fic {
   }
   set chapterHeadings (value) {
     return this._chapterHeadings = value
+  }
+  get externals () {
+    return this._externals || this.parent.externals
+  }
+  set externals (value) {
+    return this._externals = value
   }
   toJSON () {
     var result = {}
