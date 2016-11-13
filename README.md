@@ -5,10 +5,10 @@ reading in your ereader of choice.
 
 ## SITES SUPPORTED
 
-* Any Xenforo based forum, like: spacebattles.com, sufficientvelicity.com, questionablequesting.com
-* Archive of Our Own
-* Fanfiction.Net
-* Deviant Art (for linked fanart)
+* Any Xenforo based forum, like: [spacebattles.com](https://forums.spacebattles.com/), [sufficientvelicity.com](https://forums.sufficientvelocity.com/)), [questionablequesting.com](https://questionablequesting.com)
+* [Archive of Our Own](https://archiveofourown.org/)
+* [Fanfiction.Net](https://www.fanfiction.net/)
+* [Deviant Art](https://www.deviantart.com/) (for linked fanart)
 
 ## NOTABLE FEATURES
 
@@ -18,7 +18,8 @@ reading in your ereader of choice.
   and you pic the ones that are actually chapters.)
 * Links between chapters are kept and become links within the ebook itself.
 * External links to other supported sites will be added automatically as
-  appendices and the links updated to stay in the ebook.
+  appendices and the links updated to stay in the ebook. Or don't!
+* Optionally add chapter headers!
 * Content is aggressively cleaned for broad compatibility and for quality of
   display in ereards.
   * Spoiler boxes are styled as boxes w/o the "Spoiler" button.
@@ -26,7 +27,6 @@ reading in your ereader of choice.
   * White-text is de-whited.
   * Invisitext is shown
   * mailto: links are delinked.
-
 
 ## INSTALLATION
 
@@ -224,6 +224,33 @@ author = "Another Author"
 
 ```
 
+# FIC FILE FEATURES
+
+Documented here are things you can add to your fic files that would never be scraped:
+
+### cover
+
+Usable in the top level and inside subfics.  This should be the path to an
+image on disk to use as the cover of your ebook.
+
+TODO: Supporting URLs at the very least.
+
+### externals
+
+Usable in the top level, inside chapers or inside subfics, setting this to `false` will
+disable the fetching of externals.
+
+### chapterHeadings
+
+Usable at the top level and inside subfics, setting this to `true` will add
+headings to the top of each chapter with the chapter name. Often desirable on
+fics from [Archive of Our Own](https://archiveofourown.org/) as it does this too.
+
+### headings
+
+Usable inside chapters.  Setting this to `true` will add headings to _this_
+chapter only.  Setting this to false will suppress generating headings for
+this chapter only if they were otherwise enabled for the whole fic.
 
 # WIP WIP WIP
 
