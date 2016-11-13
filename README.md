@@ -12,21 +12,27 @@ reading in your ereader of choice.
 
 ## NOTABLE FEATURES
 
+* Cover images can be added.
 * Images are brought into the final ebook.  (This includes smilies on
   Xenforo sites.)
 * Threads without threadmarks can be used.  (We scrape the page for links
   and you pic the ones that are actually chapters.)
-* Links between chapters are kept and become links within the ebook itself.
-* External links to other supported sites will be added automatically as
-  appendices and the links updated to stay in the ebook. Or don't!
-* Optionally add chapter headers!
+* Links between chapters are maintained and become links within the ebook itself.
+* External links to other supported sites will optionally be added
+  automatically as appendices and the links to them updated to stay in the
+  ebook.
+* Can optionally add chapter names as headers to the start of each chapter.
 * Content is aggressively cleaned for broad compatibility and for quality of
-  display in ereards.
+  display in ereaders.
+* Content is restyled for ebook use:
   * Spoiler boxes are styled as boxes w/o the "Spoiler" button.
   * Quoted text is styled without the "Expand/Collapse" buttons.
   * White-text is de-whited.
   * Invisitext is shown
   * mailto: links are delinked.
+* Content is cached so that iterating to get the perfect config takes no
+  time.  Plus chapter updates are fast.
+
 
 ## INSTALLATION
 
