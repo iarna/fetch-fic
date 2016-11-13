@@ -115,8 +115,13 @@ function getFic (fetch, fic, maxConcurrency) {
   concurrently(chapters, maxConcurrency, (chapterInfo) => {
     return fic.getChapter(fetch, chapterInfo.link).then((chapter) => {
       chapter.order = chapterInfo.order
-      chapter.name = chapterInfo.name
-      if (fic.chapterHeadings || chapterInfo.heading) chapter.content = '<h2>' + chapter.name + '</h2>' + chapter.content
+      chapter.name = chapterInfo.name + (chapterInfo.author ? ` (${chapter.author})` : '')
+      if (fic.chapterHeadings || chapterInfo.heading) {
+        const byline = !chapterInfo.author ? ''
+          : (' by ' + (!chapterInfo.authorUrl ? chapterInfo.author
+            : `<a href="${chapterInfo.authorUrl}">${chapterInfo.author}</a>`))
+        chapter.content = `<h2>${chapterInfo.name}${byline}</h2>` + chapter.content
+      }
       rewriteImages(fic, chapter, inlineImages(images))
       rewriteLinks(fic, chapter, (href, $a) => {
         return linklocalChapters(fic, externals)(href, $a, (href) => {
