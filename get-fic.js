@@ -78,7 +78,7 @@ function inlineImages (images) {
       ext = ext && ext[1]
       if (ext === '.jpeg') ext = '.jpg'
       images[src] = {
-        filename: 'image-' + (Object.keys(images).length + 1) + (ext || '.guess.jpg')
+        filename: `image-${Object.keys(images).length + 1}${ext || '.guess.jpg'}`
       }
     }
     return images[src].filename
@@ -111,7 +111,7 @@ function getFic (fetch, fic, maxConcurrency) {
   var images = {}
   var chapters = fic.chapters
 
-  fetch.gauge.show('Fetching chapters (' + chapters.length + ')…')
+  fetch.gauge.show(`Fetching chapters (${chapters.length})…`)
   concurrently(chapters, maxConcurrency, (chapterInfo) => {
     return fic.getChapter(fetch, chapterInfo.link).then((chapter) => {
       chapter.order = chapterInfo.order
@@ -128,7 +128,7 @@ function getFic (fetch, fic, maxConcurrency) {
           }
           externals[href] = {
             name: $a.text(),
-            filename: 'external-' + (Object.keys(externals).length + 1) + '.xhtml'
+            filename: `external-${Object.keys(externals).length + 1}.xhtml`
           }
           return externals[href].filename
         })
@@ -139,28 +139,28 @@ function getFic (fetch, fic, maxConcurrency) {
     })
   }).finally(() => {
     fetch.tracker.addWork(Object.keys(externals).length)
-    fetch.gauge.show('Fetching externals (' + Object.keys(externals).length + ')…')
+    fetch.gauge.show(`Fetching externals (${Object.keys(externals).length})…`)
     return concurrently(Object.keys(externals), maxConcurrency, (href, exterNum) => {
       return fic.getChapter(fetch, href).then((external) => {
         external.order = 9000 + exterNum
-        external.name = 'External Reference #' + exterNum + ': ' + externals[href].name
+        external.name = `External Reference #${exterNum + 1}: ${externals[href].name}`
         external.filename = externals[href].filename
         rewriteImages(fic.site, external, inlineImages(images))
         rewriteLinks(fic.site, external, linklocalChapters(fic, externals))
         return stream.queueChapter(external)
       }).catch((err) => {
-        console.error('Warning, skipping external ' + href + ': ' + err.stack)
+        console.error(`Warning, skipping external ${href}: ${err.stack}`)
         return stream.queueChapter({
           order: 9000 + exterNum,
-          name: 'External Reference #' + exterNum + ': ' + externals[href].name,
+          name: `External Reference #${exterNum + 1}: ${externals[href].name}`,
           filename: externals[href].filename,
-          content: '<p>External link to <a href="' + href + '">' + href + '</a></p><pre>' + err.stack + '</pre>'
+          content: `<p>External link to <a href="${href}">${href}</a></p><pre>${err.stack}</pre>`
         })
       })
     })
   }).finally(() => {
     fetch.tracker.addWork(Object.keys(images).length)
-    fetch.gauge.show('Fetching images (' + Object.keys(images).length + ')…')
+    fetch.gauge.show(`Fetching images (${Object.keys(images).length})…`)
     return concurrently(Object.keys(images), maxConcurrency, (src, imageNum) => {
       return fetch(src).spread((meta, imageData) => {
         return stream.queueChapter({
@@ -168,12 +168,12 @@ function getFic (fetch, fic, maxConcurrency) {
           filename: images[src].filename,
           content: imageData
         })
-      }).catch(err => console.error('Error while fetching image ' + src + ': ' + require('util').inspect(err)))
+      }).catch(err => console.error(`Error while fetching image ${src}: ${require('util').inspect(err)}`))
     })
   }).finally(() => {
     return stream.queueChapter(null)
   }).catch(err => {
-    console.error('Error in get fic ' + err.stack)
+    console.error(`Error in get fic ${err.stack}`)
   })
   return stream
 }
