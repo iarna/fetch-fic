@@ -24,6 +24,8 @@ const argv = require('yargs')
   .boolean('network')
   .default('network', true)
   .describe('network', 'allow network access; when false, cache-misses are errors')
+  .default('concurrency', 4)
+  .describe('concurrency', 'maximum number of chapters/images/etc to fetch at a time')
   .argv
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
@@ -32,7 +34,8 @@ main()
 function main () {
   const cookie = argv.xf_session
   const user = argv.xf_user
-  const fetchOpts = {cacheBreak: !argv['cache'], noNetwork: !argv['network']}
+  const maxConcurrency = argv.maxConcurrency
+  const fetchOpts = {cacheBreak: !argv.cache, noNetwork: !argv.network}
   if (cookie) {
     if (!fetchOpts.headers) fetchOpts.headers = {}
     fetchOpts.headers.Cookie = 'xf_session=' + cookie
@@ -89,7 +92,7 @@ function main () {
       var filename = filenameize(fic.title) + '.epub'
 
       return pipe(
-        getFic(fetchWithOpts, fic, 1),
+        getFic(fetchWithOpts, fic, maxConcurrency),
         ficToEpub(fic),
         fs.createWriteStream(filename)
       ).tap(() => {

@@ -161,8 +161,7 @@ function getFic (fetch, fic, maxConcurrency) {
   }).finally(() => {
     fetch.tracker.addWork(Object.keys(images).length)
     fetch.gauge.show('Fetching images (' + Object.keys(images).length + ')…')
-    // Images we can fetch with arbitrary concurrency as they won't eff up chapter order
-    return concurrently(Object.keys(images), 30, (src, imageNum) => {
+    return concurrently(Object.keys(images), maxConcurrency, (src, imageNum) => {
       return fetch(src).spread((meta, imageData) => {
         return stream.queueChapter({
           image: true,
