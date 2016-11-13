@@ -32,7 +32,7 @@
     "qw": "^1.0.0",
     "readable-stream": "^2.1.5",
     "sanitize-html": "^1.13.0",
-    "streampub": "^1.4.0",
+    "streampub": "^1.4.1",
     "yargs": "^5.0.0"
   },
   "files": [
