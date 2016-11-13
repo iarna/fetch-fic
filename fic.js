@@ -213,6 +213,7 @@ class Chapter {
     this.authorUrl = opts.authorUrl
     this.tags = opts.tags
     this.externals = opts.externals != null ? opts.externals : true
+    this.headings = opts.headings
   }
   toJSON () {
     return {
@@ -223,7 +224,8 @@ class Chapter {
       created: this.created,
       modified: this.modified,
       tags: this.tags,
-      externals: this.externals !== true ? this.externals : null
+      externals: this.externals !== true ? this.externals : null,
+      headings: this.headings
     }
   }
   static fromJSON (order, opts) {
