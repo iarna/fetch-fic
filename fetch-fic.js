@@ -59,7 +59,7 @@ function main () {
 
   function fetchTopFic (ficFile, ficNum) {
     var topFic = Fic.fromJSON(TOML.parse(fs.readFileSync(ficFile, 'utf8')))
-    var fics = [topFic].concat(topFic.fics||[])
+    var fics = (topFic.chapters.length ? [topFic]: []).concat(topFic.fics||[])
     var tracker = trackers[ficNum]
     var fetchWithOpts = (url, noCache, binary) => {
       return spin(fetchWithCache(url, noCache, binary)).finally(() => tracker.completeWork(1))
