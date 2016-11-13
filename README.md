@@ -77,6 +77,9 @@ Options:
 ```
 Usage: fetch-fic <fic(s)> [options] Options:
   --xf_user            value of your xf_user cookie
+  --cache        fetch from the network even if we have it cached
+  --network      allow network access; when false, cache-misses are errors
+  --conurrency   maximum number of chapters/images/etc to fetch at a time
 
 <fic(s)> - The `.fic.toml` file(s) you want to get epubs for.  You'll get
 one epub for each `.fic.toml`.  Epubs are fetch in sequence, not in
@@ -146,6 +149,26 @@ URL you specified and count those as chapters.
 
 Fetch threadmarks AND slurp links from the URL you specified. Often results in
 duplicates but it's also often the only way to get _everything_.
+
+### --cache
+
+For `fetch-meta`, forces the use of the cache instead of looking for a fresh
+table of contents.
+
+### --no-cache
+
+For `fetch-fic`, disable the use of the cache when fetching chapter data.
+
+### --no-network
+
+Error if anything tries to access the network (on a cache-miss).  Note that
+`--no-cache` and `--no-network` used together are guaranteed to error out.
+
+### --concurrency=#
+
+Set the maximum number of simultanteous network requests we'll do at a time.
+This defaults to 4, which while conservative, pretty much guarantees you
+won't hit any site's "bot please stop beating on us" limits.
 
 ## WHAT FIC FILES LOOK LIKE
 
