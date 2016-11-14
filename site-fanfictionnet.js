@@ -54,7 +54,7 @@ class FanFictionNet extends Site {
         const rated = infomatches[1]
         fic.language = infomatches[2]
         fic.tags =  infomatches[3].split(/, /).concat(['rated:' + rated])
-        const words = infomatches[4]
+        fic.words = infomatches[4]
         const reviews = infomatches[5]
         const favs = infomatches[6]
         const follows = infomatches[7]
