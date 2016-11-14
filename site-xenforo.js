@@ -229,6 +229,7 @@ class Xenforo extends Site {
         }
         $(vv).attr('style', ns)
       })
+      $content.find('div.messageTextEndMarker').remove()
       return {
         chapterLink: chapter,
         finalUrl: finalUrl,
