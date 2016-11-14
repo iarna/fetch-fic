@@ -16,6 +16,7 @@ class Fic {
     this.cover = null
     this.chapterHeadings = null
     this.externals = null
+    this.words = null
     this.tags = []
     this.fics = []
     this.chapters = new ChapterList()
@@ -50,7 +51,7 @@ class Fic {
   importFromJSON (raw) {
     for (let prop of qw`
          link title author authorUrl created modified description tags
-         publisher cover chapterHeadings
+         publisher cover chapterHeadings words
        `) {
       this[prop] = raw[prop]
     }
@@ -102,7 +103,7 @@ class Fic {
     var result = {}
     for (let prop of qw`
          title link author authorUrl created modified publisher cover
-         description tags fics chapters chapterHeadings
+         description tags words fics chapters chapterHeadings
        `) {
       if (this[prop] != null && (!Array.isArray(this[prop]) || this[prop].length)) result[prop] = this[prop]
     }
@@ -165,7 +166,7 @@ class SubFic extends Fic {
     var result = {}
     for (let prop of qw`
          title _link _author _authorUrl created modified _publisher
-         description tags chapters _chapterHeadings
+         description tags chapters _chapterHeadings words
          `) {
       var assignTo = prop[0] === '_' ? prop.slice(1) : prop
       if (this[prop] && (this[prop].length == null || this[prop].length)) result[assignTo] = this[prop]
@@ -215,6 +216,7 @@ class Chapter {
     this.tags = opts.tags
     this.externals = opts.externals != null ? opts.externals : true
     this.headings = opts.headings
+    this.words = opts.words
   }
   toJSON () {
     return {
@@ -226,7 +228,8 @@ class Chapter {
       modified: this.modified,
       tags: this.tags,
       externals: this.externals !== true ? this.externals : null,
-      headings: this.headings
+      headings: this.headings,
+      words: this.words
     }
   }
   static fromJSON (order, opts) {
