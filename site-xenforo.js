@@ -238,7 +238,7 @@ class Xenforo extends Site {
         authorUrl: authorUrl,
         created: messageDate,
         raw: html,
-        content: $content.html()
+        content: $content.html().trim()
           // content is blockquoted, for some reason
           .replace(/^\s*<blockquote[^>]*>([\s\S]+)<[/]blockquote>\s*$/, '$1')
           // bullshit sv holloween thingy
