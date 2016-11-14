@@ -106,6 +106,7 @@ class Fic {
        `) {
       if (this[prop] != null && (!Array.isArray(this[prop]) || this[prop].length)) result[prop] = this[prop]
     }
+    if (!this.externals) result.externals = this.externals
     return result
   }
 }
