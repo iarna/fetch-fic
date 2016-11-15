@@ -96,10 +96,10 @@ class ArchiveOfOurOwn extends Site {
       const endNotes = $('div.end').find('p').html()
       let content = ''
       if (notes && !/\(See the end of the chapter for.*notes.*.\)/.test(notes)) {
-        content += '<div style="border: solid black 1px; padding: 1em">' + notes + '</div>'
+        content += `<aside style="border: solid black 1px; padding: 1em">${notes}</aside>`
       }
       content += $content.html()
-      if (endNotes) content += '<div style="border: solid black 1px; padding: 1em">' + endNotes + '</div>'
+      if (endNotes) content += `<aside epub:type="endnote" style="border: solid black 1px; padding: 1em">${endNotes}</aside>`
       return {
         chapterLink: chapter,
         finalUrl: meta.finalUrl,
