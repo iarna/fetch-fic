@@ -76,9 +76,9 @@ function transformChapter (meta) {
     var index = chapter.order != null && (1 + chapter.order)
     var name = chapter.name || chapter.order && "Chapter " + index
     var filename = chapterFilename(chapter)
-    var content = sanitizeHtml(
-      (name ? '<title>' + name.replace(/&/g,'&amp;').replace(/</g, '&lt;') + '</title>' : '') +
-      '<article>' + chapter.content + '</article>', meta.site.sanitizeHtmlConfig())
+    var toSanitize = (name ? html`<title>${name}</title></head>` : '') +
+      '<section epub:type="chapter">' + chapter.content + '</section>'
+    var content = sanitizeHtml(toSanitize, meta.site.sanitizeHtmlConfig())
     this.push(Streampub.newChapter(name, content, index, filename))
     done()
   }
