@@ -86,7 +86,7 @@ class Xenforo extends Site {
         }
       }
       if (!fic.author) fic.author = chapter.author
-      if (!fic.authorUrl) fic.author = chapter.authorUrl
+      if (!fic.authorUrl) fic.authorUrl = chapter.authorUrl
 
       const $content = cheerio.load(chapter.content)
       var firstPara = $content.text().trim().replace(/^([^\n]+)[\s\S]*?$/, '$1')
