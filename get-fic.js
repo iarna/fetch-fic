@@ -9,6 +9,7 @@ var inherits = require('util').inherits
 var FicStream = require('./fic-stream.js')
 var path = require('path')
 var url = require('url')
+var html = require('html-template-tag')
 
 function concurrently (_todo, concurrency, forEach) {
   var todo = Object.assign([], _todo)
@@ -117,10 +118,11 @@ function getFic (fetch, fic, maxConcurrency) {
       chapter.order = chapterInfo.order
       chapter.name = chapterInfo.name + (chapterInfo.author ? ` (${chapter.author})` : '')
       if (fic.chapterHeadings || chapterInfo.headings) {
+        const headerName = html`${chapterInfo.name}`
         const byline = !chapterInfo.author ? ''
           : (' by ' + (!chapterInfo.authorUrl ? chapterInfo.author
-            : `<a href="${chapterInfo.authorUrl}">${chapterInfo.author}</a>`))
-        chapter.content = `<h2>${chapterInfo.name}${byline}</h2>` + chapter.content
+            : html`<a href="${chapterInfo.authorUrl}">${chapterInfo.author}</a>`))
+        chapter.content = `<header><h2>${headerName}${byline}</h2></header>` + chapter.content
       }
       rewriteImages(fic, chapter, inlineImages(images))
       rewriteLinks(fic, chapter, (href, $a) => {
@@ -159,7 +161,7 @@ function getFic (fetch, fic, maxConcurrency) {
           order: 9000 + exterNum,
           name: `External Reference #${exterNum + 1}: ${externals[href].name}`,
           filename: externals[href].filename,
-          content: `<p>External link to <a href="${href}">${href}</a></p><pre>${err.stack}</pre>`
+          content: html`<p>External link to <a href="${href}">${href}</a></p><pre>${err.stack}</pre>`
         })
       })
     })
