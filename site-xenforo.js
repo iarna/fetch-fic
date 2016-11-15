@@ -244,6 +244,8 @@ class Xenforo extends Site {
           .replace(/^\s*<blockquote[^>]*>([\s\S]+)<[/]blockquote>\s*$/, '$1')
           // bullshit sv holloween thingy
           .replace(/^<p style="padding: 5px 0px; font-weight: bold; font-style: oblique; text-align: center; font-size: 12pt">.*?<[/]p>/g, '')
+          // trim the lines
+          .replace(/^\s+|\s+$/mg, '')
       }
     })
   }
