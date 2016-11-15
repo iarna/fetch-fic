@@ -16,9 +16,6 @@ class Xenforo extends Site {
     const siteUrl = url.parse(siteUrlStr)
     const hostname = siteUrl.hostname
     if (!/^[/](threads|posts)[/]|^[/]index[.]php[?]topic/.test(siteUrl.path)) return false
-    if (!knownSites[hostname]) {
-      this.warnings.push('Has not yet been tested with ' + threadUrl.hostname + ', may not work.')
-    }
     return true
   }
 
@@ -26,6 +23,9 @@ class Xenforo extends Site {
     super(siteUrlStr)
     const siteUrl = url.parse(siteUrlStr)
     const hostname = siteUrl.hostname
+    if (!knownSites[hostname]) {
+      this.warnings.push(`Has not yet been tested with ${threadUrl.hostname}, may not work.`)
+    }
     this.publisher = hostname
     this.publisherName = knownSites[hostname] || hostname
     const path = siteUrl.pathname || siteUrl.path || ''
