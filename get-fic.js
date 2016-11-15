@@ -142,7 +142,7 @@ function getFic (fetch, fic, maxConcurrency) {
     }).catch((err) => {
       console.error('Error while fetching chapter', chapterInfo, err.stack)
     })
-  }).finally(() => {
+  }).then(() => {
     fetch.tracker.addWork(Object.keys(externals).length)
     fetch.gauge.show(`Fetching externals (${Object.keys(externals).length})…`)
     return concurrently(Object.keys(externals), maxConcurrency, (href, exterNum) => {
@@ -163,7 +163,7 @@ function getFic (fetch, fic, maxConcurrency) {
         })
       })
     })
-  }).finally(() => {
+  }).then(() => {
     fetch.tracker.addWork(Object.keys(images).length)
     fetch.gauge.show(`Fetching images (${Object.keys(images).length})…`)
     return concurrently(Object.keys(images), maxConcurrency, (src, imageNum) => {
@@ -175,7 +175,7 @@ function getFic (fetch, fic, maxConcurrency) {
         })
       }).catch(err => console.error(`Error while fetching image ${src}: ${require('util').inspect(err)}`))
     })
-  }).finally(() => {
+  }).then(() => {
     return stream.queueChapter(null)
   }).catch(err => {
     console.error(`Error in get fic ${err.stack}`)
