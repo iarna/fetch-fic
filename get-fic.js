@@ -116,7 +116,7 @@ function getFic (fetch, fic, maxConcurrency) {
     return fic.getChapter(fetch, chapterInfo.link).then((chapter) => {
       chapter.order = chapterInfo.order
       chapter.name = chapterInfo.name + (chapterInfo.author ? ` (${chapter.author})` : '')
-      if (fic.chapterHeadings || chapterInfo.heading) {
+      if (fic.chapterHeadings || chapterInfo.headings) {
         const byline = !chapterInfo.author ? ''
           : (' by ' + (!chapterInfo.authorUrl ? chapterInfo.author
             : `<a href="${chapterInfo.authorUrl}">${chapterInfo.author}</a>`))
