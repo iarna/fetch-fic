@@ -63,10 +63,6 @@ function ficToEpub (meta) {
   return ms.pipeline.obj(ms.through.obj(transformChapter(meta)), epub)
 }
 
-function andMatches (pattern) {
-  return function (item) { return pattern.test(item) }
-}
-
 function transformChapter (meta) {
   return function (chapter, _, done) {
     if (chapter.image) {
