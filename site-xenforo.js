@@ -7,7 +7,8 @@ const color = require('color-ops')
 const knownSites = {
   'forums.sufficientvelocity.com': 'Sufficient Velocity',
   'forums.spacebattles.com': 'Spacebattles',
-  'forum.questionablequesting.com': 'Questionable Questing'
+  'forum.questionablequesting.com': 'Questionable Questing',
+  'questionablequesting.com': 'Questionable Questing'
 }
 
 class Xenforo extends Site {
