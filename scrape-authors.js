@@ -48,7 +48,6 @@ Bluebird.each(fics, fic => {
       const $content = cheerio.load(chapter.content)
       $content('.bbCodeQuote').remove()
       meta.words = wordcount($content.text().trim())
-      words += meta.words
       const author = meta.author || chapter.author || fic.author
       const authorUrl = meta.authorUrl || chapter.authorUrl || fic.authorUrl
       if (author !== fic.author) {
