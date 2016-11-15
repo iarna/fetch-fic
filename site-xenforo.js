@@ -343,7 +343,7 @@ class Xenforo extends Site {
   
   normalizeLink (href, base) {
     // force ssl
-    href = href.replace(/^http:/, 'https:')
+    if (!/index.php/.test(href)) href = href.replace(/^http:/, 'https:')
     // resolve base url
     if (base) href = url.resolve(base, href)
     // normalize post urls  
