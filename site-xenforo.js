@@ -250,14 +250,15 @@ class Xenforo extends Site {
   sanitizeHtmlConfig () {
     var config = super.sanitizeHtmlConfig()
     config.transformTags.img = (tagName, attribs) => { return this.cleanImages(tagName, attribs) }
+    return config
   }
 
   cleanImages (tagName, attribs) {
     if (attribs.class) {
-      var classes = attribs.class.trim().split(/\s+/)
-      if (classes.some(andMatches(/^mceSmilieSprite$/))) {
-        var smilies = classes.filter(andMatches(/^mceSmilie\d+$/))
-        var text
+      const classes = attribs.class.trim().split(/\s+/)
+      if (classes.some(this.andMatches(/^mceSmilieSprite$/))) {
+        const smilies = classes.filter(this.andMatches(/^mceSmilie\d+$/))
+        let text
         switch (smilies && smilies[0]) {
           case 'mceSmilie1': text = '🙂'; break
           case 'mceSmilie2': text = '😉'; break
@@ -285,6 +286,10 @@ class Xenforo extends Site {
       return {tagName: 'span', text: ''}
     }
     return {tagName: tagName, attribs: attribs}
+  }
+
+  andMatches (pattern) {
+    return (item) => { return pattern.test(item) }
   }
 
   threadmarkUrl () {
