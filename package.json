@@ -58,6 +58,7 @@
     "site-ao3.js",
     "site-deviantart.js",
     "site-fanfictionnet.js",
+    "site-generic-image.js",
     "site-gravatar.js",
     "site-wikipedia.js",
     "site-wp-facebook.js",
