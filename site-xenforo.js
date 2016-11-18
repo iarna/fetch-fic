@@ -15,7 +15,7 @@ class Xenforo extends Site {
   static matches (siteUrlStr) {
     const siteUrl = url.parse(siteUrlStr)
     const hostname = siteUrl.hostname
-    if (!/^[/](threads|posts)[/]|^[/]index[.]php[?]topic/.test(siteUrl.path)) return false
+    if (!/^[/](threads|posts)[/]|^[/]index[.]php[?]topic|^[/]goto[/]post[?]id/.test(siteUrl.path)) return false
     return true
   }
 
