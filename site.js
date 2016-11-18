@@ -1,5 +1,6 @@
 'use strict'
 var url = require('url')
+var qw = require('qw')
 
 class Site {
   constructor (rawUrl) {
@@ -67,6 +68,6 @@ Site.registered = []
 
 module.exports = Site
 
-for (const site of ['./site-xenforo.js', './site-fanfictionnet.js', './site-deviantart.js', './site-ao3.js']) {
-  Site.register(require(site))
+for (const site of qw`xenforo fanfictionnet deviantart ao3 gravatar wp-facebook `) {
+  Site.register(require(`./site-${site}.js`))
 }

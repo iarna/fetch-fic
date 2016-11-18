@@ -58,6 +58,8 @@
     "site-ao3.js",
     "site-deviantart.js",
     "site-fanfictionnet.js",
+    "site-gravatar.js",
+    "site-wp-facebook.js",
     "site-xenforo.js",
     "spin-with.js"
   ],
