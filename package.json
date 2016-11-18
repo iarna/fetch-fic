@@ -62,6 +62,7 @@
     "site-wikipedia.js",
     "site-wp-facebook.js",
     "site-xenforo.js",
+    "site-youtube.js",
     "spin-with.js"
   ],
   "repository": {
