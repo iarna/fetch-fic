@@ -162,7 +162,7 @@ function getFic (fetch, fic, maxConcurrency) {
     return concurrently(Object.keys(externals), maxConcurrency, (href, exterNum) => {
       return fic.getChapter(fetch, href).then((external) => {
         external.order = 9000 + exterNum
-        external.name = `External Reference #${exterNum + 1}: ${externals[href].name}`
+        external.name = `External Reference #${exterNum + 1}: ${external.name || externals[href].name}`
         external.filename = externals[href].filename
         rewriteImages(fic.site, external, inlineImages(images))
         rewriteLinks(fic.site, external, linklocalChapters(fic, externals))
