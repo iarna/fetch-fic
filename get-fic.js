@@ -53,6 +53,16 @@ function rewriteLinks (fic, chapter, handleLink) {
   chapter.content = $.html()
 }
 
+function rewriteIframes (fic, chapter) {
+  var $ = cheerio.load(chapter.content)
+  $('iframe').each((ii, iframe) => {
+    var $iframe = $(iframe)
+    var src = url.resolve(chapter.base, $iframe.attr('src'))
+    $iframe.replaceWith(`<a href="${src}">Video Link</a>`)
+  })
+  chapter.content = $.html()
+}
+
 function rewriteImages (fic, chapter, handleImage) {
   var $ = cheerio.load(chapter.content)
   $('img').each((ii, img) => {
@@ -141,6 +151,7 @@ function getFic (fetch, fic, maxConcurrency) {
           return externals[href].filename
         })
       })
+      rewriteIframes(fic, chapter)
       return stream.queueChapter(chapter)
     }).catch((err) => {
       console.error('Error while fetching chapter', chapterInfo, err.stack)
@@ -155,6 +166,7 @@ function getFic (fetch, fic, maxConcurrency) {
         external.filename = externals[href].filename
         rewriteImages(fic.site, external, inlineImages(images))
         rewriteLinks(fic.site, external, linklocalChapters(fic, externals))
+        rewriteIframes(fic, external)
         return stream.queueChapter(external)
       }).catch((err) => {
         console.error(`Warning, skipping external ${href}: ${err.stack}`)
