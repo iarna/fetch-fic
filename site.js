@@ -39,7 +39,7 @@ class Site {
       allowedAttributes: {
         img: qw`src width height alt`,
         a: qw`href name target`,
-        '*': qw`style`
+        '*': qw`style id`
       },
       allowedSchemes: qw`http https`,
       allowedSchemesByTag: {

@@ -45,6 +45,7 @@ function rewriteLinks (fic, chapter, handleLink) {
       $a.remove()
       return
     }
+    if (startAs[0] === '#') return
     var src = url.resolve(chapter.base, startAs)
     var newHref = handleLink(fic.normalizeLink(src, chapter.base), $a)
     $a.attr('href', newHref || src)
