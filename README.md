@@ -9,6 +9,12 @@ reading in your ereader of choice.
 * [Archive of Our Own](https://archiveofourown.org/)
 * [Fanfiction.Net](https://www.fanfiction.net/)
 * [Deviant Art](https://www.deviantart.com/) (for linked fanart)
+* [Wikipedia](https://www.wikipedia.org)
+* [Youtube](https://youtube.com) (included as a thumbnail image linked to the video)
+* [Gravatar](https://en.gravatar.com) & Wordpress Facebook Avatar Mirror (for forum avatars)
+* Generic image handling– any url ending in jpg/jpeg/png/gif/svg will be
+  accepted and included in an `<img>` tag.  Added primarily to allow
+  bringing in links to images.  Embed images would already be included.
 
 ## NOTABLE FEATURES
 
