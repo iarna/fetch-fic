@@ -58,6 +58,7 @@ class DeviantArt extends Site {
         author: authorName,
         authorUrl: authorUrl,
         raw: html,
+        headers: true,
         content: `<img width="${width}" height="${height}" src="${image}" alt="${title} by ${authorName}">`
       }
     })
