@@ -48,6 +48,7 @@ class Wikipedia extends Site {
       $content.find('.metadata').remove()
       $content.find('.navbox').remove()
       $content.find('.mw-editsection').remove()
+      $content.find('.vertical-navbox').remove()
 
       return {
         meta: chapter,
