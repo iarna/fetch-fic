@@ -8,6 +8,7 @@ class Fic {
     this.fetch = fetch
     this.title = null
     this.link = null
+    this.updateFrom = null
     this.author = null
     this.authorUrl = null
     this.created = null
@@ -52,7 +53,7 @@ class Fic {
   importFromJSON (raw) {
     for (let prop of qw`
          id link title author authorUrl created modified description tags
-         publisher cover chapterHeadings words
+         publisher cover chapterHeadings words updateFrom
        `) {
       this[prop] = raw[prop]
     }
@@ -60,7 +61,7 @@ class Fic {
     if (raw.fics) {
       raw.fics.forEach(fic => this.fics.push(SubFic.fromJSON(this, fic)))
     }
-    this.site = Site.fromUrl(this.link)
+    this.site = Site.fromUrl(this.link || this.updateFrom)
     this.externals = raw.externals != null ? raw.externals : true
     return this
   }
@@ -103,7 +104,7 @@ class Fic {
   toJSON () {
     var result = {}
     for (let prop of qw`
-         id title link author authorUrl created modified publisher cover
+         id title link updateFrom author authorUrl created modified publisher cover
          description tags words fics chapters chapterHeadings
        `) {
       if (this[prop] != null && (!Array.isArray(this[prop]) || this[prop].length)) result[prop] = this[prop]
@@ -210,6 +211,7 @@ class Chapter {
     this.order = opts.order
     this.name = opts.name
     this.link = opts.link
+    this.fetchFrom = opts.fetchFrom
     this.created = opts.created
     this.modified = opts.modified
     this.author = opts.author
@@ -223,6 +225,7 @@ class Chapter {
     return {
       name: this.name,
       link: this.link,
+      fetchFrom: this.fetchFrom,
       author: this.author,
       authorUrl: this.authorUrl,
       created: this.created,

@@ -55,7 +55,7 @@ function main () {
     if (ficFile) {
       existingFic = Fic.fromJSON(TOML.parse(ficFile))
       filename = toFetch
-      toFetch = existingFic.link
+      toFetch = existingFic.updateFrom || existingFic.link
     }
   }
   let ficReady
@@ -86,7 +86,7 @@ function main () {
       // This saves us from readding middle chapters that were previously pruned.
       for (let ii = fic.chapters.length - 1; ii>=0; --ii) {
         const newChapter = fic.chapters[ii]
-        if (outFic.chapterExists(newChapter.link)) break
+        if (outFic.chapterExists(newChapter.link) || outFic.chapterExists(newChapter.fetchFrom)) break
         toAdd.unshift(newChapter)
       }
       // Find any chapters with created dates and update them if need be.
@@ -129,7 +129,8 @@ function andChapterEquals (chapterA) {
 }
 
 function chapterEqual (chapterA, chapterB) {
-  return chapterA.link === chapterB.link
+  return (chapterA.link && chapterB.link && chapterA.link === chapterB.link) ||
+         (chapterA.fetchFrom && chapterB.fetchFrom && chapterA.fetchFrom === chapterB.fetchFrom)
 }
 
 function dateEqual (dateA, dateB) {

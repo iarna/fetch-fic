@@ -125,7 +125,7 @@ function getFic (fetch, fic, maxConcurrency) {
 
   fetch.gauge.show(`Fetching chapters (${chapters.length})…`)
   concurrently(chapters, maxConcurrency, (chapterInfo) => {
-    return fic.getChapter(fetch, chapterInfo.link).then((chapter) => {
+    return fic.getChapter(fetch, chapterInfo.fetchFrom || chapterInfo.link).then((chapter) => {
       chapter.order = chapterInfo.order
       chapter.name = chapterInfo.name + (chapterInfo.author ? ` (${chapter.author})` : '')
       if (fic.chapterHeadings || chapterInfo.headings) {
