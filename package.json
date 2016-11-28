@@ -27,6 +27,7 @@
     "comma-number": "^1.1.0",
     "gauge": "^2.6.0",
     "html-template-tag": "^1.0.0",
+    "html2bbcode": "^1.2.3",
     "mississippi": "^1.2.0",
     "mkdirp": "^0.5.1",
     "node-fetch": "^1.6.0",
