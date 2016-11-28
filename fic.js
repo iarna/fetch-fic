@@ -70,9 +70,12 @@ class Fic {
     var fic = new this(fetch)
     fic.site = Site.fromUrl(link)
     fic.link = fic.site.link
-    return fic.site.getFicMetadata(fetch, fic).then(thenMaybeFallback, thenMaybeFallback).thenReturn(fic)
-    function thenMaybeFallback (err) {
+    return fic.site.getFicMetadata(fetch, fic).then(thenMaybeFallback, elseMaybeFallback).thenReturn(fic)
+    function elseMaybeFallback (err) {
       if (err && (!err.meta || err.meta.status !== 404)) throw err
+      thenMaybeFallback()
+    }
+    function thenMaybeFallback () {
       // no chapters in the threadmarks, fallback to fetching
       if (fic.chapters.length === 0) {
         return fic.site.scrapeFicMetadata(fetch, fic)
