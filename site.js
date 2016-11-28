@@ -65,6 +65,6 @@ Site.registered = []
 
 module.exports = Site
 
-for (const site of qw`xenforo fanfictionnet deviantart ao3 gravatar wp-facebook wikipedia youtube worm generic-image`) {
+for (const site of qw`xenforo fanfictionnet deviantart ao3 gravatar wp-facebook wikipedia youtube worm generic-image local`) {
   Site.register(require(`./site-${site}.js`))
 }
