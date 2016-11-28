@@ -35,6 +35,8 @@ function ficToEpub (meta) {
   table {
     border: 3px double #ccc;
     padding: 0.5em;
+    margin-left: auto;
+    margin-right: auto;
   }
   th {
     text-align: right;
