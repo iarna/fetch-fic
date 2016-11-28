@@ -34,20 +34,15 @@ function main () {
   const user = argv.xf_user
   const fromThreadmarks = !argv.scrape
   const fromScrape = argv.scrape || argv['and-scrape']
-  const fetchOpts = {cacheBreak: !argv['cache'], noNetwork: !argv['network']}
-  if (cookie) {
-    if (!fetchOpts.headers) fetchOpts.headers = {}
-    fetchOpts.headers.Cookie = 'xf_session=' + cookie
+  const cookieJar = new simpleFetch.CookieJar()
+  const fetchOpts = {
+    cacheBreak: !argv.cache,
+    noNetwork: !argv.network,
+    cookieJar: cookieJar
   }
-  if (user) {
-    if (!fetchOpts.headers) fetchOpts.headers = {}
-    if (fetchOpts.headers.Cookie) {
-      fetchOpts.headers.Cookie += '; '
-    } else {
-      fetchOpts.headers.Cookie = ''
-    }
-    fetchOpts.headers.Cookie += 'xf_user=' + user
-  }
+  const fetchWithOpts = simpleFetch(fetchOpts)
+  if (cookie) cookieJar.setCookieSync('xf_session=' + cookie, toFetch)
+  if (user) cookieJar.setCookieSync('xf_user=' + user, toFetch)
   let existingFic
   if (filename) {
     existingFic = Fic.fromJSON(TOML.parse(fs.readFileSync(filename)))
@@ -63,7 +58,6 @@ function main () {
       toFetch = existingFic.link
     }
   }
-  const fetchWithOpts = simpleFetch(fetchOpts)
   let ficReady
   if (fromThreadmarks && fromScrape) {
     ficReady = Fic.fromUrlAndScrape(fetchWithOpts, toFetch)

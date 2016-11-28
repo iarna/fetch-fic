@@ -24,21 +24,16 @@ const fic = Fic.fromJSON(TOML.parse(fs.readFileSync(argv._[0])))
 
 const cookie = argv.xf_session
 const user = argv.xf_user
-const fetchOpts = {cacheBreak: !argv.cache, noNetwork: !argv.network}
-if (cookie) {
-  if (!fetchOpts.headers) fetchOpts.headers = {}
-  fetchOpts.headers.Cookie = 'xf_session=' + cookie
-}
-if (user) {
-  if (!fetchOpts.headers) fetchOpts.headers = {}
-  if (fetchOpts.headers.Cookie) {
-    fetchOpts.headers.Cookie += '; '
-  } else {
-    fetchOpts.headers.Cookie = ''
-  }
-  fetchOpts.headers.Cookie += 'xf_user=' + user
+const cookieJar = new simpleFetch.CookieJar()
+const fetchOpts = {
+  cacheBreak: !argv.cache,
+  noNetwork: !argv.network,
+  cookieJar: cookieJar
 }
 const fetch = simpleFetch(fetchOpts)
+if (cookie) cookieJar.setCookieSync('xf_session=' + cookie, toFetch)
+if (user) cookieJar.setCookieSync('xf_user=' + user, toFetch)
+
 const fics = (fic.chapters.length ? [fic] : []).concat(fic.fics)
 Bluebird.each(fics, fic => {
   let words = 0

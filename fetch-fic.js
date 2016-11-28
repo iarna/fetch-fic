@@ -35,21 +35,15 @@ function main () {
   const cookie = argv.xf_session
   const user = argv.xf_user
   const maxConcurrency = argv.maxConcurrency
-  const fetchOpts = {cacheBreak: !argv.cache, noNetwork: !argv.network}
-  if (cookie) {
-    if (!fetchOpts.headers) fetchOpts.headers = {}
-    fetchOpts.headers.Cookie = 'xf_session=' + cookie
-  }
-  if (user) {
-    if (!fetchOpts.headers) fetchOpts.headers = {}
-    if (fetchOpts.headers.Cookie) {
-      fetchOpts.headers.Cookie += '; '
-    } else {
-      fetchOpts.headers.Cookie = ''
-    }
-    fetchOpts.headers.Cookie += 'xf_user=' + user
+  const cookieJar = new simpleFetch.CookieJar()
+  const fetchOpts = {
+    cacheBreak: !argv.cache,
+    noNetwork: !argv.network,
+    cookieJar: cookieJar
   }
   const fetchWithCache = simpleFetch(fetchOpts)
+  if (cookie) cookieJar.setCookieSync('xf_session=' + cookie, toFetch)
+  if (user) cookieJar.setCookieSync('xf_user=' + user, toFetch)
   const gauge = new Gauge()
   const trackerGroup = new TrackerGroup()
   trackerGroup.on('change', (name, completed) => gauge.show({completed: completed}))
