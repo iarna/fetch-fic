@@ -1,6 +1,6 @@
 'use strict'
-var url = require('url')
-var qw = require('qw')
+const url = require('url')
+const qw = require('qw')
 
 class Site {
   constructor (rawUrl) {
