@@ -74,7 +74,6 @@ function main () {
       outFic = existingFic
       // copy over any newly acquired metadata but don't
       if (outFic.title == null) outFic.title = fic.title
-      if (outFic.link == null) outFic.link = fic.link || fic.site.link
       if (outFic.author == null) outFic.author = fic.author
       if (outFic.authorUrl == null) outFic.authorUrl = fic.authorUrl
       if (outFic.created == null) outFic.created = fic.created

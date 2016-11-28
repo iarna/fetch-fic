@@ -51,7 +51,7 @@ function ficToEpub (meta) {
     const author = meta.authorUrl ? html`<a href="${meta.authorUrl}">${meta.author}</a>` : meta.author
     titleContent += `<h3>by ${author}</h3>`
     titleContent += html`<table>`
-    titleContent += html`<tr><th>Source</th><td><a href="${meta.link}">${meta.link}</a></td></tr>`
+    if (meta.link) titleContent += html`<tr><th>Source</th><td><a href="${meta.link}">${meta.link}</a></td></tr>`
     if (meta.created) titleContent += html`<tr><th>Published</th><td>${meta.created}</td></tr>`
     if (meta.modified) titleContent += html`<tr><th>Updated</th><td>${meta.modified}</td></tr>`
     if (meta.tags && meta.tags.length) titleContent += html`<tr><th>Tags</th><td><em>${meta.tags.join(', ')}</em></td></tr>`
