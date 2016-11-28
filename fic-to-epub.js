@@ -11,6 +11,7 @@ var html = require('html-template-tag')
 
 function ficToEpub (meta) {
   var epub = new Streampub({
+    id: meta.id,
     title: meta.title,
     author: meta.author,
     authorUrl: meta.authorUrl,

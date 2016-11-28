@@ -4,6 +4,7 @@ const Site = require('./site.js')
 
 class Fic {
   constructor (fetch) {
+    this.id = null
     this.fetch = fetch
     this.title = null
     this.link = null
@@ -50,7 +51,7 @@ class Fic {
 
   importFromJSON (raw) {
     for (let prop of qw`
-         link title author authorUrl created modified description tags
+         id link title author authorUrl created modified description tags
          publisher cover chapterHeadings words
        `) {
       this[prop] = raw[prop]
@@ -102,7 +103,7 @@ class Fic {
   toJSON () {
     var result = {}
     for (let prop of qw`
-         title link author authorUrl created modified publisher cover
+         id title link author authorUrl created modified publisher cover
          description tags words fics chapters chapterHeadings
        `) {
       if (this[prop] != null && (!Array.isArray(this[prop]) || this[prop].length)) result[prop] = this[prop]
