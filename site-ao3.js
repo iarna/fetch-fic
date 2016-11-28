@@ -53,9 +53,9 @@ class ArchiveOfOurOwn extends Site {
         const created = new Date($vv.find('span.datetime').text().replace(/\((.*)\)/, '$1'))
         fic.addChapter(name, link, created)
       })
-      return fetch(fic.chapters[0].link)
-    }).spread((meta, html) => {
-      const $ = cheerio.load(html)
+      return this.getChapter(fetch, fic.chapters[0].link)
+    }).then(chapter => {
+      const $ = cheerio.load(chapter.raw)
       const base = $('base').attr('href') || this.chapterIndex()
       const $meta = $('dl.meta')
       const ratings = this.tagGroup($, 'rating', $meta.find('dd.rating'))
