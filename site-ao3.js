@@ -89,6 +89,9 @@ class ArchiveOfOurOwn extends Site {
   getChapter (fetch, chapter) {
     return fetch(chapter).spread((meta, html) => {
       const $ = cheerio.load(html)
+      if ($('p.caution').length) {
+        return this.getChapter(fetch, chapter + '?view_adult=true')
+      }
       const base = $('base').attr('href') || meta.finalUrl
       const $content = $('div[role="article"]')
       $content.find('h3.landmark').remove()
