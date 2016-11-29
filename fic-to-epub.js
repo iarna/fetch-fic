@@ -1,16 +1,16 @@
 'use strict'
 module.exports = ficToEpub
-var Streampub = require('streampub')
-var chapterFilename = require('./chapter-filename.js')
-var sanitizeHtml = require('sanitize-html')
-var ms = require('mississippi')
-var url = require('url')
-var fs = require('fs')
-var commaNumber = require('comma-number')
-var html = require('html-template-tag')
+const Streampub = require('streampub')
+const chapterFilename = require('./chapter-filename.js')
+const sanitizeHtml = require('sanitize-html')
+const ms = require('mississippi')
+const url = require('url')
+const fs = require('fs')
+const commaNumber = require('comma-number')
+const html = require('html-template-tag')
 
 function ficToEpub (meta) {
-  var epub = new Streampub({
+  const epub = new Streampub({
     id: meta.id,
     title: meta.title,
     author: meta.author,
@@ -60,7 +60,7 @@ function ficToEpub (meta) {
     if (meta.words) titleContent += html`<tr><th>Words</th><td>${commaNumber(meta.words)}</td></tr>`
     titleContent += `</table>`
     if (meta.description) titleContent += `<div>${meta.description}</div>`
-    var titlePage = `${titleContent}`
+    const titlePage = `${titleContent}`
     epub.write(Streampub.newChapter('Title Page', titlePage, 0, 'top.xhtml'))
   }
   return ms.pipeline.obj(ms.through.obj(transformChapter(meta)), epub)
@@ -72,12 +72,12 @@ function transformChapter (meta) {
       this.push(Streampub.newFile(chapter.filename, chapter.content))
       return done()
     }
-    var index = chapter.order != null && (1 + chapter.order)
-    var name = chapter.name || chapter.order && "Chapter " + index
-    var filename = chapterFilename(chapter)
-    var toSanitize = (name ? html`<title>${name}</title></head>` : '') +
+    const index = chapter.order != null && (1 + chapter.order)
+    const name = chapter.name || chapter.order && "Chapter " + index
+    const filename = chapterFilename(chapter)
+    const toSanitize = (name ? html`<title>${name}</title></head>` : '') +
       '<section epub:type="chapter">' + chapter.content + '</section>'
-    var content = sanitizeHtml(toSanitize, meta.site.sanitizeHtmlConfig())
+    const content = sanitizeHtml(toSanitize, meta.site.sanitizeHtmlConfig())
     this.push(Streampub.newChapter(name, content, index, filename))
     done()
   }
