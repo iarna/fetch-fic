@@ -23,7 +23,7 @@ function ficToEpub (meta) {
     modified: meta.modified
   })
 
-  if (meta.cover) {
+  if (meta.cover && !/:/.test(meta.cover)) {
     epub.write(Streampub.newCoverImage(fs.createReadStream(meta.cover)))
   } else {
     let titleContent = ''
