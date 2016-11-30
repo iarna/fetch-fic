@@ -59,7 +59,7 @@ function fetchWithCache (toFetch, opts) {
     })
   }).spread(function (meta, content) {
     if (meta.headers && meta.headers['set-cookie']) {
-      const setCookies = meta.headers['set-cookie'].map(rawCookie => setCookieP(opts.cookieJar, rawCookie, toFetch))
+      const setCookies = meta.headers['set-cookie'].map(rawCookie => setCookieP(opts.cookieJar, rawCookie, meta.finalUrl || toFetch))
       return Bluebird.all(setCookies).thenReturn([meta, content])
     } else {
       return [meta, content]
