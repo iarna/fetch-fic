@@ -34,7 +34,7 @@ main()
 function main () {
   const cookie = argv.xf_session
   const user = argv.xf_user
-  const maxConcurrency = argv.maxConcurrency
+  const maxConcurrency = argv.concurrency
   const cookieJar = new simpleFetch.CookieJar()
   const fetchOpts = {
     cacheBreak: !argv.cache,
