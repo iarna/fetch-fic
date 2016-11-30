@@ -44,8 +44,7 @@ class Local extends Site {
           todo.push(this.recursedir(fic, filename))
         } else if (/\.rtf$/.test(filename)) {
           const name = path.relative(fic.updateFrom, filename)
-          const chapter = fic.addChapter({name, link: filename, created: info.birthtime})
-          chapter.modified = info.mtime
+          fic.addChapter({name, link: filename, created: info.birthtime, modified: info.mtime})
         }
       }
       return Bluebird.all(todo).catch(x => console.log('TAP', x))
