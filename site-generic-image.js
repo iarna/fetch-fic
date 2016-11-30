@@ -22,7 +22,7 @@ class GenericImage extends Site {
     // currently we only support /art/ urls, which can only have one thing on them
     return this.getChapter(fetch, this.link).then(info => {
       fic.link = this.normalizeLink(info.finalUrl)
-      fic.addChapter(this.link, fic.link)
+      fic.addChapter({name: this.link, link: fic.link})
     })
   }
 

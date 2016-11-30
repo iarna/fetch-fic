@@ -56,7 +56,7 @@ class Xenforo extends Site {
         const created = this.dateTime($chapter.find('.DateTime'))
         if (!leastRecent || created < leastRecent) leastRecent = created
         if (!mostRecent || created > mostRecent) mostRecent = created
-        fic.chapters.addChapter(name, link, created)
+        fic.chapters.addChapter({name, link, created})
       })
       fic.created = leastRecent
       fic.modified = mostRecent
@@ -94,9 +94,9 @@ class Xenforo extends Site {
       const links = $content('a')
       const indexLink = this.normalizeLink(chapter.finalUrl)
       if (links.length === 0) {
-        fic.addChapter(chapter.title || fic.title, indexLink, chapter.created)
+        fic.addChapter({name: chapter.title || fic.title, link: indexLink, created: chapter.created})
       } else {
-        fic.addChapter('Table of Contents', indexLink, chapter.created)
+        fic.addChapter({name: 'Table of Contents', link: indexLink, created: chapter.created})
       }
       links.each((_, link) => {
         const $link = $content(link)
@@ -120,7 +120,7 @@ class Xenforo extends Site {
           }
         }
         if (/^[/](?:threads|posts|s|art)[/]|^[/]index.php[?]topic/.test(url.parse(href).path)) {
-          fic.addChapter(name, href)
+          fic.addChapter({name, link: href})
         }
       })
       if (!fic.modified && fic.chapters.slice(-1).created) {

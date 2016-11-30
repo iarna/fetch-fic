@@ -28,7 +28,7 @@ class Wikipedia extends Site {
       fic.publisher = this.publisherName
       fic.description = info.description
       fic.externals = false
-      fic.addChapter(info.name || info.author, this.normalizeLink(info.finalUrl))
+      fic.addChapter({name: info.name || info.author, link: this.normalizeLink(info.finalUrl)})
     })
   }
 

@@ -44,7 +44,7 @@ class Local extends Site {
           todo.push(this.recursedir(fic, filename))
         } else if (/\.rtf$/.test(filename)) {
           const name = path.relative(fic.updateFrom, filename)
-          const chapter = fic.addChapter(name, filename, info.birthtime)
+          const chapter = fic.addChapter({name, link: filename, created: info.birthtime})
           chapter.modified = info.mtime
         }
       }

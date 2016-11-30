@@ -27,7 +27,7 @@ class DeviantArt extends Site {
       fic.authorUrl = info.authorUrl
       fic.publisher = this.publisherName
       fic.description = info.description
-      fic.addChapter(info.name || info.author, this.normalizeLink(info.finalUrl))
+      fic.addChapter({name: info.name || info.author, link: this.normalizeLink(info.finalUrl)})
     })
   }
 

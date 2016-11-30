@@ -41,7 +41,7 @@ class Worm extends Site {
       fic.created = info.created
       fic.modified = info.modified
       fic.title = info.name
-      fic.addChapter(info.name, info.finalUrl, info.created)
+      fic.addChapter({name: info.name, link: info.finalUrl, created: info.created})
     })
   }
 

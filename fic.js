@@ -45,9 +45,9 @@ class Fic {
     return site.getChapter(fetch, link)
   }
 
-  addChapter (name, link, created) {
-    if (this.chapterExists(link, this)) return
-    return this.chapters.addChapter(name, link, created)
+  addChapter (opts) {
+    if (this.chapterExists(opts.link) || this.chapterExists(opts.fetchFrom)) return
+    return this.chapters.addChapter(opts)
   }
 
   importFromJSON (raw) {
@@ -182,21 +182,24 @@ class SubFic extends Fic {
 
 class ChapterList extends Array {
   chapterExists (link, fic) {
-    if (fic) {
-      return this.some(chap => fic.normalizeLink(chap.link) === fic.normalizeLink(link))
+    if (link == null) {
+      return
+    } else if (fic) {
+      return this.filter(chap => fic.normalizeLink(chap.link) === fic.normalizeLink(link))[0]
     } else {
-      return this.some(chap => chap.link === link)
+      return this.filter(chap => chap.link === link)[0]
     }
   }
-  addChapter (baseName, link, created) {
-    if (this.chapterExists(link)) return
-    let name = baseName
+  addChapter (opts) {
+    const matchingChapter = this.chapterExists(opts.fetchFrom) || this.chapterExists(opts.link)
+    if (matchingChapter) return matchingChapter
+    let name = opts.name
     let ctr = 0
     while (this.some(chap => chap.name === name)) {
-      name = baseName + ' (' + ++ctr + ')'
+      name = opts.name + ' (' + ++ctr + ')'
     }
-    if (created && !this.created) this.created = created
-    const chapter = new Chapter({order: this.length, name, link, created})
+    if (opts.created && (!this.created || opts.created < this.created)) this.created = opts.created
+    const chapter = new Chapter(Object.assign({}, opts, {name, order: this.length})
     this.push(chapter)
     return chapter
   }

@@ -51,7 +51,7 @@ class ArchiveOfOurOwn extends Site {
         const name = $vv.find('a').text().replace(/^\d+[.] /, '')
         const link = this.normalizeLink($vv.find('a').attr('href'), base)
         const created = new Date($vv.find('span.datetime').text().replace(/\((.*)\)/, '$1'))
-        fic.addChapter(name, link, created)
+        fic.addChapter({name, link, created})
       })
       return this.getChapter(fetch, fic.chapters[0].link)
     }).then(chapter => {

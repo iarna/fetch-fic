@@ -67,7 +67,7 @@ class FanFictionNet extends Site {
       $chapters.each((ii, vv) => {
         const chapterName = $(vv).text().match(/^\d+[.](?: (.*))?$/)
         const chapterNum = $(vv).attr('value') || ii
-        fic.addChapter(chapterName[1] || (String(chapterNum) + '.'), this.chapterUrl(chapterNum))
+        fic.addChapter({name: chapterName[1] || (String(chapterNum) + '.'), link: this.chapterUrl(chapterNum)})
       })
     })
   }
