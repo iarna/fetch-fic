@@ -10,6 +10,9 @@ reading in your ereader of choice.
 * [Fanfiction.Net](https://www.fanfiction.net/)
 * [Deviant Art](https://www.deviantart.com/) (for linked fanart)
 * [Wikipedia](https://www.wikipedia.org)
+* Local folders full of rtf files– I use it with synced folders from
+  Scriviner, though it should, to some degree, work on the actual Scriviner
+  data files too.
 * [Youtube](https://youtube.com) (included as a thumbnail image linked to the video)
 * [Gravatar](https://en.gravatar.com) & Wordpress Facebook Avatar Mirror (for forum avatars)
 * Generic image handling– any url ending in jpg/jpeg/png/gif/svg will be
@@ -61,9 +64,13 @@ can also UPDATE a fic instead of downloading it anew.
 Usage: fetch-meta <url> [options]
 
 Options:
-  --xf_user            value of your xf_user cookie
-  --scrape             scrape the index instead of using threadmarks
-  --and-scrape         pull chapters from BOTH the index AND the threadmarks
+  --scrape      scrape the index instead of using threadmarks          [boolean]
+  --and-scrape  pull chapters from BOTH the index AND the threadmarks  [boolean]
+  --xf_user      value of your xf_user variable                         [string]
+  --cache        fetch from the network even if we have it cached
+                                                       [boolean] [default: false]
+  --network      allow network access; when false, cache-misses are errors
+                                                       [boolean] [default: true]
 <url> - The URL of the threads you want to epubize. These fetches are not cached so you're
 guaranteed an up-to-date index.  This writes a metadata file out with the
 extension `.fic.toml` for you to edit and pass to…
@@ -73,19 +80,27 @@ extension `.fic.toml` for you to edit and pass to…
 Usage: fetch-meta <fanfiction.fic.toml> [options]
 
 Options:
-  --xf_user            value of your xf_user cookie
-  --scrape             scrape the index instead of using threadmarks
-  --and-scrape         pull chapters from BOTH the index AND the threadmarks
+  --scrape      scrape the index instead of using threadmarks          [boolean]
+  --and-scrape  pull chapters from BOTH the index AND the threadmarks  [boolean]
+  --xf_user      value of your xf_user variable                         [string]
+  --cache        fetch from the network even if we have it cached
+                                                       [boolean] [default: false]
+  --network      allow network access; when false, cache-misses are errors
+                                                       [boolean] [default: true]
 
 <fanfiction.fic.toml> - This will update an existing metadata file with the latest chapters.
 ```
 
 ```
 Usage: fetch-fic <fic(s)> [options] Options:
-  --xf_user            value of your xf_user cookie
+  --xf_user      value of your xf_user variable                         [string]
   --cache        fetch from the network even if we have it cached
+                                                       [boolean] [default: true]
   --network      allow network access; when false, cache-misses are errors
-  --conurrency   maximum number of chapters/images/etc to fetch at a time
+                                                       [boolean] [default: true]
+  --concurrency  maximum number of chapters/images/etc to fetch at a time
+                                                           [number] [default: 4]
+  -o, --output   Set output format [choices: "epub", "bbcode"] [default: "epub"]
 
 <fic(s)> - The `.fic.toml` file(s) you want to get epubs for.  You'll get
 one epub for each `.fic.toml`.  Epubs are fetch in sequence, not in
@@ -259,42 +274,173 @@ author = "Another Author"
 
 ```
 
-# FIC FILE FEATURES
+# FULL DOCUMENTATION FOR `.fic.toml` PROPERTIES
 
-Documented here are things you can add to your fic files that would never be scraped:
+
+## Top level properties
+
+### id
+
+Optional.  Defaults to `link`.  An identifier string representing this piece
+of fiction.  This is not generally visible in any document you create.  It's
+used in conjunction with the modified date for epub's to produce unique IDs.
+
+### title
+
+**Required.**  The title of this piece of fiction.  In addition to being placed
+on the title page and included in any metadata, this is also used to
+generate the output filename.
+
+### link
+
+Optional. The URL from which this fiction was fetched. This is filled in as the
+`source` in an epub and is included on any title pages.
+
+### updateFrom
+
+Optional.  Defaults to `link`.  This is the URL or directory that the
+fiction was fetched from.  This is used when updating existing fic metadata.
+
+### author
+
+Optional.  The name of the author of this work.  This is displayed on the
+title page and included in available metadata.
+
+### authorUrl
+
+Optional.  A URL to a profile page for the author of this work. Not used unless
+`author` is also set.
+
+### created
+
+Optional. The date that this work was originally published.
+
+### modified
+
+Optional. The date that this work was most recently modified.
+
+### publisher
+
+Optional.  The name of the website or other publisher where this work was
+found.  This is used for non-user visible metadata.
+
+### description
+
+Optional.  HTML.  A few paragraphs providing a "back of the book" type
+description for new readers. This is included in the title page and metadata.
 
 ### cover
 
-Usable in the top level and inside subfics.  This should be the path to an
-image on disk to use as the cover of your ebook.
-
-TODO: Supporting URLs at the very least.
-
-### externals
-
-Usable in the top level, inside chapers or inside subfics, setting this to `false` will
-disable the fetching of externals.
+Optional.  The name of an image file to embed as the cover of this work.  If
+this is included then a title page won't be generated. *TODO: I'd like this to
+support URLs as well.*
 
 ### chapterHeadings
 
-Usable at the top level and inside subfics, setting this to `true` will add
-headings to the top of each chapter with the chapter name. Often desirable on
-fics from [Archive of Our Own](https://archiveofourown.org/) as it does this too.
+Optional.  Default: false.  If true then chapters will have headings added
+to the top of them with the name of the chapter and, if different than that
+of the work as a whole, the author.  Often desirable on fics from [Archive
+of Our Own](https://archiveofourown.org/) as it does this too.
+
+### externals
+
+Optional.  Default: true.  If true then any links to external sources that
+`fetch-fic` understands will be added as appendices.
+
+### words
+
+Optional. The number of words in this work. This is used on the title page.
+
+### tags
+
+Optional.  Any tags associated with this work.  This is included on the
+title page and the metadata.
+
+## [[chapters]]
+
+### name
+
+Required.  Must be unique.  The name of the chapter, as it will appear in
+the index and any chapter headings.
+
+### link
+
+Optional.  The URL from which this chapter was fetched. This is used in the
+`bbcode` output index. This is also used if `fetchFrom` is missing to fetch
+the content of the chapter.
+
+### fetchFrom
+
+Optional. Default: `link`. The URL or path to the content of a chapter.
+
+### created
+
+Optional. The date that this chapter was originally published.
+
+### modified
+
+Optional. The date that this chapter was most recently modified.
+
+### author
+
+Optional. The name of the author.  Ordinarily this is only used if
+different then that of the work's author.
+
+### authorUrl
+
+Optional.  A URL to a profile page for the author of this chapter.  Not used
+unless `author` is also set.  Ordinarily this is only used if different then
+that of the work's authorUrl.
+
+### tags
+
+Optional. Tags associated with this chapter. Currently not used for anything.
+
+### externals
+
+Optional.  Default: true.  If true then any links to external sources that
+`fetch-fic` understands will be added as appendices.  Overrides any
+work-level setting.
 
 ### headings
 
-Usable inside chapters.  Setting this to `true` will add headings to _this_
-chapter only.  Setting this to false will suppress generating headings for
-this chapter only if they were otherwise enabled for the whole fic.
+Optional.  Default: false.  If true then a heading will be inserted at the
+top of the chapter with the name of the chapter and, if different than that
+of the work, the author. Often desirable with omake.
 
-# WIP WIP WIP
+### words
 
-Stuff I'd like to see:
+Optional. The number words in this chapter. Used in some indexes.
+
+## [[fics]]
+
+These sections can be used to create multiple output files from a single
+`.fic.toml`.  These sections have all of the same properties as the top
+level.  Additionally, any not specified will default to the values given
+at the top level.  (So, for example, if you don't have an `author` property
+under `[[fics]]` then it will use the value you had at the top level.)
+
+## [[fics.chapters]]
+
+A chapter within a subfic. These have exactly the same properties as `[[chapters]]`.
+
+# TODO
+
+Stuff I'd like to see (user visible):
 
 * A web UI
-* More formatting rewriting (eg, invisitext)
-* Add author to chapter metadata. Being able to fetch this implies also being
-  able to get timestamps for scraped chapters.
+* More external site support:
+  * Don't want to support every fic site ever, but…
+  * More image sources for externing would be useful.
+  * If generic wikia support is possible that would be super useful.
+* Update CLI-UI:
+  * Make a single unified command with subcommands, eg:
+    * `ff meta <url|file>` - today's `fetch-meta`
+    * `ff fetch <file>` - today's `fetch-fic`
+    * `ff clear <url>` - what `clear.js` does
+    * Something for what `scrape-authors.js` does now (maybe fold into
+      `fetch-meta`)
+    * Maybe something for generating index sheets
 
 ## LIMITED TESTING
 
