@@ -6,6 +6,7 @@ const fs = require('fs')
 const TOML = require('@iarna/toml')
 const getFic = require('./get-fic.js')
 const ficToEpub = require('./fic-to-epub.js')
+const ficToBbcode = require('./fic-to-bbcode.js')
 const Gauge = require('gauge')
 const TrackerGroup = require('are-we-there-yet').TrackerGroup
 const spinWith = require('./spin-with.js')
@@ -16,22 +17,42 @@ const pipe = Bluebird.promisify(ms.pipe)
 const argv = require('yargs')
   .usage('Usage: $0 <fic> [--xf_session=<sessionid>] [--xf_user=<userid>]')
   .demand(1, '<fic> - A fic metadata file to fetch a fic for. Typically ends in .fic.toml')
-  .describe('xf_session', 'value of your xf_session variable')
-  .describe('xf_user', 'value of your xf_session variable')
-  .boolean('cache')
-  .default('cache', true)
-  .describe('cache', 'fetch from the network even if we have it cached')
-  .boolean('network')
-  .default('network', true)
-  .describe('network', 'allow network access; when false, cache-misses are errors')
-  .default('concurrency', 4)
-  .describe('concurrency', 'maximum number of chapters/images/etc to fetch at a time')
+  .option('xf_session', {
+    type: 'string',
+    describe: 'value of your xf_session variable'
+  })
+  .option('xf_user', {
+    type: 'string',
+    describe: 'value of your xf_user variable'
+  })
+  .option('cache', {
+     type: 'boolean',
+     default: true,
+     describe: 'fetch from the network even if we have it cached'
+  })
+  .option('network', {
+    describe: 'allow network access; when false, cache-misses are errors',
+    type: 'boolean',
+    default: true
+   })
+  .option('concurrency', {
+     type: 'number',
+     default: 4,
+     describe: 'maximum number of chapters/images/etc to fetch at a time'
+   })
+  .option('o', {
+    alias: 'output',
+    describe: 'Set output format',
+    default: 'epub',
+    choices: ['epub', 'bbcode']
+  })
   .argv
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
 main()
 
 function main () {
+  const output = argv.output
   const cookie = argv.xf_session
   const user = argv.xf_user
   const maxConcurrency = argv.concurrency
@@ -83,17 +104,26 @@ function main () {
   }
   function fetchFic (fetchWithOpts) {
     return (fic) => {
-      var filename = filenameize(fic.title) + '.epub'
-
-      return pipe(
-        getFic(fetchWithOpts, fic, maxConcurrency),
-        ficToEpub(fic),
-        fs.createWriteStream(filename)
-      ).tap(() => {
-        gauge.hide()
-        console.log(filename)
-        gauge.show()
-      })
+      const ficStream = getFic(fetchWithOpts, fic, maxConcurrency)
+      if (output === 'epub') {
+        const filename = filenameize(fic.title) + '.epub'
+        return pipe(
+          ficStream,
+          ficToEpub(fic),
+          fs.createWriteStream(filename)
+        ).tap(() => {
+          gauge.hide()
+          console.log(filename)
+          gauge.show()
+        })
+      } else if (output === 'bbcode') {
+        const filename = filenameize(fic.title)
+        return pipe(ficStream, ficToBbcode(fic, filename)).tap(() => {
+          gauge.hide()
+          console.log(filename)
+          gauge.show()
+        })
+      }
     }
   }
 }
