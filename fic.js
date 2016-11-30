@@ -26,6 +26,7 @@ class Fic {
   }
 
   chapterExists (link) {
+    if (link == null) return false
     if (this.chapters.chapterExists(link, this)) return true
     if (this.fics.some(fic => fic.chapterExists(link))) return true
     return false
@@ -47,7 +48,7 @@ class Fic {
 
   addChapter (opts) {
     if (this.chapterExists(opts.link) || this.chapterExists(opts.fetchFrom)) return
-    return this.chapters.addChapter(opts)
+    this.chapters.addChapter(opts)
   }
 
   importFromJSON (raw) {
@@ -123,8 +124,8 @@ class SubFic extends Fic {
     delete this.fics
     this.parent = parentFic
   }
-  chapterExists (link, fic) {
-    return this.chapters.chapterExists(link, fic)
+  chapterExists (link) {
+    return this.chapters.chapterExists(link, this)
   }
   static fromJSON (parent, raw) {
     const fic = new this(parent)
@@ -185,23 +186,20 @@ class ChapterList extends Array {
     if (link == null) {
       return
     } else if (fic) {
-      return this.filter(chap => fic.normalizeLink(chap.link) === fic.normalizeLink(link))[0]
+      return this.some(chap => fic.normalizeLink(chap.link) === fic.normalizeLink(link))
     } else {
-      return this.filter(chap => chap.link === link)[0]
+      return this.some(chap => chap.link === link)
     }
   }
   addChapter (opts) {
-    const matchingChapter = this.chapterExists(opts.fetchFrom) || this.chapterExists(opts.link)
-    if (matchingChapter) return matchingChapter
+    if (this.chapterExists(opts.fetchFrom) || this.chapterExists(opts.link)) return
     let name = opts.name
     let ctr = 0
     while (this.some(chap => chap.name === name)) {
       name = opts.name + ' (' + ++ctr + ')'
     }
     if (opts.created && (!this.created || opts.created < this.created)) this.created = opts.created
-    const chapter = new Chapter(Object.assign({}, opts, {name, order: this.length})
-    this.push(chapter)
-    return chapter
+    this.push(new Chapter(Object.assign({}, opts, {name, order: this.length})))
   }
   importFromJSON (raw) {
     if (raw.fics && !raw.chapters) return
