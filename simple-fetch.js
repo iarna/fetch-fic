@@ -56,7 +56,7 @@ function fetchWithCache (toFetch, opts) {
       if (opts.noNetwork) throw NoNetwork(toFetch, opts)
       return getCookieStringP(opts.cookieJar, toFetch).then(cookies => {
         if (!opts.headers) opts.headers = {}
-        opts.headers.Cookies = cookies
+        opts.headers.Cookie = cookies
         return fetch(toFetch, opts)
       })
     })
