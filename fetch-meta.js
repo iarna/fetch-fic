@@ -7,6 +7,7 @@ const fs = require('fs')
 const TOML = require('@iarna/toml')
 const cheerio = require('cheerio')
 const Fic = require('./fic.js')
+const url = require('url')
 const argv = require('yargs')
   .usage('Usage: $0 [options] <url> [<fic>]')
   .demand(1, '<url> - The URL of the thread you want to epubize')
@@ -35,14 +36,17 @@ function main () {
   const fromThreadmarks = !argv.scrape
   const fromScrape = argv.scrape || argv['and-scrape']
   const cookieJar = new simpleFetch.CookieJar()
+  const linkP = url.parse(toFetch)
+  linkP.pathname = ''
+  const link = url.format(linkP)
+  if (cookie) cookieJar.setCookieSync('xf_session=' + cookie, url)
+  if (user) cookieJar.setCookieSync('xf_user=' + user, url)
   const fetchOpts = {
     cacheBreak: !argv.cache,
     noNetwork: !argv.network,
     cookieJar: cookieJar
   }
   const fetchWithOpts = simpleFetch(fetchOpts)
-  if (cookie) cookieJar.setCookieSync('xf_session=' + cookie, toFetch)
-  if (user) cookieJar.setCookieSync('xf_user=' + user, toFetch)
   let existingFic
   if (filename) {
     existingFic = Fic.fromJSON(TOML.parse(fs.readFileSync(filename)))

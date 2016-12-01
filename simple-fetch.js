@@ -7,6 +7,7 @@ fetch.Promise = Bluebird
 var util = require('util')
 var tough = require('tough-cookie')
 var CookieJar = tough.CookieJar
+var url = require('url')
 
 var cookieJar = new CookieJar();
 
@@ -37,9 +38,11 @@ function getCookieStringP (jar, url) {
   })
 }
 
-function setCookieP (jar, cookie, url) {
+function setCookieP (jar, cookie, link) {
+  var linkP = url.parse(link)
+  linkP.pathname = ''
   return new Bluebird((resolve, reject) => {
-    jar.setCookie(cookie, url, (err, cookie) => {
+    jar.setCookie(cookie, url.format(linkP), (err, cookie) => {
       return err ? reject(err) : resolve(cookie)
     })
   })

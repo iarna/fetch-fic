@@ -14,6 +14,7 @@ const Fic = require('./fic.js')
 const filenameize = require('./filenameize.js')
 const ms = require('mississippi')
 const pipe = Bluebird.promisify(ms.pipe)
+const url = require('url')
 const argv = require('yargs')
   .usage('Usage: $0 <fic> [--xf_session=<sessionid>] [--xf_user=<userid>]')
   .demand(1, '<fic> - A fic metadata file to fetch a fic for. Typically ends in .fic.toml')
@@ -63,8 +64,6 @@ function main () {
     cookieJar: cookieJar
   }
   const fetchWithCache = simpleFetch(fetchOpts)
-  if (cookie) cookieJar.setCookieSync('xf_session=' + cookie, toFetch)
-  if (user) cookieJar.setCookieSync('xf_user=' + user, toFetch)
   const gauge = new Gauge()
   const trackerGroup = new TrackerGroup()
   trackerGroup.on('change', (name, completed) => gauge.show({completed: completed}))
@@ -104,6 +103,11 @@ function main () {
   }
   function fetchFic (fetchWithOpts) {
     return (fic) => {
+      const linkP = url.parse(fic.updateFrom || fic.link)
+      linkP.pathname = ''
+      const link = url.format(linkP)
+      if (cookie) cookieJar.setCookieSync('xf_session=' + cookie, link)
+      if (user) cookieJar.setCookieSync('xf_user=' + user, link)
       const ficStream = getFic(fetchWithOpts, fic, maxConcurrency)
       if (output === 'epub') {
         const filename = filenameize(fic.title) + '.epub'

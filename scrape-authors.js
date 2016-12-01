@@ -18,6 +18,7 @@ const wordcount = require('wordcount')
 const simpleFetch = require('./simple-fetch')
 const Bluebird = require('bluebird')
 const cheerio = require('cheerio')
+const url = require('url')
 
 
 const fic = Fic.fromJSON(TOML.parse(fs.readFileSync(argv._[0])))
@@ -31,9 +32,12 @@ const fetchOpts = {
   cookieJar: cookieJar
 }
 const fetch = simpleFetch(fetchOpts)
-if (cookie) cookieJar.setCookieSync('xf_session=' + cookie, toFetch)
-if (user) cookieJar.setCookieSync('xf_user=' + user, toFetch)
-
+var linkP = url.parse(fic.updateFrom || fic.link)
+linkP.pathname = ''
+var link = url.format(linkP)
+if (cookie) cookieJar.setCookieSync('xf_session=' + cookie, link)
+if (user) cookieJar.setCookieSync('xf_user=' + user, link)
+console.log(cookieJar)
 const fics = (fic.chapters.length ? [fic] : []).concat(fic.fics)
 Bluebird.each(fics, fic => {
   let words = 0
