@@ -14,7 +14,7 @@ var cookieJar = new CookieJar();
 module.exports = function (_opts) {
   function simpleFetch (url, noCache) {
     var opts = Object.assign({}, simpleFetch.options)
-    opts.cookieJar = cookieJar
+    if (!opts.cookieJar) opts.cookieJar = cookieJar
     if (noCache != null) opts.cacheBreak = noCache
     return fetchWithCache(url, opts)
   }
