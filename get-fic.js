@@ -85,9 +85,11 @@ function findChapter (href, fic) {
 function inlineImages (images) {
   return (src, $img) => {
     if (/clear[.]png$/.test(src)) return
+    src = src.replace(/^https:[/][/]api[.]imgble[.]com[/](.*)[/]\d+[/]\d+$/, '$1')
     if (!images[src]) {
       var ext = src.match(/([.](?:jpe?g|gif|png|svg))/i)
       ext = ext && ext[1]
+      if (ext === '.svg' && /wikia.nocookie.net/.test(src)) ext = '.png'
       if (ext === '.jpeg') ext = '.jpg'
       images[src] = {
         filename: `image-${Object.keys(images).length + 1}${ext || '.guess.jpg'}`
