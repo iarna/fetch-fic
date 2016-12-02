@@ -37,9 +37,10 @@ class Site {
         strike sub sup table tbody td tfoot th thead time title tr u ul var
         wbr nav summary`,
       allowedAttributes: {
+        html: qw`xmlns:epub`,
         img: qw`src width height alt`,
         a: qw`href name target`,
-        '*': qw`style id`
+        '*': qw`style id epub:type`
       },
       allowedSchemes: qw`http https`,
       allowedSchemesByTag: {

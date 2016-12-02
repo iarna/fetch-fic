@@ -28,6 +28,7 @@ function ficToEpub (meta) {
   } else {
     let titleContent = ''
     titleContent += html`
+<html xmlns:epub="http://www.idpf.org/2007/ops">
 <head>
 <title>${meta.title}</title>
 <style>
@@ -48,10 +49,10 @@ function ficToEpub (meta) {
   th:after {
     content: ":";
   }
-</style></head>`
-    titleContent += html`<h1>${meta.title}</h1>`
+</style></head><body epub:type="cover titlepage">`
+    titleContent += html`<h1><section epub:type="title">${meta.title}</section></h1>`
     const author = meta.authorUrl ? html`<a href="${meta.authorUrl}">${meta.author}</a>` : meta.author
-    titleContent += `<h3>by ${author}</h3>`
+    titleContent += `<h3>by <section epub:type="credits">${author}</section></h3>`
     titleContent += html`<table>`
     if (meta.link) {
       const wrappableLink = meta.link.replace(/(.....)/g, '$1<wbr>')
@@ -59,10 +60,13 @@ function ficToEpub (meta) {
     }
     if (meta.created) titleContent += html`<tr><th>Published</th><td>${meta.created}</td></tr>`
     if (meta.modified) titleContent += html`<tr><th>Updated</th><td>${meta.modified}</td></tr>`
-    if (meta.tags && meta.tags.length) titleContent += html`<tr><th>Tags</th><td><em>${meta.tags.join(', ')}</em></td></tr>`
+    if (meta.tags && meta.tags.length) {
+      titleContent += html`<tr><th>Tags</th><td><section epub:type="keywords"><em>${meta.tags.join(', ')}</em></section></td></tr>`
+    }
     if (meta.words) titleContent += html`<tr><th>Words</th><td>${commaNumber(meta.words)}</td></tr>`
     titleContent += `</table>`
-    if (meta.description) titleContent += `<p>${meta.description}</p>`
+    if (meta.description) titleContent += `<section epub:type="abstract"><p>${meta.description}</p></section>`
+    titleContent += `</body>`
     const titlePage = `${titleContent}`
     epub.write(Streampub.newChapter('Title Page', titlePage, 0, 'top.xhtml'))
   }
@@ -78,8 +82,10 @@ function transformChapter (meta) {
     const index = chapter.order != null && (1 + chapter.order)
     const name = chapter.name
     const filename = chapterFilename(chapter)
-    const toSanitize = (name ? html`<title>${name}</title></head>` : '') +
-      '<section epub:type="chapter">' + chapter.content + '</section>'
+    const toSanitize = '<html xmlns:epub="http://www.idpf.org/2007/ops">' +
+      (name ? html`<title>${name}</title></head>` : '') +
+      '<section epub:type="chapter">' + chapter.content + '</section>' +
+      '</html>'
     const content = sanitizeHtml(toSanitize, meta.site.sanitizeHtmlConfig())
     this.push(Streampub.newChapter(name, content, index, filename))
     done()
