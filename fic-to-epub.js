@@ -62,7 +62,7 @@ function ficToEpub (meta) {
     if (meta.tags && meta.tags.length) titleContent += html`<tr><th>Tags</th><td><em>${meta.tags.join(', ')}</em></td></tr>`
     if (meta.words) titleContent += html`<tr><th>Words</th><td>${commaNumber(meta.words)}</td></tr>`
     titleContent += `</table>`
-    if (meta.description) titleContent += `<div>${meta.description}</div>`
+    if (meta.description) titleContent += `<p>${meta.description}</p>`
     const titlePage = `${titleContent}`
     epub.write(Streampub.newChapter('Title Page', titlePage, 0, 'top.xhtml'))
   }
