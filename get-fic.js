@@ -159,10 +159,12 @@ function getFic (fetch, fic, maxConcurrency) {
   }).then(() => {
     fetch.tracker.addWork(Object.keys(externals).length)
     fetch.gauge.show(`Fetching externals (${Object.keys(externals).length})…`)
+    const externalCount = Object.keys(externals).length
+    const pages = externalCount === 1 ? 'page' : 'pages'
     return concurrently(Object.keys(externals), maxConcurrency, (href, exterNum) => {
       return fic.getChapter(fetch, href).then((external) => {
         external.order = 9000 + exterNum
-        external.name = `External Reference #${exterNum + 1}: ${external.name || externals[href].name}`
+        external.name = !exterNum && `External References (${externalCount} ${pages})`
         external.filename = externals[href].filename
         rewriteImages(fic.site, external, inlineImages(images))
         rewriteLinks(fic.site, external, linklocalChapters(fic, externals))
