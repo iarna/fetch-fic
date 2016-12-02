@@ -41,7 +41,7 @@ const fics = (fic.chapters.length ? [fic] : []).concat(fic.fics)
 Bluebird.each(fics, fic => {
   let words = 0
   return Bluebird.each(fic.chapters, meta => {
-    console.log("Updating chapter", meta.order + 1)
+    process.stdout.write(`Updating chapter ${meta.order + 1}`)
     return fic.getChapter(fetch, meta.link).then(chapter => {
       const $content = cheerio.load(chapter.content)
       $content('.bbCodeQuote').remove()

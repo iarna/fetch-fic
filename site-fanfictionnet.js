@@ -59,7 +59,7 @@ class FanFictionNet extends Site {
         const favs = infomatches[6]
         const follows = infomatches[7]
       } else {
-        console.log('NOMATCH:', infoline)
+        console.error('NOMATCH:', infoline)
       }
 
       const $index = $($('#chap_select')[0])

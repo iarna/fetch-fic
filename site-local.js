@@ -47,7 +47,7 @@ class Local extends Site {
           fic.addChapter({name, link: filename, created: info.birthtime, modified: info.mtime})
         }
       }
-      return Bluebird.all(todo).catch(x => console.log('TAP', x))
+      return Bluebird.all(todo).catch(x => console.error('TAP', x))
     })
   }
 

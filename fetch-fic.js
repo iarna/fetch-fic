@@ -117,14 +117,14 @@ function main () {
           fs.createWriteStream(filename)
         ).tap(() => {
           gauge.hide()
-          console.log(filename)
+          process.stdout.write(`${filename}\n`)
           gauge.show()
         })
       } else if (output === 'bbcode') {
         const filename = filenameize(fic.title)
         return pipe(ficStream, ficToBbcode(fic, filename)).tap(() => {
           gauge.hide()
-          console.log(filename)
+          process.stdout.write(`${filename}\n`)
           gauge.show()
         })
       }
