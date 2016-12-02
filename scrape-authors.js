@@ -37,7 +37,6 @@ linkP.pathname = ''
 var link = url.format(linkP)
 if (cookie) cookieJar.setCookieSync('xf_session=' + cookie, link)
 if (user) cookieJar.setCookieSync('xf_user=' + user, link)
-console.log(cookieJar)
 const fics = (fic.chapters.length ? [fic] : []).concat(fic.fics)
 Bluebird.each(fics, fic => {
   let words = 0
