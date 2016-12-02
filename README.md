@@ -1,7 +1,7 @@
 # fetch-fic
 
 Package up delicious, delicious fanfic from various sources into epub ebooks ready for
-reading in your ereader of choice.
+reading in your ereader of choice. Also bbcode for posting to forum sites.
 
 ## SITES SUPPORTED
 
@@ -17,10 +17,12 @@ reading in your ereader of choice.
 * [Gravatar](https://en.gravatar.com) & Wordpress Facebook Avatar Mirror (for forum avatars)
 * Generic image handling– any url ending in jpg/jpeg/png/gif/svg will be
   accepted and included in an `<img>` tag.  Added primarily to allow
-  bringing in links to images.  Embed images would already be included.
+  links to images to be included in the Externals section.
 
 ## NOTABLE FEATURES
 
+* Can output the entire book (including index) as bbcode, suitable for
+  posting to sites supporting it.
 * Cover images can be added.
 * Images are brought into the final ebook.  (This includes smilies on
   Xenforo sites.)
@@ -442,7 +444,7 @@ Stuff I'd like to see (user visible):
       `fetch-meta`)
     * Maybe something for generating index sheets
 
-## LIMITED TESTING
+## LIMITED XENFORO TESTING
 
 While in principle this should work with most any XenForo site, it's only
 been tested with the following:
@@ -453,17 +455,22 @@ been tested with the following:
 
 Currently it will warn if you use it with another site.
 
-## PRIOR ART
+## OTHER OPTIONS
 
-[FanFicFare](https://fanficfare.appspot.com/) ([as Calibre plugin](http://www.mobileread.com/forums/showthread.php?t=259221))
-is a great general tool.  It can talk to everything `fetch-fic` can with the
-exception of Deviant Art.  It also supports a whole slew of sites that
-`fetch-fic` likely never will.  It's missing a couple of specific features
-however:
-
-* It has no facility for editing the chapter list before ebook creation.
-* Is not as aggressive about cleaning up the HTML that goes in the epubs.
-* It doesn't know how to split a single thread into multiple books.
-* It doesn't bring in images or maintain intrachapter linking.
-* It is substantially slower.
-* Xenforo: It can't scrape indexes w/o threadmarks.
+* [FanFicFare](https://fanficfare.appspot.com/) ([as Calibre plugin](http://www.mobileread.com/forums/showthread.php?t=259221))
+  is a great general tool.  It is missing a few of the less "ficcy" sites
+  that `fetch-fic` supports, eg Deviant Art, Wikipedia, Youtube, etc, but it
+  supports a whole slew of sites that `fetch-fic` likely never will.  The
+  command line version can also *update* an existing epub.  (`fetch-fic`
+  doesn't support this (yet), but outside of absurdly huge fics, it can
+  recreate them as fast as it could update them.)
+  [(Python)](https://github.com/JimmXinu/FanFicFare)
+* [ficrip](https://ficrip.io/) is specialized for fanfiction.net currently
+  and supports some things not found elsewhere, for instance using the
+  associated image as a title page. [(Ruby)](https://github.com/toroidal-code/ficrip)
+* [FicSave](http://ficsave.xyz/) supports fanfiction.net and a few more
+  obsure sites.  [(PHP)](https://github.com/waylaidwanderer/FicSave)
+* [Leech](https://github.com/kemayo/leech) supports ffnet, ao3, xenforo
+  sites, deviant art and sta.sh.  It makes some different formatting
+  choices, of particular note is displaying spoilers as footnotes (which
+  show up as popup windows in ereaders).
