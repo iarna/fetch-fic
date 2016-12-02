@@ -76,7 +76,7 @@ function transformChapter (meta) {
       return done()
     }
     const index = chapter.order != null && (1 + chapter.order)
-    const name = chapter.name || chapter.order && "Chapter " + index
+    const name = chapter.name
     const filename = chapterFilename(chapter)
     const toSanitize = (name ? html`<title>${name}</title></head>` : '') +
       '<section epub:type="chapter">' + chapter.content + '</section>'
