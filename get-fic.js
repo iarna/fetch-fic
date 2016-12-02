@@ -84,7 +84,8 @@ function findChapter (href, fic) {
 
 function inlineImages (images) {
   return (src, $img) => {
-    if (/clear[.]png$/.test(src)) return
+    if (/clear[.]png$/.test(src)) return // xenforo
+    if (/Special:CentralAutoLogin/.test(src)) return // wikipedia
     src = src.replace(/^https:[/][/]api[.]imgble[.]com[/](.*)[/]\d+[/]\d+$/, '$1')
     if (!images[src]) {
       var ext = src.match(/([.](?:jpe?g|gif|png|svg))/i)
