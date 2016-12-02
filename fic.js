@@ -74,7 +74,7 @@ class Fic {
     return fic.site.getFicMetadata(fetch, fic).then(thenMaybeFallback, elseMaybeFallback).thenReturn(fic)
     function elseMaybeFallback (err) {
       if (err && (!err.meta || err.meta.status !== 404)) throw err
-      thenMaybeFallback()
+      return thenMaybeFallback()
     }
     function thenMaybeFallback () {
       // no chapters in the threadmarks, fallback to fetching
