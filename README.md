@@ -473,4 +473,4 @@ Currently it will warn if you use it with another site.
 * [Leech](https://github.com/kemayo/leech) supports ffnet, ao3, xenforo
   sites, deviant art and sta.sh.  It makes some different formatting
   choices, of particular note is displaying spoilers as footnotes (which
-  show up as popup windows in ereaders).
+  show up as popup windows in ereaders). [(Python)](https://github.com/kemayo/leech)
