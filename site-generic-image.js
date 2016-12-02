@@ -15,6 +15,12 @@ class GenericImage extends Site {
     this.publisherName = this.publisher
   }
 
+  normalizeLink (href, base) {
+    // resolve base url
+    if (base) href = url.resolve(base, href)
+    return href
+  }
+
   getFicMetadata (fetch, fic) {
     fic.title = this.link
     fic.link = this.link
