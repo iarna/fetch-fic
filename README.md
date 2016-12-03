@@ -358,6 +358,14 @@ Optional. The number of words in this work. This is used on the title page.
 Optional.  Any tags associated with this work.  This is included on the
 title page and the metadata.
 
+### includeTOC
+
+Optional.  If true then a Table of Contents page will be generated and injected at the start of the fic.
+
+### numberTOC
+
+Optional.  If true then the navigation version of the table of contents will have numbers before each item.
+
 ## [[chapters]]
 
 ### name

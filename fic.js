@@ -23,6 +23,8 @@ class Fic {
     this.fics = []
     this.chapters = new ChapterList()
     this.site = null
+    this.includeTOC = null
+    this.numberTOC = null
   }
 
   chapterExists (link) {
@@ -54,7 +56,7 @@ class Fic {
   importFromJSON (raw) {
     for (let prop of qw`
          id link title author authorUrl created modified description tags
-         publisher cover chapterHeadings words updateFrom
+         publisher cover chapterHeadings words updateFrom includeTOC numberTOC
        `) {
       this[prop] = raw[prop]
     }
@@ -109,7 +111,7 @@ class Fic {
     var result = {}
     for (let prop of qw`
          id title link updateFrom author authorUrl created modified publisher cover
-         description tags words fics chapters chapterHeadings
+         description tags words fics chapters chapterHeadings includeTOC numberTOC
        `) {
       if (this[prop] != null && (!Array.isArray(this[prop]) || this[prop].length)) result[prop] = this[prop]
     }
@@ -172,7 +174,7 @@ class SubFic extends Fic {
     var result = {}
     for (let prop of qw`
          title _link _author _authorUrl created modified _publisher
-         description tags chapters _chapterHeadings words
+         description tags chapters _chapterHeadings words includeTOC numberTOC
          `) {
       var assignTo = prop[0] === '_' ? prop.slice(1) : prop
       if (this[prop] && (this[prop].length == null || this[prop].length)) result[assignTo] = this[prop]

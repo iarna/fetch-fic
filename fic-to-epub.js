@@ -20,7 +20,9 @@ function ficToEpub (meta) {
     subject: meta.tags && meta.tags.length && meta.tags.join(','),
     publisher: meta.publisher,
     published: meta.started || meta.created,
-    modified: meta.modified
+    modified: meta.modified,
+    includeTOC: meta.includeTOC,
+    numberTOC: meta.numberTOC
   })
 
   if (meta.cover && !/:/.test(meta.cover)) {

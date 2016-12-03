@@ -36,6 +36,7 @@ class Xenforo extends Site {
   getFicMetadata (fetch, fic) {
     fic.link = this.link
     fic.publisher = this.publisherName
+    fic.includeTOC = true
     return fetch(this.threadmarkUrl()).spread((meta, html) => {
       const $ = cheerio.load(html)
       const base = $('base').attr('href') || this.threadmarkUrl()
@@ -72,6 +73,7 @@ class Xenforo extends Site {
   scrapeFicMetadata (fetch, fic) {
     if (!fic.link) fic.link = this.link
     if (!fic.publisher) fic.publisher = this.publisherName
+    if (fic.includeTOC == null) fic.includeTOC = true
     return this.getChapter(fetch, this.link).then(chapter => {
       const $ = cheerio.load(chapter.raw)
       // we guard all the fic metadata updates because we might be
@@ -97,6 +99,7 @@ class Xenforo extends Site {
         fic.addChapter({name: chapter.title || fic.title, link: indexLink, created: chapter.created})
       } else {
         fic.addChapter({name: 'Table of Contents', link: indexLink, created: chapter.created})
+        fic.includeTOC = false
       }
       links.each((_, link) => {
         const $link = $content(link)
