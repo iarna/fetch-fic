@@ -21,7 +21,6 @@ function ficToEpub (meta) {
     publisher: meta.publisher,
     published: meta.started || meta.created,
     modified: meta.modified,
-    includeTOC: meta.includeTOC,
     numberTOC: meta.numberTOC
   })
 
@@ -73,6 +72,24 @@ function ficToEpub (meta) {
     titleContent += `</body>`
     const titlePage = `${titleContent}`
     epub.write(Streampub.newChapter('Title Page', titlePage, 0, 'top.xhtml'))
+  }
+  if (meta.includeTOC) {
+    const style = `
+  h1, h3 { text-align: center; }
+  ol { margin-left: 3em; }`
+    const header = html`<title>${meta.title}</title><style>${style}</style>`
+    const title = html`<h1>${meta.title}</h1>`
+    let author = ''
+    if (meta.author) {
+      author = meta.authorUrl
+        ? html`<h3>by <a href="${meta.authorUrl}">${meta.author}</a></h3>`
+        : html`<h3>by ${meta.author}</h3>`
+    }
+    const tocitems = meta.chapters.map((chapter) => html`<li><a href="${chapterFilename(chapter)}">${chapter.name}</li>`).join('\n')
+    const toc = `<ol>${tocitems}</ol>`
+    const body = `${title}${author}${toc}`
+    const tocPage = `<html><head>${header}</head><body>${body}</body></html>`
+    epub.write(Streampub.newChapter('Table of Contents', tocPage, 1, 'toc.xhtml'))
   }
   return ms.pipeline.obj(ms.through.obj(transformChapter(meta)), epub)
 }
