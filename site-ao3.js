@@ -37,6 +37,7 @@ class ArchiveOfOurOwn extends Site {
   getFicMetadata (fetch, fic) {
     fic.link = this.link
     fic.publisher = this.publisherName
+    fic.includeTOC = true
     return fetch(this.chapterIndex()).spread((meta, html) => {
       const $ = cheerio.load(html)
       const base = $('base').attr('href') || this.chapterIndex()

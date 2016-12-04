@@ -36,6 +36,7 @@ class FanFictionNet extends Site {
   getFicMetadata (fetch, fic) {
     fic.link = this.link
     fic.publisher = this.publisherName
+    fic.includeTOC = true
     return this.getChapter(fetch, this.chapterListUrl()).then(chapter => {
       const $ = cheerio.load(chapter.raw)
       const $meta = $('#profile_top')
