@@ -53,8 +53,10 @@ function ficToEpub (meta) {
   }
 </style></head><body epub:type="cover titlepage">`
     titleContent += html`<section epub:type="title"><h1>${meta.title}</h1></section>`
-    const author = meta.authorUrl ? html`<a href="${meta.authorUrl}">${meta.author}</a>` : meta.author
-    titleContent += `<h3>by <span epub:type="credits">${author}</span></h3>`
+    if (meta.author) {
+      const author = meta.authorUrl ? html`<a href="${meta.authorUrl}">${meta.author}</a>` : meta.author
+      titleContent += `<h3>by <span epub:type="credits">${author}</span></h3>`
+    }
     titleContent += html`<table>`
     if (meta.link) {
       const wrappableLink = meta.link.replace(/(.....)/g, '$1<wbr>')
