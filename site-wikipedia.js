@@ -53,6 +53,8 @@ class Wikipedia extends Site {
       return {
         meta: chapter,
         name: title,
+        author: 'Wikipedia',
+        authorUrl: link,
         finalUrl: link,
         base: base,
         raw: html,
