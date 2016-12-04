@@ -167,6 +167,13 @@ function getFic (fetch, fic, maxConcurrency) {
     return concurrently(Object.keys(externals), maxConcurrency, (href, exterNum) => {
       return fic.getChapter(fetch, href).then((external) => {
         external.order = 9000 + exterNum
+        if (external.name) {
+          const headerName = html`${external.name}`
+          const byline = !external.author ? ''
+            : (' by ' + (!external.authorUrl ? external.author
+              : html`<a href="${external.authorUrl}">${external.author}</a>`))
+          external.content = `<header><h2>${headerName}${byline}</h2></header>` + external.content
+        }
         external.name = !exterNum && `External References (${externalCount} ${pages})`
         external.filename = externals[href].filename
         rewriteImages(fic.site, external, inlineImages(images))
