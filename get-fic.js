@@ -88,7 +88,7 @@ function inlineImages (images) {
     if (/Special:CentralAutoLogin/.test(src)) return // wikipedia
     src = src.replace(/^https:[/][/]api[.]imgble[.]com[/](.*)[/]\d+[/]\d+$/, '$1')
     if (!images[src]) {
-      var ext = src.match(/([.](?:jpe?g|gif|png|svg))/i)
+      var ext = src.match(/([.](?:jpe?g|gif|png))/i) || src.match(/([.]svg)/i)
       ext = ext && ext[1]
       if (ext === '.svg' && /wikia.nocookie.net/.test(src)) ext = '.png'
       if (ext === '.jpeg') ext = '.jpg'
