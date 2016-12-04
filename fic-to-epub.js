@@ -108,7 +108,7 @@ function transformChapter (meta) {
       '<section epub:type="chapter">' + chapter.content + '</section>' +
       '</html>'
     const content = sanitizeHtml(toSanitize, meta.site.sanitizeHtmlConfig())
-    this.push(Streampub.newChapter(name, content, index, filename))
+    this.push(Streampub.newChapter(name, content, 100 + index, filename))
     done()
   }
 }
