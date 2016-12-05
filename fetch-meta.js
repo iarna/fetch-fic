@@ -39,8 +39,8 @@ function main () {
   const linkP = url.parse(toFetch)
   linkP.pathname = ''
   const link = url.format(linkP)
-  if (cookie) cookieJar.setCookieSync('xf_session=' + cookie, url)
-  if (user) cookieJar.setCookieSync('xf_user=' + user, url)
+  if (cookie) cookieJar.setCookieSync('xf_session=' + cookie, link)
+  if (user) cookieJar.setCookieSync('xf_user=' + user, link)
   const fetchOpts = {
     cacheBreak: !argv.cache,
     noNetwork: !argv.network,
