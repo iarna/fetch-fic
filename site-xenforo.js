@@ -80,13 +80,8 @@ class Xenforo extends Site {
       // acting in addition to the result from getFicMetadata
       if (!fic.link) fic.link = this.normalizeLink(chapter.finalUrl)
       if (!fic.created) fic.created = this.dateTime($('.DateTime'))
-      if (!fic.title) {
-        const tat = this.detagTitle(this.scrapeTitle($))
-        fic.title = tat.title
-        if (!fic.tags.length) {
-          fic.tags = tat.tags
-        }
-      }
+      if (!fic.title) fic.title = chapter.ficTitle
+      if (!fic.tags) fic.tags = chapter.ficTags
       if (!fic.author) fic.author = chapter.author
       if (!fic.authorUrl) fic.authorUrl = chapter.authorUrl
 
@@ -179,6 +174,10 @@ class Xenforo extends Site {
         }
       }
       $content.find('.quoteExpand').remove()
+
+      const tat = this.detagTitle(this.scrapeTitle($))
+      const ficTitle = tat.title
+      const ficTags = tat.tags
       const $spoiler = $content.find('.bbCodeSpoilerContainer')
       $spoiler.attr('style', 'border: solid black 1px')
       $spoiler.find('.bbCodeSpoilerButton').remove()
@@ -235,6 +234,8 @@ class Xenforo extends Site {
       })
       $content.find('div.messageTextEndMarker').remove()
       return {
+        ficTitle: ficTitle,
+        ficTags: ficTags,
         chapterLink: chapter,
         finalUrl: finalUrl,
         base: base,
