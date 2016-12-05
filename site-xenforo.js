@@ -178,6 +178,14 @@ class Xenforo extends Site {
       const ficTitle = tat.title
       const ficTags = tat.tags
 
+      // at least on qq
+      const $contentWarning = $content.find('dl.adv_accordion')
+      if ($contentWarning.length) {
+        const label = $contentWarning.find('dt').html()
+        const value = $contentWarning.find('dd').html()
+        $contentWarning.replaceWith(`<div><h3>${label}</h3>${value}</div>`)
+      }
+
       $content.find('.quoteContainer < aside').each((ii, quote) => {
         const $quote = $(quote)
         const $attribution = $quote.find('.attribution')
