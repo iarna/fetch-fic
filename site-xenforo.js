@@ -206,8 +206,13 @@ class Xenforo extends Site {
       })
 
       const $spoiler = $content.find('.bbCodeSpoilerContainer')
-      $spoiler.attr('style', 'border: solid black 1px')
-      $spoiler.find('.bbCodeSpoilerButton').remove()
+      const spoilerLabel = $spoiler.find('.bbCodeSpoilerButton').text().trim()
+      $spoiler.attr('style', `border: solid black 1px; xenforo-spoiler: '${spoilerLabel}';`)
+      if (spoilerLabel === 'Spoiler') {
+        $spoiler.find('.bbCodeSpoilerButton').remove()
+      } else {
+        $spoiler.find('.bbCodeSpoilerButton').replaceWith(`<b>${spoilerLabel}</b><br/>`)
+      }
       const base = $('base').attr('href') || finalUrl
       const $author = $($message.find('a.username')[0])
       const authorUrl = url.resolve(base, $author.attr('href'))
