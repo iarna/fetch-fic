@@ -81,6 +81,8 @@ class FanFictionNet extends Site {
   getChapter (fetch, chapter) {
     return fetch(chapter).spread((meta, html) => {
       const $ = cheerio.load(html)
+      const $meta = $('#profile_top')
+      const ficTitle = $meta.find('b.xcontrast_txt').text()
       const $content = $('#storytextp')
       const base = $('base').attr('href') || meta.finalUrl
       const links = $('a.xcontrast_txt')
@@ -94,6 +96,7 @@ class FanFictionNet extends Site {
         }
       })
       return {
+        ficTitle: ficTitle,
         chapterLink: chapter,
         finalUrl: meta.finalUrl,
         base: base,
