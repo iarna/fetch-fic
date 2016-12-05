@@ -173,11 +173,30 @@ class Xenforo extends Site {
           throw new Error('Error fetching ' + chapter + ': ' + $error.text().trim())
         }
       }
-      $content.find('.quoteExpand').remove()
 
       const tat = this.detagTitle(this.scrapeTitle($))
       const ficTitle = tat.title
       const ficTags = tat.tags
+
+      $content.find('.quoteContainer < aside').each((ii, quote) => {
+        const $quote = $(quote)
+        const $attribution = $quote.find('.attribution')
+        if ($attribution.length !== 0) {
+          if (!$attribution.text().match(/(.*) said:/)) console.log('QUOTE', $quote.html())
+          const user = $attribution.text().match(/(.*) said:/)[1].trim()
+          const postHref = $attribution.find('a').attr('href')
+          if (postHref) {
+            const post = postHref.match(/(\d+)/)[1]
+            $quote.find('.quote').attr('style', `xenforo-quote: ${post} '${user}';`)
+          } else {
+            $quote.find('.quote').attr('style', `xenforo-quote: '${user}';`)
+          }
+        } else {
+          $quote.find('.quote').attr('style', `xenforo-quote: true`)
+        }
+        $content.find('.quoteExpand').remove()
+      })
+
       const $spoiler = $content.find('.bbCodeSpoilerContainer')
       $spoiler.attr('style', 'border: solid black 1px')
       $spoiler.find('.bbCodeSpoilerButton').remove()
