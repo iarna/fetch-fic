@@ -230,7 +230,7 @@ class Xenforo extends Site {
       }
       $content.find('[style *= color]').each((ii, vv) => {
         const style = $(vv).attr('style')
-        let ns = ''
+        let ns = `xenforo-color: ${style};`
         const colorMatch = style.match(/color: #(\S\S)(\S\S)(\S\S)/)
         let opacity = 1
         if (colorMatch) {
@@ -241,10 +241,10 @@ class Xenforo extends Site {
           opacity = lightness / baseLightness
           if (baseLightness < 0.5) opacity = 1 - opacity
           if (opacity < 0.25) opacity = 0.25
-          ns = 'opacity: ' +  opacity + ';'
+          ns += 'opacity: ' +  opacity
         } else if (style === 'color: transparent') {
           opacity = 0.25
-          ns = 'text-decoration: line-through; font-style: oblique; opacity: 0.25;'
+          ns += 'text-decoration: line-through; font-style: oblique; opacity: 0.25;'
         }
         if (opacity > 1) {
           ns += 'font-weight: bolder;'
