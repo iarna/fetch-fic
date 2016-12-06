@@ -19,7 +19,7 @@ function ficToBbcode (fic, filename) {
 function chapterFilename (chapter) {
   const index = 1 + chapter.order
   const name = chapter.name || "Chapter " + index
-  return chapter.filename || filenameize('chapter-' + name) + '.bbcode'
+  return chapter.filename && chapter.filename.replace('xhtml', 'bbcode') || filenameize('chapter-' + name) + '.bbcode'
 }
 
 function transformChapter (fic, dirname, ready) {
