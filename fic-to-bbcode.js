@@ -30,7 +30,7 @@ function transformChapter (fic, dirname, ready) {
       const index = chapter.order != null && (1 + chapter.order)
       const content = HTMLToBBCode(sanitizeHtml(chapter.content, fic.site.sanitizeHtmlConfig()))
       return writeFile(filename, content)
-    }).then(done)
+    }).catch(done).then(() => done())
   }
 }
 
