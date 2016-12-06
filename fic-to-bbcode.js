@@ -6,7 +6,7 @@ const promisify = require('./promisify')
 const mkdirp = promisify(require('mkdirp'))
 const writeFile = promisify(fs.writeFile)
 const commaNumber = require('comma-number')
-const HTML2BBCode = require('html2bbcode').HTML2BBCode
+const HTMLToBBCode = require('./html-to-bbcode')
 const sanitizeHtml = require('sanitize-html')
 const filenameize = require('./filenameize.js')
 const path = require('path')
@@ -27,16 +27,10 @@ function transformChapter (fic, dirname, ready) {
     ready.then(() => {
       const filename = path.join(dirname, chapterFilename(chapter))
       const index = chapter.order != null && (1 + chapter.order)
-      const content = bbencode(sanitizeHtml(chapter.content, fic.site.sanitizeHtmlConfig()))
+      const content = HTMLToBBCode(sanitizeHtml(chapter.content, fic.site.sanitizeHtmlConfig()))
       return writeFile(filename, content)
     }).then(done)
   }
-}
-
-function bbencode (html) {
-  const converter = new HTML2BBCode()
-  const bbcode = converter.feed(html)
-  return bbcode.toString().replace(/\n/g, '\n\n')
 }
 
 function writeIndex (fic, dirname) {
