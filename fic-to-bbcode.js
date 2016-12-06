@@ -26,6 +26,7 @@ function transformChapter (fic, dirname, ready) {
   return function (chapter, _, done) {
     ready.then(() => {
       const filename = path.join(dirname, chapterFilename(chapter))
+      if (chapter.image) return writeFile(filename, chapter.content)
       const index = chapter.order != null && (1 + chapter.order)
       const content = HTMLToBBCode(sanitizeHtml(chapter.content, fic.site.sanitizeHtmlConfig()))
       return writeFile(filename, content)
