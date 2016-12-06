@@ -130,7 +130,8 @@ function getFic (fetch, fic, maxConcurrency) {
   concurrently(chapters, maxConcurrency, (chapterInfo) => {
     return fic.getChapter(fetch, chapterInfo.fetchFrom || chapterInfo.link).then((chapter) => {
       chapter.order = chapterInfo.order
-      chapter.name = chapterInfo.name + (chapterInfo.author ? ` (${chapter.author})` : '')
+      const plainName = chapterInfo.name
+      chapter.name = chapterInfo.name = plainName + (chapterInfo.author ? ` (${chapter.author})` : '')
       if (fic.chapterHeadings || chapterInfo.headings) {
         const headerName = html`${chapterInfo.name}`
         const byline = !chapterInfo.author ? ''
@@ -149,7 +150,8 @@ function getFic (fetch, fic, maxConcurrency) {
           }
           externals[href] = {
             name: $a.text(),
-            filename: `external-${Object.keys(externals).length + 1}.xhtml`
+            filename: `external-${Object.keys(externals).length + 1}.xhtml`,
+            requestedBy: chapterInfo
           }
           return externals[href].filename
         })
@@ -165,15 +167,24 @@ function getFic (fetch, fic, maxConcurrency) {
     const externalCount = Object.keys(externals).length
     const pages = externalCount === 1 ? 'page' : 'pages'
     return concurrently(Object.keys(externals), maxConcurrency, (href, exterNum) => {
+      const externalInfo = externals[href]
       return fic.getChapter(fetch, href).then((external) => {
         external.order = 9000 + exterNum
-        if (external.name) {
-          const headerName = html`${external.name}`
-          const byline = !external.author ? ''
-            : (' by ' + (!external.authorUrl ? external.author
-              : html`<a href="${external.authorUrl}">${external.author}</a>`))
-          external.content = `<header><h2>${headerName}${byline}</h2></header>` + external.content
+        const name = external.name || external.ficTitle
+        let header = ''
+        const linkSource = externalInfo.requestedBy.link || externalInfo.requestedBy.fetchFrom
+        header += `<div>Linked to from: <a href="${linkSource}">${externalInfo.requestedBy.name}</a></div>`
+        const byline = !external.author ? ''
+          : (!external.authorUrl ? external.author : html`<a href="${external.authorUrl}">${external.author}</a>`)
+        if (name) {
+          const headerName = html`${name}`
+          header += `<header><h2><a external="false" href="${href}">${headerName}</a>${byline ? ' by ' + byline : ''}</h2></header>`
+        } else if (byline) {
+          const wrappableLink = href.replace(/(.....)/g, '$1<wbr>')
+          header += `<header><h2><div style="font-size: 11px"><a external="false" href="${href}">${wrappableLink}</a></div>`
+          header += `by ${byline}</h2></header>`
         }
+        external.content = `${header}<hr>${external.content}`
         external.name = !exterNum && `External References (${externalCount} ${pages})`
         external.filename = externals[href].filename
         rewriteImages(fic.site, external, inlineImages(images))
