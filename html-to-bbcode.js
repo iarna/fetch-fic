@@ -39,20 +39,20 @@ class Parser {
       td: this.inline('{td}', '{/td}'),
       th: this.inline('{td}[b][center]', '[/center][/b]{/td}'),
       img: {
-        start (tag, attrs) {
+        start: (tag, attrs) => {
           const src = attrs.filter(attr => attr.name === 'src')
           this.addText(`[img]${src[0].value}[/img]`)
         },
-        end () {
+        end: () => {
           this.addText('[/img]')
         }
       },
       a: {
-        start (tag, attrs) {
+        start: (tag, attrs) => {
           const href = attrs.filter(attr => attr.name === 'href')
           this.addText(`[url=${href[0].value}]`)
         },
-        end () {
+        end: () => {
           this.addText('[/url]')
         }
       },
@@ -102,7 +102,7 @@ class Parser {
         return '[/color]'
       },
       'xenforo-quote': (tag, name, value) => {
-        const bits = value.match(/^(?:(\d+) )?'(.*)'/)
+        const bits = value.match(/^(?:(\d+) )?'(.*)'|true/)
         if (bits[2]) {
           this.addText(`[quote="${bits[2]}, post: ${bits[1]}"]`)
         } else if (value !== 'true') {
@@ -240,7 +240,7 @@ class Parser {
   }
 
   textDecorations (which) {
-    return value => which == null ? textDecorationsMap[value] : textDecorationsMap[value][which]
+    return value => which == null ? this.textDecorationsMap[value] : this.textDecorationsMap[value][which]
   }
 
   handleStyle (tag, attrs) {
@@ -261,7 +261,7 @@ class Parser {
             }
           }
         } catch (ex) {
-          throw new Error('INVALID CSS', attr.value, ex.stack)
+          throw new Error('INVALID CSS value=' + attr.value + ', ' +ex.stack)
         }
       } else if (attr.name === 'id' || attr.name === 'epub:type') {
         // ignore
