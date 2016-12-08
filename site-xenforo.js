@@ -64,7 +64,7 @@ class Xenforo extends Site {
       return this.getChapter(link => fetch(link, false), this.link).then((chapter) => {
         fic.author = chapter.author
         fic.authorUrl = chapter.authorUrl
-        var $content = cheerio.load(chapter.content)
+        const $content = cheerio.load(chapter.content)
         fic.description = $content.text().trim().replace(/^([^\n]+)[\s\S]*?$/, '$1')
       })
     })
@@ -86,7 +86,7 @@ class Xenforo extends Site {
       if (!fic.authorUrl) fic.authorUrl = chapter.authorUrl
 
       const $content = cheerio.load(chapter.content)
-      var firstPara = $content.text().trim().replace(/^([^\n]+)[\s\S]*?$/, '$1')
+      const firstPara = $content.text().trim().replace(/^([^\n]+)[\s\S]*?$/, '$1')
       if (!fic.description) fic.description = firstPara
       const links = $content('a')
       const indexLink = this.normalizeLink(chapter.finalUrl)
@@ -287,7 +287,7 @@ class Xenforo extends Site {
   }
 
   sanitizeHtmlConfig () {
-    var config = super.sanitizeHtmlConfig()
+    const config = super.sanitizeHtmlConfig()
     config.transformTags.img = (tagName, attribs) => { return this.cleanImages(tagName, attribs) }
     return config
   }

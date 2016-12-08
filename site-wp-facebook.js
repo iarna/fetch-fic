@@ -7,7 +7,7 @@ class WpFacebook extends Site {
     return /wp[.]com[/]graph[.]facebook[.]com/.test(siteUrlStr)
   }
   normalizeLink (link) {
-    var linkBits = url.parse(link)
+    const linkBits = url.parse(link)
     linkBits.host = 'i0.wp.com'
     linkBits.pathname = linkBits.pathname.replace(/v2.2[/]/, '') + '/.jpg'
     return url.format(linkBits)

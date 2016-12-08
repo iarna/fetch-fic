@@ -36,7 +36,7 @@ class Fic {
 
   normalizeLink (link) {
     try {
-      var site = Site.fromUrl(link)
+      const site = Site.fromUrl(link)
       return site.normalizeLink(link)
     } catch (_) {
       return link
@@ -44,7 +44,7 @@ class Fic {
   }
 
   getChapter (fetch, link) {
-    var site = Site.fromUrl(link)
+    const site = Site.fromUrl(link)
     return site.getChapter(fetch, link)
   }
 
@@ -70,7 +70,7 @@ class Fic {
   }
 
   static fromUrl (fetch, link) {
-    var fic = new this(fetch)
+    const fic = new this(fetch)
     fic.site = Site.fromUrl(link)
     fic.link = fic.site.link
     return fic.site.getFicMetadata(fetch, fic).then(thenMaybeFallback, elseMaybeFallback).thenReturn(fic)
@@ -87,7 +87,7 @@ class Fic {
   }
 
   static fromUrlAndScrape (fetch, link) {
-    var fic = new this(fetch)
+    const fic = new this(fetch)
     fic.site = Site.fromUrl(link)
     fic.link = fic.site.link
     return fic.site.getFicMetadata(fetch, fic).then(() => {
@@ -96,7 +96,7 @@ class Fic {
   }
 
   static scrapeFromUrl (fetch, link) {
-    var fic = new this()
+    const fic = new this()
     fic.site = Site.fromUrl(link)
     fic.link = fic.site.link
     return fic.site.scrapeFicMetadata(fetch, fic).thenReturn(fic)
@@ -108,7 +108,7 @@ class Fic {
   }
 
   toJSON () {
-    var result = {}
+    const result = {}
     for (let prop of qw`
          id title link updateFrom author authorUrl created modified publisher cover
          description tags words fics chapters chapterHeadings includeTOC numberTOC
@@ -171,12 +171,12 @@ class SubFic extends Fic {
     return this._externals = value
   }
   toJSON () {
-    var result = {}
+    const result = {}
     for (let prop of qw`
          title _link _author _authorUrl created modified _publisher
          description tags chapters _chapterHeadings words includeTOC numberTOC
          `) {
-      var assignTo = prop[0] === '_' ? prop.slice(1) : prop
+      const assignTo = prop[0] === '_' ? prop.slice(1) : prop
       if (this[prop] && (this[prop].length == null || this[prop].length)) result[assignTo] = this[prop]
     }
     return result

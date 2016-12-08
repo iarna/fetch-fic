@@ -36,7 +36,7 @@ class Local extends Site {
 
   recursedir (fic, dir) {
     return readdir(dir).then(files => {
-      var todo = []
+      const todo = []
       for (let file of files) {
         const filename = path.join(dir, file)
         const info = fs.statSync(filename)

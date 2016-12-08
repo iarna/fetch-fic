@@ -68,9 +68,9 @@ Bluebird.each(argv._, filename => {
   const fic = Fic.fromJSON(TOML.parse(fs.readFileSync(filename)))
   const fics = (fic.chapters.length ? [fic] : []).concat(fic.fics)
 
-  var linkP = url.parse(fic.updateFrom || fic.link)
+  const linkP = url.parse(fic.updateFrom || fic.link)
   linkP.pathname = ''
-  var link = url.format(linkP)
+  const link = url.format(linkP)
   if (cookie) cookieJar.setCookieSync('xf_session=' + cookie, link)
   if (user) cookieJar.setCookieSync('xf_user=' + user, link)
 

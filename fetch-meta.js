@@ -124,7 +124,7 @@ function main () {
       }
       // Find any chapters with created dates and update them if need be.
       for (let chapter of outFic.chapters) {
-        const match = fic.chapters.filter(andChapterEquals(chapter)).filter(function (newChapter) {
+        const match = fic.chapters.filter(andChapterEquals(chapter)).filter(newChapter => {
           // the new chapter has our new metadata
           return !!newChapter.created
         })

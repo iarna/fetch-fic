@@ -8,7 +8,7 @@ class Gravatar extends Site {
     return /gravatar/.test(siteUrlStr) && /[/]avatar[/]/.test(siteUrlStr)
   }
   normalizeLink (link) {
-    var linkBits = url.parse(link)
+    const linkBits = url.parse(link)
     linkBits.host = 'gravatar.com'
     if (/identicon/.test(linkBits.query)) {
       linkBits.pathname += '.png'

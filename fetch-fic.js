@@ -84,10 +84,10 @@ function main () {
   })
 
   function fetchTopFic (ficFile, ficNum) {
-    var topFic = Fic.fromJSON(TOML.parse(fs.readFileSync(ficFile, 'utf8')))
-    var fics = (topFic.chapters.length ? [topFic]: []).concat(topFic.fics||[])
-    var tracker = trackers[ficNum]
-    var fetchWithOpts = (url, noCache, binary) => {
+    const topFic = Fic.fromJSON(TOML.parse(fs.readFileSync(ficFile, 'utf8')))
+    let fics = (topFic.chapters.length ? [topFic]: []).concat(topFic.fics||[])
+    const tracker = trackers[ficNum]
+    const fetchWithOpts = (url, noCache, binary) => {
       return spin(fetchWithCache(url, noCache, binary)).finally(() => tracker.completeWork(1))
     }
     fetchWithOpts.gauge = gauge

@@ -1,7 +1,6 @@
 'use strict'
 module.exports = ficToBbcode
 const fs = require('fs')
-const ms = require('mississippi')
 const promisify = require('./promisify')
 const mkdirp = promisify(require('mkdirp'))
 const writeFile = promisify(fs.writeFile)
@@ -10,10 +9,11 @@ const HTMLToBBCode = require('./html-to-bbcode')
 const sanitizeHtml = require('sanitize-html')
 const filenameize = require('./filenameize.js')
 const path = require('path')
+const Transform = require('readable-stream').Transform
 
 function ficToBbcode (fic, filename) {
   const ready = mkdirp(filename).then(() => writeIndex(fic, filename))
-  return ms.through.obj(transformChapter(fic, filename, ready))
+  return new Transform({objectMode: true, transform: transformChapter(fic, filename, ready)})
 }
 
 function chapterFilename (chapter) {
@@ -23,7 +23,7 @@ function chapterFilename (chapter) {
 }
 
 function transformChapter (fic, dirname, ready) {
-  return function (chapter, _, done) {
+  return (chapter, _, done) => {
     ready.then(() => {
       const filename = path.join(dirname, chapterFilename(chapter))
       if (chapter.image) return writeFile(filename, chapter.content)

@@ -8,6 +8,7 @@ const url = require('url')
 const fs = require('fs')
 const commaNumber = require('comma-number')
 const html = require('html-template-tag')
+const Transform = require('readable-stream').Transform
 
 function ficToEpub (meta) {
   const epub = new Streampub({
@@ -88,7 +89,7 @@ function ficToEpub (meta) {
     const tocPage = `<html><head>${header}</head><body>${body}</body></html>`
     epub.write(Streampub.newChapter('Table of Contents', tocPage, 1, 'toc.xhtml'))
   }
-  return ms.pipeline.obj(ms.through.obj(transformChapter(meta)), epub)
+  return ms.pipeline.obj(new Transform({objectMode: true, transform: transformChapter(meta)}), epub)
 }
 
 function transformChapter (meta) {

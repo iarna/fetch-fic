@@ -13,7 +13,7 @@ class Wikipedia extends Site {
     super(siteUrlStr)
     this.publisher = 'youtube.com'
     this.publisherName = 'You Tube'
-    var matches = siteUrlStr.match(/[/]watch[?]v=(.*)$/) || siteUrlStr.match(/youtu.be[/](.*)/)
+    const matches = siteUrlStr.match(/[/]watch[?]v=(.*)$/) || siteUrlStr.match(/youtu.be[/](.*)/)
     this.id = matches[1]
   }
 

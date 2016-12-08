@@ -2,9 +2,9 @@
 module.exports = spinGauge
 
 function spinGauge (gauge) {
-  var spinning = 0
-  var spinInterval
-  return function spinWith (P) {
+  let spinning = 0
+  let spinInterval
+  return P => {
     if (++spinning === 1) {
       spinInterval = setInterval(function () { gauge.pulse() }, 50)
     }

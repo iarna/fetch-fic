@@ -1,9 +1,9 @@
 'use strict'
 module.exports = inFlight
 
-var Bluebird = require('bluebird')
+const Bluebird = require('bluebird')
 
-var active = {}
+const active = {}
 
 function inFlight () {
   return Bluebird.all(arguments).spread(function (unique, doFly) {

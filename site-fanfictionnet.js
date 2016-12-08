@@ -20,7 +20,7 @@ class FanFictionNet extends Site {
     this.publisherName = 'FanFiction.net'
     const siteUrl = url.parse(siteUrlStr)
     const path = siteUrl.pathname || siteUrl.path || ''
-    var ficMatch = path.match(/^[/]s[/](\d+)[/]\d+(?:[/](.*))?/)
+    const ficMatch = path.match(/^[/]s[/](\d+)[/]\d+(?:[/](.*))?/)
     this.ficId = ficMatch[1]
     this.name = ficMatch[2]
   }

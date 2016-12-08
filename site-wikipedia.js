@@ -12,7 +12,7 @@ class Wikipedia extends Site {
     super(siteUrlStr)
     this.publisher = 'wikipedia.org'
     this.publisherName = 'Wikipedia'
-    var matches = siteUrlStr.match(/[/]wiki[/](.*?)$/)
+    const matches = siteUrlStr.match(/[/]wiki[/](.*?)$/)
     this.name = matches[1]
   }
 
