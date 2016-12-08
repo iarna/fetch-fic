@@ -14,11 +14,16 @@ const cookieJar = new CookieJar();
 
 module.exports = function (_opts) {
   const fetch = callLimit(rawFetch, _opts.maxConcurrency || 4, 1000 / (_opts.requestsPerSecond || 1))
-  function simpleFetch (url, noCache) {
+  function simpleFetch (what, noCache) {
     const opts = Object.assign({}, simpleFetch.options)
     if (!opts.cookieJar) opts.cookieJar = cookieJar
     if (noCache != null) opts.cacheBreak = noCache
-    return fetchWithCache(fetch, url, opts)
+    const href = what.href || what
+    if (what.referer) {
+      if (!opts.headers) opts.headers = {}
+      opts.headers.Referer = what.referer
+    }
+    return fetchWithCache(fetch, href, opts)
   }
   simpleFetch.options = _opts || {}
   return simpleFetch
