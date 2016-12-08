@@ -155,8 +155,8 @@ class Xenforo extends Site {
       }
       const $ = cheerio.load(html)
       let $message
-      if (id !== '') {
-        $message = $('li.message#' + id.slice(1))
+      if (id.length > 1) {
+        $message = $('li.message#' + id.slice(1).replace(/[)]$/, ''))
       } else {
         $message = $($('li.message')[0])
       }
