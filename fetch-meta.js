@@ -113,6 +113,7 @@ function main () {
       if (outFic.modified == null) outFic.modified = fic.modified
       if (outFic.description == null) outFic.description = fic.description
       if (outFic.tags == null) outFic.tags = fic.tags
+      if (outFic.cover == null) outFic.cover = fic.cover
       const toAdd = []
       // Walk from the newest to the oldest marking chapters to add.
       // Stop when we find one that already exists.
