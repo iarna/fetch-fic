@@ -333,9 +333,9 @@ description for new readers. This is included in the title page and metadata.
 
 ### cover
 
-Optional.  The name of an image file to embed as the cover of this work.  If
-this is included then a title page won't be generated. *TODO: I'd like this to
-support URLs as well.*
+Optional.  The URL of an image file to embed as the cover of this work. 
+(Alternatively, this can be a filename, but it'll be relative to where you
+run `fetch-fic`, which is not great.)
 
 ### chapterHeadings
 

@@ -214,6 +214,24 @@ function getFic (fetch, fic, maxConcurrency) {
       }).catch(err => console.error(`Error while fetching image ${src}: ${require('util').inspect(err)}`))
     })
   }).then(() => {
+    if (fic.cover) {
+      if (/:/.test(fic.cover)) {
+        fetch.tracker.addWork(1)
+        fetch.gauge.show('Fetching cover…')
+        return fetch(fic.cover).spread((meta, imageData) => {
+          return stream.queueChapter({
+            cover: true,
+            content: imageData
+          })
+        }).catch(err => console.error(`Error while fetching cover ${fic.cover}: ${require('util').inspect(err)}`))
+      } else {
+        return stream.queueChapter({
+          cover: true,
+          content: fs.createReadStream(fic.cover)
+        })
+      }
+    }
+  }).then(() => {
     return stream.queueChapter(null)
   }).catch(err => {
     console.error(`Error in get fic ${err.stack}`)

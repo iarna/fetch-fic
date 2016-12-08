@@ -24,9 +24,6 @@ function ficToEpub (meta) {
     numberTOC: meta.numberTOC
   })
 
-  if (meta.cover && !/:/.test(meta.cover)) {
-    epub.write(Streampub.newCoverImage(fs.createReadStream(meta.cover)))
-  }
   let titleContent = ''
   titleContent += html`
 <html xmlns:epub="http://www.idpf.org/2007/ops">
@@ -98,6 +95,10 @@ function transformChapter (meta) {
   return function (chapter, _, done) {
     if (chapter.image) {
       this.push(Streampub.newFile(chapter.filename, chapter.content))
+      return done()
+    }
+    if (chapter.cover) {
+      this.push(Streampub.newCoverImage(chapter.content))
       return done()
     }
     const index = chapter.order != null && (1 + chapter.order)
