@@ -19,9 +19,9 @@ const simpleFetch = require('./simple-fetch')
 const Bluebird = require('bluebird')
 const cheerio = require('cheerio')
 const url = require('url')
+const Gauge = require('gauge')
+const TrackerGroup = require('are-we-there-yet').TrackerGroup
 
-
-const fic = Fic.fromJSON(TOML.parse(fs.readFileSync(argv._[0])))
 
 const cookie = argv.xf_session
 const user = argv.xf_user
@@ -32,46 +32,63 @@ const fetchOpts = {
   cookieJar: cookieJar
 }
 const fetch = simpleFetch(fetchOpts)
-var linkP = url.parse(fic.updateFrom || fic.link)
-linkP.pathname = ''
-var link = url.format(linkP)
-if (cookie) cookieJar.setCookieSync('xf_session=' + cookie, link)
-if (user) cookieJar.setCookieSync('xf_user=' + user, link)
-const fics = (fic.chapters.length ? [fic] : []).concat(fic.fics)
-Bluebird.each(fics, fic => {
-  let words = 0
-  return Bluebird.each(fic.chapters, meta => {
-    process.stdout.write(`Updating chapter ${meta.order + 1}\n`)
-    return fic.getChapter(fetch, meta.link).then(chapter => {
-      const $content = cheerio.load(chapter.content)
-      $content('.bbCodeQuote').remove()
-      meta.words = wordcount($content.text().trim())
-      const author = meta.author || chapter.author || fic.author
-      const authorUrl = meta.authorUrl || chapter.authorUrl || fic.authorUrl
-      if (author !== fic.author) {
-        meta.author = author
-        meta.authorUrl = authorUrl
-      }
-      if (chapter.modified && (!meta.modified || chapter.modified > meta.modified)) {
-        meta.modified = chapter.modified
-        if (!fic.modified || meta.modified > fic.modified) {
-          fic.modified = meta.modified
+
+const gauge = new Gauge()
+const pulseInterval = setInterval(function () {
+  gauge.pulse()
+}, 50)
+const trackerGroup = new TrackerGroup()
+trackerGroup.on('change', (name, completed) => gauge.show({completed: completed}))
+
+Bluebird.each(argv._, filename => {
+  const fic = Fic.fromJSON(TOML.parse(fs.readFileSync(filename)))
+  const fics = (fic.chapters.length ? [fic] : []).concat(fic.fics)
+
+  var linkP = url.parse(fic.updateFrom || fic.link)
+  linkP.pathname = ''
+  var link = url.format(linkP)
+  if (cookie) cookieJar.setCookieSync('xf_session=' + cookie, link)
+  if (user) cookieJar.setCookieSync('xf_user=' + user, link)
+
+  return Bluebird.map(fics, fic => {
+    const ficTracker = trackerGroup.newItem(`${fic.title}`, fic.chapters.length)
+    let words = 0
+    return Bluebird.map(fic.chapters, meta => {
+      gauge.show(`${fic.title}: Chapter ${meta.order + 1}`)
+      return fic.getChapter(fetch, meta.link).then(chapter => {
+        gauge.show(`${fic.title}: Chapter ${meta.order + 1}`)
+        ficTracker.completeWork(1)
+        const $content = cheerio.load(chapter.content)
+        $content('.bbCodeQuote').remove()
+        meta.words = wordcount($content.text().trim())
+        const author = meta.author || chapter.author || fic.author
+        const authorUrl = meta.authorUrl || chapter.authorUrl || fic.authorUrl
+        if (author !== fic.author) {
+          meta.author = author
+          meta.authorUrl = authorUrl
         }
-      }
-      if (chapter.created && (!meta.created || chapter.created < meta.created)) {
-        meta.created = chapter.created
-        if (!fic.created || meta.created < fic.created) {
-          fic.created = meta.created
+        if (chapter.modified && (!meta.modified || chapter.modified > meta.modified)) {
+          meta.modified = chapter.modified
+          if (!fic.modified || meta.modified > fic.modified) {
+            fic.modified = meta.modified
+          }
         }
-        if (!fic.modified || meta.created > fic.modified) {
-          fic.modified = meta.created
+        if (chapter.created && (!meta.created || chapter.created < meta.created)) {
+          meta.created = chapter.created
+          if (!fic.created || meta.created < fic.created) {
+            fic.created = meta.created
+          }
+          if (!fic.modified || meta.created > fic.modified) {
+            fic.modified = meta.created
+          }
         }
-      }
+      })
+    }).then(() => {
+      fic.chapters.forEach(meta => words += meta.words)
+      fic.words = words
+      ficTracker.finish()
     })
   }).then(() => {
-    fic.chapters.forEach(meta => words += meta.words)
-    fic.words = words
+    fs.writeFileSync(filename, TOML.stringify(fic))
   })
-}).then(() => {
-  fs.writeFileSync(argv._[0], TOML.stringify(fic))
-})
+}).then(() => clearInterval(pulseInterval))
