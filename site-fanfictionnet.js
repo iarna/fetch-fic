@@ -49,6 +49,11 @@ class FanFictionNet extends Site {
       fic.modified = new Date(Number($($dates[0]).attr('data-xutime'))*1000)
       fic.publisher = this.publisherName
       fic.description = $meta.find('div.xcontrast_txt').text()
+      const img = $('#img_large img').attr('data-original')
+      if (img) {
+        fic.cover = url.resolve(chapter.base, img)
+      }
+
       const infoline = $meta.find('span.xgray').text()
       const infomatches = infoline.match(/Rated:\s+(.*)\s+-\s+(\S+)\s+-\s+(.*)\s+-\s+Chapters:\s+\d+\s+-\s+Words:\s+([\d,]+)\s+-\s+Reviews:\s+([,\d]+)\s+-\s+Favs:\s+([,\d]+)\s+-\s+Follows:\s+([,\d]+)/)
       if (infomatches) {
