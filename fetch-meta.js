@@ -20,7 +20,7 @@ const argv = require('yargs')
     type: 'string',
     describe: 'value of your xf_user variable'
   })
-  .option('cache', {
+  .option('scrape', {
     type: 'boolean',
     describe: 'scrape the index instead of using threadmarks'
   })
