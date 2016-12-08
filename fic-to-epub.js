@@ -26,9 +26,9 @@ function ficToEpub (meta) {
 
   if (meta.cover && !/:/.test(meta.cover)) {
     epub.write(Streampub.newCoverImage(fs.createReadStream(meta.cover)))
-  } else {
-    let titleContent = ''
-    titleContent += html`
+  }
+  let titleContent = ''
+  titleContent += html`
 <html xmlns:epub="http://www.idpf.org/2007/ops">
 <head>
 <title>${meta.title}</title>
@@ -51,28 +51,28 @@ function ficToEpub (meta) {
     content: ":";
   }
 </style></head><body epub:type="cover titlepage">`
-    titleContent += html`<section epub:type="title"><h1>${meta.title}</h1></section>`
-    if (meta.author) {
-      const author = meta.authorUrl ? html`<a href="${meta.authorUrl}">${meta.author}</a>` : meta.author
-      titleContent += `<h3>by <span epub:type="credits">${author}</span></h3>`
-    }
-    titleContent += html`<table>`
-    if (meta.link) {
-      const wrappableLink = meta.link.replace(/(.....)/g, '$1<wbr>')
-      titleContent += `<tr><th>Source</th><td><a href="${meta.link}">${wrappableLink}</a></td></tr>`
-    }
-    if (meta.created) titleContent += html`<tr><th>Published</th><td>${meta.created}</td></tr>`
-    if (meta.modified) titleContent += html`<tr><th>Updated</th><td>${meta.modified}</td></tr>`
-    if (meta.tags && meta.tags.length) {
-      titleContent += html`<tr><th>Tags</th><td><section epub:type="keywords"><em>${meta.tags.join(', ')}</em></section></td></tr>`
-    }
-    if (meta.words) titleContent += html`<tr><th>Words</th><td>${commaNumber(meta.words)}</td></tr>`
-    titleContent += `</table>`
-    if (meta.description) titleContent += `<section epub:type="abstract"><p>${meta.description}</p></section>`
-    titleContent += `</body>`
-    const titlePage = `${titleContent}`
-    epub.write(Streampub.newChapter('Title Page', titlePage, 0, 'top.xhtml'))
+  titleContent += html`<section epub:type="title"><h1>${meta.title}</h1></section>`
+  if (meta.author) {
+    const author = meta.authorUrl ? html`<a href="${meta.authorUrl}">${meta.author}</a>` : meta.author
+    titleContent += `<h3>by <span epub:type="credits">${author}</span></h3>`
   }
+  titleContent += html`<table>`
+  if (meta.link) {
+    const wrappableLink = meta.link.replace(/(.....)/g, '$1<wbr>')
+    titleContent += `<tr><th>Source</th><td><a href="${meta.link}">${wrappableLink}</a></td></tr>`
+  }
+  if (meta.created) titleContent += html`<tr><th>Published</th><td>${meta.created}</td></tr>`
+  if (meta.modified) titleContent += html`<tr><th>Updated</th><td>${meta.modified}</td></tr>`
+  if (meta.tags && meta.tags.length) {
+    titleContent += html`<tr><th>Tags</th><td><section epub:type="keywords"><em>${meta.tags.join(', ')}</em></section></td></tr>`
+  }
+  if (meta.words) titleContent += html`<tr><th>Words</th><td>${commaNumber(meta.words)}</td></tr>`
+  titleContent += `</table>`
+  if (meta.description) titleContent += `<section epub:type="abstract"><p>${meta.description}</p></section>`
+  titleContent += `</body>`
+  const titlePage = `${titleContent}`
+  epub.write(Streampub.newChapter('Title Page', titlePage, 0, 'top.xhtml'))
+
   if (meta.includeTOC) {
     const style = `
   h1, h3 { text-align: center; }
