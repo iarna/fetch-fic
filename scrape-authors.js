@@ -2,14 +2,35 @@
 const argv = require('yargs')
   .usage('Usage: $0 <fic> [--xf_session=<sessionid>] [--xf_user=<userid>]')
   .demand(1, '<fic> - A fic metadata file to fetch a fic for. Typically ends in .fic.toml')
-  .describe('xf_session', 'value of your xf_session variable')
-  .describe('xf_user', 'value of your xf_session variable')
-  .boolean('cache')
-  .default('cache', true)
-  .describe('cache', 'fetch from the network even if we have it cached')
-  .boolean('network')
-  .default('network', true)
-  .describe('network', 'allow network access; when false, cache-misses are errors')
+  .option('xf_session', {
+    type: 'string',
+    describe: 'value of your xf_session variable'
+  })
+  .option('xf_user', {
+    type: 'string',
+    describe: 'value of your xf_user variable'
+  })
+  .option('cache', {
+     type: 'boolean',
+     default: true,
+     describe: 'fetch from the network even if we have it cached'
+  })
+  .option('network', {
+    describe: 'allow network access; when false, cache-misses are errors',
+    type: 'boolean',
+    default: true
+   })
+  .option('concurrency', {
+     type: 'number',
+     default: 4,
+     describe: 'maximum number of chapters/images/etc to fetch at a time'
+   })
+  .option('requests-per-second', {
+    alias: 'rps',
+    type: 'number',
+    default: 1,
+    describe: 'maximum number of HTTP requests per second'
+  })
   .argv
 const TOML = require('@iarna/toml')
 const Fic = require('./fic')
@@ -22,14 +43,17 @@ const url = require('url')
 const Gauge = require('gauge')
 const TrackerGroup = require('are-we-there-yet').TrackerGroup
 
-
+const maxConcurrency = argv.concurrency
+const requestsPerSecond = argv['requests-per-second']
 const cookie = argv.xf_session
 const user = argv.xf_user
 const cookieJar = new simpleFetch.CookieJar()
 const fetchOpts = {
   cacheBreak: !argv.cache,
   noNetwork: !argv.network,
-  cookieJar: cookieJar
+  cookieJar,
+  maxConcurrency,
+  requestsPerSecond
 }
 const fetch = simpleFetch(fetchOpts)
 

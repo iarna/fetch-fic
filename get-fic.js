@@ -1,21 +1,21 @@
 'use strict'
 module.exports = getFic
-var Bluebird = require('bluebird')
-var Site = require('./site.js')
-var cheerio = require('cheerio')
-var chapterFilename = require('./chapter-filename.js')
-var Readable = require('readable-stream').Readable
-var inherits = require('util').inherits
-var FicStream = require('./fic-stream.js')
-var path = require('path')
-var url = require('url')
-var html = require('html-template-tag')
+const Bluebird = require('bluebird')
+const Site = require('./site.js')
+const cheerio = require('cheerio')
+const chapterFilename = require('./chapter-filename.js')
+const Readable = require('readable-stream').Readable
+const inherits = require('util').inherits
+const FicStream = require('./fic-stream.js')
+const path = require('path')
+const url = require('url')
+const html = require('html-template-tag')
 
 function concurrently (_todo, concurrency, forEach) {
-  var todo = Object.assign([], _todo)
-  var run = 0
-  var active = 0
-  var aborted = false
+  const todo = Object.assign([], _todo)
+  let run = 0
+  let active = 0
+  let aborted = false
   return new Bluebird((resolve, reject) => {
     function runNext () {
       if (aborted) return
@@ -37,48 +37,48 @@ function concurrently (_todo, concurrency, forEach) {
 }
 
 function rewriteLinks (fic, chapter, handleLink) {
-  var $ = cheerio.load(chapter.content)
+  const $ = cheerio.load(chapter.content)
   $('a').each((ii, a) => {
-    var $a = $(a)
-    var startAs = $a.attr('href')
+    const $a = $(a)
+    const startAs = $a.attr('href')
     if (!startAs) {
       $a.remove()
       return
     }
     if (startAs[0] === '#') return
-    var src = url.resolve(chapter.base, startAs)
-    var newHref = handleLink(fic.normalizeLink(src, chapter.base), $a)
+    const src = url.resolve(chapter.base, startAs)
+    const newHref = handleLink(fic.normalizeLink(src, chapter.base), $a)
     $a.attr('href', newHref || src)
   })
   chapter.content = $.html()
 }
 
 function rewriteIframes (fic, chapter) {
-  var $ = cheerio.load(chapter.content)
+  const $ = cheerio.load(chapter.content)
   $('iframe').each((ii, iframe) => {
-    var $iframe = $(iframe)
-    var src = url.resolve(chapter.base, $iframe.attr('src'))
+    const $iframe = $(iframe)
+    const src = url.resolve(chapter.base, $iframe.attr('src'))
     $iframe.replaceWith(`<a href="${src}">Video Link</a>`)
   })
   chapter.content = $.html()
 }
 
 function rewriteImages (fic, chapter, handleImage) {
-  var $ = cheerio.load(chapter.content)
+  const $ = cheerio.load(chapter.content)
   $('img').each((ii, img) => {
-    var $img = $(img)
-    var startAs = ($img.attr('src') || '').replace(/(https?:[/])([^/])/, '$1/$2')
+    const $img = $(img)
+    const startAs = ($img.attr('src') || '').replace(/(https?:[/])([^/])/, '$1/$2')
     if (!startAs) return
-    var src = url.resolve(chapter.base, startAs)
+    const src = url.resolve(chapter.base, startAs)
     if (!url.parse(src).hostname) return
-    var newsrc = handleImage(fic.normalizeLink(src, chapter.base), $img)
+    const newsrc = handleImage(fic.normalizeLink(src, chapter.base), $img)
     $img.attr('src', newsrc || src)
   })
   chapter.content = $.html()
 }
 
 function findChapter (href, fic) {
-  var matching = fic.chapters.filter(index => fic.normalizeLink(index.link) === fic.normalizeLink(href))
+  const matching = fic.chapters.filter(index => fic.normalizeLink(index.link) === fic.normalizeLink(href))
   return matching && matching[0]
 }
 
@@ -88,7 +88,7 @@ function inlineImages (images) {
     if (/Special:CentralAutoLogin/.test(src)) return // wikipedia
     src = src.replace(/^https:[/][/]api[.]imgble[.]com[/](.*)[/]\d+[/]\d+$/, '$1')
     if (!images[src]) {
-      var ext = src.match(/([.](?:jpe?g|gif|png))/i) || src.match(/([.]svg)/i)
+      const ext = src.match(/([.](?:jpe?g|gif|png))/i) || src.match(/([.]svg)/i)
       ext = ext && ext[1]
       if (ext === '.svg' && /wikia.nocookie.net/.test(src)) ext = '.png'
       if (ext === '.jpeg') ext = '.jpg'
@@ -108,7 +108,7 @@ function linklocalChapters (fic, externals) {
       return
     }
     if ($a.attr('external') === 'false') return
-    var linkedChapter = findChapter(href, fic)
+    const linkedChapter = findChapter(href, fic)
     if (linkedChapter) {
       return chapterFilename(linkedChapter)
     } else if (externals[href]) {
@@ -119,12 +119,12 @@ function linklocalChapters (fic, externals) {
   }
 }
 
-function getFic (fetch, fic, maxConcurrency) {
-  if (!maxConcurrency) maxConcurrency = 4
-  var stream = new FicStream({highWaterMark: maxConcurrency * 2})
-  var externals = {}
-  var images = {}
-  var chapters = fic.chapters
+function getFic (fetch, fic) {
+  const stream = new FicStream({highWaterMark: 8})
+  const externals = {}
+  const images = {}
+  const chapters = fic.chapters
+  const maxConcurrency = 40 // limit saves memory, not network, network is protected elsewhere
 
   fetch.gauge.show(`Fetching chapters (${chapters.length})…`)
   concurrently(chapters, maxConcurrency, (chapterInfo) => {
@@ -144,7 +144,7 @@ function getFic (fetch, fic, maxConcurrency) {
         return linklocalChapters(fic, externals)(href, $a, (href) => {
           if (!chapterInfo.externals || !fic.externals) return
           try {
-            var site = Site.fromUrl(href)
+            const site = Site.fromUrl(href)
           } catch (ex) {
             return
           }

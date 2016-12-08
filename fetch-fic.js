@@ -18,6 +18,12 @@ const url = require('url')
 const argv = require('yargs')
   .usage('Usage: $0 <fic> [--xf_session=<sessionid>] [--xf_user=<userid>]')
   .demand(1, '<fic> - A fic metadata file to fetch a fic for. Typically ends in .fic.toml')
+  .option('o', {
+    alias: 'output',
+    describe: 'Set output format',
+    default: 'epub',
+    choices: ['epub', 'bbcode']
+  })
   .option('xf_session', {
     type: 'string',
     describe: 'value of your xf_session variable'
@@ -41,11 +47,11 @@ const argv = require('yargs')
      default: 4,
      describe: 'maximum number of chapters/images/etc to fetch at a time'
    })
-  .option('o', {
-    alias: 'output',
-    describe: 'Set output format',
-    default: 'epub',
-    choices: ['epub', 'bbcode']
+  .option('requests-per-second', {
+    alias: 'rps',
+    type: 'number',
+    default: 1,
+    describe: 'maximum number of HTTP requests per second'
   })
   .argv
 
@@ -57,11 +63,14 @@ function main () {
   const cookie = argv.xf_session
   const user = argv.xf_user
   const maxConcurrency = argv.concurrency
+  const requestsPerSecond = argv['requests-per-second']
   const cookieJar = new simpleFetch.CookieJar()
   const fetchOpts = {
     cacheBreak: !argv.cache,
     noNetwork: !argv.network,
-    cookieJar: cookieJar
+    cookieJar,
+    maxConcurrency,
+    requestsPerSecond
   }
   const fetchWithCache = simpleFetch(fetchOpts)
   const gauge = new Gauge()
@@ -108,7 +117,7 @@ function main () {
       const link = url.format(linkP)
       if (cookie) cookieJar.setCookieSync('xf_session=' + cookie, link)
       if (user) cookieJar.setCookieSync('xf_user=' + user, link)
-      const ficStream = getFic(fetchWithOpts, fic, maxConcurrency)
+      const ficStream = getFic(fetchWithOpts, fic)
       if (output === 'epub') {
         const filename = filenameize(fic.title) + '.epub'
         return pipe(

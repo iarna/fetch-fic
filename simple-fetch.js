@@ -1,22 +1,24 @@
 'use strict'
-var cache = require('./cache.js')
-var Bluebird = require('bluebird')
-var promisify = require('./promisify')
-var fetch = require('node-fetch')
-fetch.Promise = Bluebird
-var util = require('util')
-var tough = require('tough-cookie')
-var CookieJar = tough.CookieJar
-var url = require('url')
+const cache = require('./cache.js')
+const Bluebird = require('bluebird')
+const promisify = require('./promisify')
+const callLimit = require('./call-limit')
+const rawFetch = require('node-fetch')
+rawFetch.Promise = Bluebird
+const util = require('util')
+const tough = require('tough-cookie')
+const CookieJar = tough.CookieJar
+const url = require('url')
 
-var cookieJar = new CookieJar();
+const cookieJar = new CookieJar();
 
 module.exports = function (_opts) {
+  const fetch = callLimit(rawFetch, _opts.maxConcurrency || 4, 1000 / (_opts.requestsPerSecond || 1))
   function simpleFetch (url, noCache) {
-    var opts = Object.assign({}, simpleFetch.options)
+    const opts = Object.assign({}, simpleFetch.options)
     if (!opts.cookieJar) opts.cookieJar = cookieJar
     if (noCache != null) opts.cacheBreak = noCache
-    return fetchWithCache(url, opts)
+    return fetchWithCache(fetch, url, opts)
   }
   simpleFetch.options = _opts || {}
   return simpleFetch
@@ -25,7 +27,7 @@ module.exports = function (_opts) {
 module.exports.CookieJar = CookieJar
 
 function NoNetwork (toFetch, opts) {
-  var err = new Error(`Not found in cache: ${toFetch} ${util.inspect(opts)}`)
+  const err = new Error(`Not found in cache: ${toFetch} ${util.inspect(opts)}`)
   err.code = 'NETWORKDISABLED'
   return err
 }
@@ -39,7 +41,7 @@ function getCookieStringP (jar, url) {
 }
 
 function setCookieP (jar, cookie, link) {
-  var linkP = url.parse(link)
+  const linkP = url.parse(link)
   linkP.pathname = ''
   return new Bluebird((resolve, reject) => {
     jar.setCookie(cookie, url.format(linkP), (err, cookie) => {
@@ -48,7 +50,7 @@ function setCookieP (jar, cookie, link) {
   })
 }
 
-function fetchWithCache (toFetch, opts) {
+function fetchWithCache (fetch, toFetch, opts) {
   return Bluebird.resolve(opts).then(function (opts) {
     if (opts.noCache || opts.cacheBreak) return cache.clearUrl(toFetch)
   }).then(function () {

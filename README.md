@@ -102,6 +102,8 @@ Usage: fetch-fic <fic(s)> [options] Options:
                                                        [boolean] [default: true]
   --concurrency  maximum number of chapters/images/etc to fetch at a time
                                                            [number] [default: 4]
+  --requests-per-second, --rps  maximum number of HTTP requests per second
+                                                           [number] [default: 1]
   -o, --output   Set output format [choices: "epub", "bbcode"] [default: "epub"]
 
 <fic(s)> - The `.fic.toml` file(s) you want to get epubs for.  You'll get
@@ -187,11 +189,21 @@ For `fetch-fic`, disable the use of the cache when fetching chapter data.
 Error if anything tries to access the network (on a cache-miss).  Note that
 `--no-cache` and `--no-network` used together are guaranteed to error out.
 
+## --requests-per-second=#
+
+The maximum number of network requests that will be made per second.  This
+defaults to `1` which seems to avoid everyone's flood protection, but if you
+know you're fetching from a site that allows it, increasing this can make fic
+downloading a lot faster.
+
 ### --concurrency=#
 
 Set the maximum number of simultanteous network requests we'll do at a time.
-This defaults to 4, which while conservative, pretty much guarantees you
-won't hit any site's "bot please stop beating on us" limits.
+This is limited in conjunction with `requests-per-second` and so only comes
+into play when a site is unable to respond in `1/requests-per-second`
+seconds, eg, if you set `requests-per-second` to `5`, then concurrency would
+only happen when the site took great than 200ms to reply.  This limits how
+many outstanding requests to a slow site are allowed.
 
 ## WHAT FIC FILES LOOK LIKE
 

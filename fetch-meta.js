@@ -12,18 +12,43 @@ const argv = require('yargs')
   .usage('Usage: $0 [options] <url> [<fic>]')
   .demand(1, '<url> - The URL of the thread you want to epubize')
 //  .describe('<fic> - Optionally, a fic.toml file to update from a previous run')
-  .describe('xf_session', 'value of your xf_session variable')
-  .describe('xf_user', 'value of your xf_session variable')
-  .boolean('scrape')
-  .describe('scrape', 'scrape the index instead of using threadmarks')
-  .boolean('and-scrape')
-  .describe('and-scrape', 'pull chapters from BOTH the index AND the threadmarks')
-  .boolean('cache')
-  .default('cache', false)
-  .describe('cache', 'use the cache for metadata loookups')
-  .boolean('network')
-  .default('network', true)
-  .describe('network', 'allow network access; when false, cache-misses are errors')
+  .option('xf_session', {
+    type: 'string',
+    describe: 'value of your xf_session variable'
+  })
+  .option('xf_user', {
+    type: 'string',
+    describe: 'value of your xf_user variable'
+  })
+  .option('cache', {
+    type: 'boolean',
+    describe: 'scrape the index instead of using threadmarks'
+  })
+  .option('and-scrape', {
+    type: 'boolean',
+    describe: 'pull chapters from BOTH the index AND the threadmarks'
+  })
+  .option('cache', {
+     type: 'boolean',
+     default: false,
+     describe: 'fetch from the network even if we have it cached'
+  })
+  .option('network', {
+    describe: 'allow network access; when false, cache-misses are errors',
+    type: 'boolean',
+    default: true
+   })
+  .option('concurrency', {
+     type: 'number',
+     default: 4,
+     describe: 'maximum number of chapters/images/etc to fetch at a time'
+   })
+  .option('requests-per-second', {
+    alias: 'rps',
+    type: 'number',
+    default: 1,
+    describe: 'maximum number of HTTP requests per second'
+  })
   .argv
 
 main()
@@ -35,6 +60,8 @@ function main () {
   const user = argv.xf_user
   const fromThreadmarks = !argv.scrape
   const fromScrape = argv.scrape || argv['and-scrape']
+  const maxConcurrency = argv.concurrency
+  const requestsPerSecond = argv['requests-per-second']
   const cookieJar = new simpleFetch.CookieJar()
   const linkP = url.parse(toFetch)
   linkP.pathname = ''
@@ -44,7 +71,9 @@ function main () {
   const fetchOpts = {
     cacheBreak: !argv.cache,
     noNetwork: !argv.network,
-    cookieJar: cookieJar
+    cookieJar,
+    maxConcurrency,
+    requestsPerSecond
   }
   const fetchWithOpts = simpleFetch(fetchOpts)
   let existingFic
