@@ -35,36 +35,34 @@ function transformChapter (fic, dirname, ready) {
 }
 
 function writeIndex (fic, dirname) {
-  const indexHTML = Promise.resolve(fic.description && HTMLToBBCode(fic.description)).then(ficDescription => {
-    let index = `[center][b][size=7]${fic.title}[/size][/b][/center]\n\n`
-    if (fic.cover) index += `[img]${fic.cover}[/img]\n`
-    if (ficDescription) index += `${ficDescription}\n\n`
-    if (fic.created) index += `First Published: ${fic.created}\n`
-    if (fic.modified) index += `Last Updated: ${fic.modified}\n`
-    if (fic.tags && fic.tags.length) index += `Tags: [i]${fic.tags.join(', ')}[/i]\n`
-    if (fic.words) index += `Words: ${commaNumber(fic.words)}\n`
-    index += '\n[list]\n'
-    for (let chapter of fic.chapters) {
-      index += `[*] [url=${chapter.link}]${chapter.name}[/url]`
-      const author = chapter.author || fic.author
-      const authorUrl = chapter.authorUrl || fic.authorUrl
-      if (author !== fic.author) {
-        const authorBB = authorUrl
-          ? `[url=${authorUrl}]${author}[/url]`
-          : author
-        index += ` (${authorBB})`
-      }
-      if (chapter.description) {
-        index += ' – ' + chapter.description
-      }
-      if (chapter.words) {
-        index += ` (${chapter.words} words)`
-      }
-      index += `\n`
+  let index = `<html><head><title>${fic.title}</title></head><body>`
+  index += `<h1 style="text-align: center">${fic.title}</h1>\n`
+  if (fic.cover) index += `<img src="${fic.cover}">\n`
+  if (fic.description) index += `<div>${fic.description}</div>\n\n`
+  if (fic.created) index += `First Published: ${fic.created}<br>\n`
+  if (fic.modified) index += `Last Updated: ${fic.modified}<br>\n`
+  if (fic.tags && fic.tags.length) index += `Tags: <em>${fic.tags.join(', ')}</em><br>\n`
+  if (fic.words) index += `Words: ${commaNumber(fic.words)}<br>\n`
+  index += '\n<ol>\n'
+  for (let chapter of fic.chapters) {
+    index += `<li><a href="${chapter.link}">${chapter.name}</a>`
+    const author = chapter.author || fic.author
+    const authorUrl = chapter.authorUrl || fic.authorUrl
+    if (author !== fic.author) {
+      const authorBB = authorUrl
+        ? `<a href="${authorUrl}">${author}</a>`
+        : author
+      index += ` (${authorBB})`
     }
-    index += '[/list]\n'
-    return index
-  })
+    if (chapter.description) {
+      index += ' – ' + chapter.description
+    }
+    if (chapter.words) {
+      index += ` (${chapter.words} words)`
+    }
+    index += `</li>\n`
+  }
+  index += '</ol></body></html>\n'
 
-  return writeFile(path.join(dirname, 'index.bbcode'), indexHTML)
+  return writeFile(path.join(dirname, 'index.bbcode'), HTMLToBBCode(index))
 }
