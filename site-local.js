@@ -7,7 +7,7 @@ const fs = require('fs')
 const uuid = require('uuid')
 const promisify = require('./promisify')
 const readdir = promisify(fs.readdir)
-const unrtf = promisify(require('unrtf'))
+const rtfToHTML = require('./rtf-to-html.js')
 const readFile = promisify(fs.readFile)
 
 class Local extends Site {
@@ -36,6 +36,7 @@ class Local extends Site {
 
   recursedir (fic, dir) {
     return readdir(dir).then(files => {
+      files.sort()
       const todo = []
       for (let file of files) {
         const filename = path.join(dir, file)
@@ -57,10 +58,10 @@ class Local extends Site {
   }
 
   getChapter (fetch, chapter) {
-    return unrtf(readFile(chapter, 'utf8')).then(result => {
+    return rtfToHTML(readFile(chapter, 'ascii')).then(result => {
       return {
         'finalUrl': chapter,
-        'content': result.html
+        'content': result
       }
     })
   }
