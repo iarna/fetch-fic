@@ -234,7 +234,7 @@ class Parser {
   addText (text) {
     if (!this.accumulatingContent) return
 
-    const matchEmoji = new RegExp(Object.keys(this.emojiMap).join('|'))
+    const matchEmoji = new RegExp(Object.keys(this.emojiMap).join('|'), 'g')
     this.lineBuffer += text.replace(matchEmoji, match => this.emojiMap[match])
   }
 
