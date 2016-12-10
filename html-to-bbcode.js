@@ -363,13 +363,15 @@ class Parser {
       }
     })
     parser.on('text', text => this.addText(text))
-    parser.end(html)
 
-    return new Bluebird( (resolve, reject) => {
-      parser.on('error', reject)
-      parser.on('finish', () => {
-        this.endLine()
-        resolve(this.output.join('\n').replace(/\n+$/, '') + '\n')
+    return Promise.resolve(html).then(html => {
+      return new Bluebird( (resolve, reject) => {
+        parser.on('error', reject)
+        parser.on('finish', () => {
+          this.endLine()
+          resolve(this.output.join('\n').replace(/\n+$/, '') + '\n')
+        })
+        parser.end(html)
       })
     })
   }
