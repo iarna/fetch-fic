@@ -45,6 +45,7 @@
   },
   "files": [
     "cache.js",
+    "call-limit.js",
     "chapter-filename.js",
     "clear.js",
     "fetch-fic.js",
