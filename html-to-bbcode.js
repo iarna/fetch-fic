@@ -67,9 +67,9 @@ class Parser {
       sub: this.inline('[sub]', '[/sub]'),
       sup: this.inline('[sup]', '[/sup]'),
       p: this.paragraph(),
-      ul: this.inline('[list]','[/list]'),
-      ol: this.inline('[list=1]', '[/list]'),
-      li: this.inline('[*]', null, false),
+      ul: this.block('[list]','[/list]'),
+      ol: this.block('[list=1]', '[/list]'),
+      li: this.block('[*]', null, false),
       blockquote: this.inline('[indent]', '[/indent]'),
       $ignore: {
         start: nothing,
