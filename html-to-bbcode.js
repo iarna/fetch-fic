@@ -265,11 +265,11 @@ class Parser {
               closeWith = style(tag, decl.property, decl.value) + closeWith
               if (/^xenforo-/.test(decl.property)) break
             } else {
-              throw new Error('UNKNOWN CSS', decl, tag, attrs)
+              throw new Error(`UNKNOWN CSS: ${require('util').inspect(decl)} ${tag} ${require('util').inspect(attrs)}`)
             }
           }
         } catch (ex) {
-          throw new Error('INVALID CSS value=' + attr.value + ', ' +ex.stack)
+          throw new Error('INVALID CSS value=' + attr.value + ', '  + ex.stack)
         }
       } else if (attr.name === 'id' || attr.name === 'epub:type') {
         // ignore
