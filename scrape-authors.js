@@ -79,7 +79,7 @@ Bluebird.each(argv._, filename => {
     let words = 0
     return Bluebird.map(fic.chapters, meta => {
       gauge.show(`${fic.title}: Chapter ${meta.order + 1}`)
-      return fic.getChapter(fetch, meta.link).then(chapter => {
+      return fic.getChapter(fetch, meta.fetchFrom || meta.link).then(chapter => {
         gauge.show(`${fic.title}: Chapter ${meta.order + 1}`)
         ficTracker.completeWork(1)
         const $content = cheerio.load(chapter.content)
