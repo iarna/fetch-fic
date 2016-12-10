@@ -10,17 +10,16 @@ const limit = module.exports = (func, maxRunning, minTimeMS) => {
     const grouping = args[0]
     if (!state[grouping]) state[grouping] = {running: 0, queue: [], lastCall: null}
     const self = this
-    if (state[grouping].running >= maxRunning || tillNext(grouping) >= 0) {
-      if (!state[grouping].running && !state[grouping].queue.length) setTimeout(callNext(grouping),tillNext(grouping))
+    if (state[grouping].running >= maxRunning || tillNext(grouping) > 0) {
+      if (!state[grouping].queue.length) setTimeout(callNext(grouping),tillNext(grouping))
       return new Bluebird(resolve => { 
         state[grouping].queue.push({resolve, self, args})
       })
     }
-    ++ state[grouping].running
     return callFunc(this, args)
   }
   function tillNext (grouping) {
-    return state[grouping].lastCall ? minTimeMS - (Date.now() - state[grouping].lastCall) : minTimeMS
+    return Math.floor(state[grouping].lastCall ? minTimeMS - (Date.now() - state[grouping].lastCall) : 0)
   }
   function callNext (grouping) {
     return function () {
@@ -32,13 +31,14 @@ const limit = module.exports = (func, maxRunning, minTimeMS) => {
   }
   function callFunc (self, args) {
     const grouping = args.shift()
+    ++ state[grouping].running
     state[grouping].lastCall = Date.now()
     return func.apply(self, args).finally(() => {
       -- state[grouping].running
-      if (tillNext(grouping) >= 0) {
+      if (tillNext(grouping) > 0) {
         setTimeout(callNext(grouping), tillNext(grouping))
       } else {
-        callNext()
+        callNext(grouping)()
       }
     })
   }
