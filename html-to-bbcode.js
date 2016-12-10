@@ -146,6 +146,14 @@ class Parser {
         this.addText(`[size=${xen}]`)
         return '[/size]'
       },
+      'font-weight': (tag, name, value) => {
+        if (value === 'bold' || value === 'bolder' || value >= 700) {
+          this.addText(`[b]`)
+          return '[/b]'
+        } else {
+          return ''
+        }
+      },
       'font-family': (tag, name, value) => {
         this.addText(`[font=${value}]`)
         return '[/font]'
