@@ -7,6 +7,7 @@ const TOML = require('@iarna/toml')
 const getFic = require('./get-fic.js')
 const ficToEpub = require('./fic-to-epub.js')
 const ficToBbcode = require('./fic-to-bbcode.js')
+const ficToHtml = require('./fic-to-html.js')
 const Gauge = require('gauge')
 const TrackerGroup = require('are-we-there-yet').TrackerGroup
 const spinWith = require('./spin-with.js')
@@ -22,7 +23,7 @@ const argv = require('yargs')
     alias: 'output',
     describe: 'Set output format',
     default: 'epub',
-    choices: ['epub', 'bbcode']
+    choices: ['epub', 'bbcode', 'html']
   })
   .option('xf_session', {
     type: 'string',
@@ -132,6 +133,13 @@ function main () {
       } else if (output === 'bbcode') {
         const filename = filenameize(fic.title)
         return pipe(ficStream, ficToBbcode(fic, filename)).tap(() => {
+          gauge.hide()
+          process.stdout.write(`${filename}\n`)
+          gauge.show()
+        })
+      } else if (output === 'html') {
+        const filename = filenameize(fic.title)
+        return pipe(ficStream, ficToHtml(fic, filename)).tap(() => {
           gauge.hide()
           process.stdout.write(`${filename}\n`)
           gauge.show()

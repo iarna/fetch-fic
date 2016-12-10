@@ -54,6 +54,7 @@
     "fic-stream.js",
     "fic-to-bbcode.js",
     "fic-to-epub.js",
+    "fic-to-html.js",
     "filenameize.js",
     "get-fic.js",
     "html-to-bbcode.js",
