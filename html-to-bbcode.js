@@ -142,7 +142,7 @@ class Parser {
         } else if (unit === 'em') {
           px *= 13.3
         }
-        const xen = (px - 6) / 2.8571
+        const xen = Math.floor((px - 6) / 2.8571)
         this.addText(`[size=${xen}]`)
         return '[/size]'
       },
