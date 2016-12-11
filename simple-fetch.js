@@ -57,7 +57,7 @@ function setCookieP (jar, cookie, link) {
 
 function fetchWithCache (fetch, toFetch, opts) {
   return Bluebird.resolve(opts).then(opts => {
-    if (opts.noCache || opts.cacheBreak) return cache.clearUrl(toFetch)
+    if (opts.cacheBreak) return cache.clearUrl(toFetch)
   }).then(() => {
     return cache.readUrl(toFetch, toFetch => {
       if (opts.noNetwork) throw NoNetwork(toFetch, opts)
