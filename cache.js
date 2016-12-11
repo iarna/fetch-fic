@@ -24,6 +24,7 @@ exports.readFile = readFile
 exports.clearFile = clearFile
 exports.readUrl = readUrl
 exports.clearUrl = clearUrl
+exports.invalidateUrl = invalidateUrl
 
 function resolveCall () {
   return Bluebird.all(arguments).then(args => {
@@ -71,6 +72,10 @@ function readJSON (filename, onMiss) {
   }
 }
 
+function writeJSON (filename, content) {
+  return writeFile(filename, JSON.stringify(content, null, 2))
+}
+
 function readGzipFile (filename, onMiss) {
   return readFile(filename, gzipOnMiss).then(buf => zlibGunzip(buf))
 
@@ -113,25 +118,50 @@ function readUrl (fetchUrl, onMiss) {
     startUrl: fetchUrl,
     finalUrl: null
   }
-  return inFlight(fetchUrl, thenReadContent)
+  let existingMeta = {}
+  return inFlight(fetchUrl, thenReadExistingMetadata)
+
+  function thenReadExistingMetadata () {
+    return readJSON(metafile, () => existingMeta).then(meta => {
+      existingMeta = meta
+      // corrupt JSON, clear entry and start again
+      if (!existingMeta.finalUrl) {
+        existingMeta = {}
+        return clearUrl(fetchUrl).then(thenReadContent)
+      } else {
+        return thenReadContent()
+      }
+    })
+  }
 
   function thenReadContent () {
-    return readGzipFile(content, orFetchUrl).catch(err => {
-      if (err.code !== 'Z_DATA_ERROR') throw err
-      return clearUrl(fetchUrl).then(() => {
-        return readGzipFile(content, orFetchUrl)
+    let result
+    if (existingMeta && existingMeta.invalid) {
+      result = orFetchUrl()
+    } else {
+      result = readGzipFile(content, orFetchUrl).catch(err => {
+        // corrupted gzips we retry, anything else explode
+        if (err.code !== 'Z_DATA_ERROR') throw err
+        return clearUrl(fetchUrl).then(() => {
+          return readGzipFile(content, orFetchUrl)
+        })
       })
-    }).then(thenReadMetadata)
+    }
+    return result.then(thenReadMetadata)
   }
 
   function orFetchUrl () {
-    return resolveCall(onMiss, fetchUrl).then(res => {
+    return resolveCall(onMiss, fetchUrl, existingMeta).then(res => {
       meta.finalUrl   = res.url || meta.startUrl
       meta.status     = res.status
       meta.statusText = res.statusText
       meta.headers    = res.headers.raw()
       meta.fetchedAt  = fetchedAt
-      if (meta.status && meta.status !== 200) {
+      if (existingMeta && existingMeta.invalid && meta.status && meta.status === 304) {
+        delete existingMeta.invalid
+        return thenReadContent()
+      }
+      else if (meta.status && meta.status !== 200) {
         const non200 = new Error('Got status: ' + meta.status + ' ' + meta.statusText + ' for ' + fetchUrl)
         non200.meta = meta
         return Bluebird.reject(non200)
@@ -141,7 +171,7 @@ function readUrl (fetchUrl, onMiss) {
   }
 
   function thenReadMetadata (result) {
-    return readJSON(metafile, () => meta).then(meta => {
+    return Bluebird.all([metafile, readJSON(metafile, () => meta)]).spread((metafile, meta) => {
       meta.fromCache = meta.fetchedAt !== fetchedAt ? metafile : null
       if (meta.startURL) {
         meta.startUrl = meta.startURL
@@ -152,7 +182,7 @@ function readUrl (fetchUrl, onMiss) {
         delete meta.finalURL
       }
       if (!meta.finalUrl) meta.finalUrl = meta.startUrl
-      return linkUrl(meta).thenReturn([meta, result])
+      return [meta, result]
     })
   }
 }
@@ -164,40 +194,17 @@ function ignoreHarmlessErrors (p) {
   })
 }
 
-function linkUrl (meta) {
-  if (meta.startUrl === meta.finalUrl) return Bluebird.resolve()
-  const startm = cacheFilename(cacheUrlMetaName(meta.startUrl))
-  const startc = cacheFilename(cacheUrlContentName(meta.startUrl))
-  const finalm = cacheFilename(cacheUrlMetaName(meta.finalUrl))
-  const finalc = cacheFilename(cacheUrlContentName(meta.finalUrl))
-  return Bluebird.all([
-    pathDirname(finalm),
-    ignoreHarmlessErrors(fsReadlink(finalm)),
-    ignoreHarmlessErrors(fsReadlink(finalc)),
-    startm,
-    startc
-  ]).spread((fd, fm, fc, sm, sc) => {
-    const rfm = fm && path.resolve(fd, fm)
-    const rfc = fc && path.resolve(fd, fc)
-    if (sm === rfm && sc === rfc) return Bluebird.resolve()
-    return Bluebird.all([
-      ignoreHarmlessErrors(fsUnlink(finalm)),
-      ignoreHarmlessErrors(fsUnlink(finalc)),
-      mkdirp(pathDirname(finalm))
-    ]).then(() => {
-      return Bluebird.all([
-//        fsSymlink(pathRelative(pathDirname(finalm), startm), finalm),
-//        fsSymlink(pathRelative(pathDirname(finalc), startc), finalc)
-      ]).catch((er) => {
-        if (er.code === 'EEXIST') return
-        throw er
-      })
-    })
-  })
-}
-
 function clearUrl (fetchUrl) {
   const metafile = cacheUrlMetaName(fetchUrl)
   const content = cacheUrlContentName(fetchUrl)
   return Bluebird.all([clearFile(metafile), clearFile(content)])
+}
+
+function invalidateUrl (fetchUrl) {
+  const metafile = cacheUrlMetaName(fetchUrl)
+  return readJSON(metafile, () => null).then(meta => {
+    if (meta == null) return clearUrl(fetchUrl)
+    meta.invalid = true
+    return writeJSON(metafile, meta)
+  })
 }

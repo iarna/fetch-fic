@@ -57,14 +57,17 @@ function setCookieP (jar, cookie, link) {
 
 function fetchWithCache (fetch, toFetch, opts) {
   return Bluebird.resolve(opts).then(opts => {
-    if (opts.cacheBreak) return cache.clearUrl(toFetch)
+    if (opts.cacheBreak) return cache.invalidateUrl(toFetch)
   }).then(() => {
-    return cache.readUrl(toFetch, toFetch => {
+    return cache.readUrl(toFetch, (toFetch, meta) => {
       if (opts.noNetwork) throw NoNetwork(toFetch, opts)
       return getCookieStringP(opts.cookieJar, toFetch).then(cookies => {
         if (!opts.headers) opts.headers = {}
         opts.headers.Cookie = cookies
         const domain = url.parse(toFetch).hostname.replace(/^forums?[.]/, '')
+        if (meta.headers && meta.headers['last-modified']) {
+          opts.headers['If-Modified-Since'] = meta.headers['last-modified']
+        }
         return fetch(domain, toFetch, opts)
       })
     })
