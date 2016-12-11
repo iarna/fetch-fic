@@ -56,10 +56,10 @@ function setCookieP (jar, cookie, link) {
 }
 
 function fetchWithCache (fetch, toFetch, opts) {
-  return Bluebird.resolve(opts).then(function (opts) {
+  return Bluebird.resolve(opts).then(opts => {
     if (opts.noCache || opts.cacheBreak) return cache.clearUrl(toFetch)
-  }).then(function () {
-    return cache.readUrl(toFetch, function (toFetch) {
+  }).then(() => {
+    return cache.readUrl(toFetch, toFetch => {
       if (opts.noNetwork) throw NoNetwork(toFetch, opts)
       return getCookieStringP(opts.cookieJar, toFetch).then(cookies => {
         if (!opts.headers) opts.headers = {}
@@ -68,7 +68,7 @@ function fetchWithCache (fetch, toFetch, opts) {
         return fetch(domain, toFetch, opts)
       })
     })
-  }).spread(function (meta, content) {
+  }).spread((meta, content) => {
     if (meta.headers && meta.headers['set-cookie']) {
       const setCookies = meta.headers['set-cookie'].map(rawCookie => setCookieP(opts.cookieJar, rawCookie, meta.finalUrl || toFetch))
       return Bluebird.all(setCookies).thenReturn([meta, content])
