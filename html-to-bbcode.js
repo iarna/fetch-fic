@@ -133,16 +133,18 @@ class Parser {
         return '[/indent]'
       },
       'font-size': (tag, name, value) => {
-        const size = value.match(/^(\d+)(em|px|pt)?$/)
+        const size = value.match(/^(\d*(?:[.]\d+)?)(em|px|pt)?$/)
         if (!size) return ''
         let px = size[1]
         const unit = size[2] || 'px'
         if (unit == 'pt') {
-          px *= 72
+          px *= 1.33333
         } else if (unit === 'em') {
-          px *= 13.3
+          px *= 13.33333
         }
-        const xen = Math.floor((px - 6) / 2.8571)
+        let xen = Math.round((px - 5) / 2.8571)
+        if (xen > 7) xen = 7
+        if (xen === 3) return
         this.addText(`[size=${xen}]`)
         return '[/size]'
       },
