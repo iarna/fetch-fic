@@ -63,11 +63,6 @@ function main () {
   const maxConcurrency = argv.concurrency
   const requestsPerSecond = argv['requests-per-second']
   const cookieJar = new simpleFetch.CookieJar()
-  const linkP = url.parse(toFetch)
-  linkP.pathname = ''
-  const link = url.format(linkP)
-  if (cookie) cookieJar.setCookieSync('xf_session=' + cookie, link)
-  if (user) cookieJar.setCookieSync('xf_user=' + user, link)
   const fetchOpts = {
     cacheBreak: !argv.cache,
     noNetwork: !argv.network,
@@ -91,6 +86,11 @@ function main () {
       toFetch = existingFic.updateFrom || existingFic.link
     }
   }
+  const linkP = url.parse(toFetch)
+  linkP.pathname = ''
+  const link = url.format(linkP)
+  if (cookie) cookieJar.setCookieSync('xf_session=' + cookie, link)
+  if (user) cookieJar.setCookieSync('xf_user=' + user, link)
   let ficReady
   if (fromThreadmarks && fromScrape) {
     ficReady = Fic.fromUrlAndScrape(fetchWithOpts, toFetch)
