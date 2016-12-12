@@ -106,6 +106,11 @@ Bluebird.each(argv._, filename => {
             fic.modified = meta.created
           }
         }
+      }).catch(err => {
+        gauge.hide()
+        console.error(err.stack)
+        gauge.show()
+        ficTracker.completeWork(1)
       })
     }).then(() => {
       fic.chapters.forEach(meta => words += meta.words)
