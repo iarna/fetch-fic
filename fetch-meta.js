@@ -58,8 +58,6 @@ function main () {
   let filename = argv._[1]
   const cookie = argv.xf_session
   const user = argv.xf_user
-  const fromThreadmarks = !argv.scrape
-  const fromScrape = argv.scrape || argv['and-scrape']
   const maxConcurrency = argv.concurrency
   const requestsPerSecond = argv['requests-per-second']
   const cookieJar = new simpleFetch.CookieJar()
@@ -91,6 +89,9 @@ function main () {
   const link = url.format(linkP)
   if (cookie) cookieJar.setCookieSync('xf_session=' + cookie, link)
   if (user) cookieJar.setCookieSync('xf_user=' + user, link)
+  const ficSourced = existingFic && (existingFic.fetchMeta != null || existingFic.scrapeMeta != null)
+  const fromThreadmarks = ficSourced ? existingFic.fetchMeta : !argv.scrape
+  const fromScrape = ficSourced ? existingFic.scrapeMeta : (argv.scrape || argv['and-scrape'])
   let ficReady
   if (fromThreadmarks && fromScrape) {
     ficReady = Fic.fromUrlAndScrape(fetchWithOpts, toFetch)

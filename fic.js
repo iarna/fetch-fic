@@ -25,6 +25,8 @@ class Fic {
     this.site = null
     this.includeTOC = null
     this.numberTOC = null
+    this.fetchMeta = null
+    this.scrapeMeta = null
   }
 
   chapterExists (link) {
@@ -57,6 +59,7 @@ class Fic {
     for (let prop of qw`
          id link title author authorUrl created modified description tags
          publisher cover chapterHeadings words updateFrom includeTOC numberTOC
+         fetchMeta scrapeMeta
        `) {
       this[prop] = raw[prop]
     }
@@ -81,7 +84,10 @@ class Fic {
     function thenMaybeFallback () {
       // no chapters in the threadmarks, fallback to fetching
       if (fic.chapters.length === 0) {
+        fic.scrapeMeta = true
         return fic.site.scrapeFicMetadata(fetch, fic)
+      } else {
+        fic.fetchMeta = true
       }
     }
   }
@@ -90,6 +96,8 @@ class Fic {
     const fic = new this(fetch)
     fic.site = Site.fromUrl(link)
     fic.link = fic.site.link
+    fic.fetchMeta = true
+    fic.scrapeMeta = true
     return fic.site.getFicMetadata(fetch, fic).then(() => {
       return fic.site.scrapeFicMetadata(fetch, fic).thenReturn(fic)
     })
@@ -99,6 +107,7 @@ class Fic {
     const fic = new this()
     fic.site = Site.fromUrl(link)
     fic.link = fic.site.link
+    fic.scrapeMeta = true
     return fic.site.scrapeFicMetadata(fetch, fic).thenReturn(fic)
   }
 
@@ -111,7 +120,7 @@ class Fic {
     const result = {}
     for (let prop of qw`
          id title link updateFrom author authorUrl created modified publisher cover
-         description tags words fics chapters chapterHeadings includeTOC numberTOC
+         description tags words fics chapters chapterHeadings includeTOC numberTOC fetchMeta scrapeMeta
        `) {
       if (this[prop] != null && (!Array.isArray(this[prop]) || this[prop].length)) result[prop] = this[prop]
     }
