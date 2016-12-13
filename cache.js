@@ -26,6 +26,8 @@ exports.readUrl = readUrl
 exports.clearUrl = clearUrl
 exports.invalidateUrl = invalidateUrl
 
+const invalidated = {}
+
 function resolveCall () {
   return Bluebird.all(arguments).then(args => {
     const fn = args.shift()
@@ -136,7 +138,8 @@ function readUrl (fetchUrl, onMiss) {
 
   function thenReadContent () {
     let result
-    if (existingMeta && existingMeta.invalid) {
+    if (invalidated[fetchUrl]) {
+      delete invalidated[fetchUrl]
       result = orFetchUrl()
     } else {
       result = readGzipFile(content, orFetchUrl).catch(err => {
@@ -157,8 +160,7 @@ function readUrl (fetchUrl, onMiss) {
       meta.statusText = res.statusText
       meta.headers    = res.headers.raw()
       meta.fetchedAt  = fetchedAt
-      if (existingMeta && existingMeta.invalid && meta.status && meta.status === 304) {
-        delete existingMeta.invalid
+      if (meta.status && meta.status === 304) {
         return thenReadContent()
       }
       else if (meta.status && meta.status !== 200) {
@@ -201,10 +203,5 @@ function clearUrl (fetchUrl) {
 }
 
 function invalidateUrl (fetchUrl) {
-  const metafile = cacheUrlMetaName(fetchUrl)
-  return readJSON(metafile, () => null).then(meta => {
-    if (meta == null) return clearUrl(fetchUrl)
-    meta.invalid = true
-    return writeJSON(metafile, meta)
-  })
+  return Promise.resolve(fetchUrl).then(fetchUrl => invalidated[fetchUrl] = true)
 }
