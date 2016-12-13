@@ -49,6 +49,11 @@ const argv = require('yargs')
     default: 1,
     describe: 'maximum number of HTTP requests per second'
   })
+  .option('add-all', {
+    type: 'boolean',
+    default: false,
+    describe: 'if true, merge ALL missing chapters in instead of just NEW ones'
+  })
   .argv
 
 main()
@@ -58,6 +63,7 @@ function main () {
   let filename = argv._[1]
   const cookie = argv.xf_session
   const user = argv.xf_user
+  const addAll = argv['add-all']
   const maxConcurrency = argv.concurrency
   const requestsPerSecond = argv['requests-per-second']
   const cookieJar = new simpleFetch.CookieJar()
@@ -121,7 +127,9 @@ function main () {
       // This saves us from readding middle chapters that were previously pruned.
       for (let ii = fic.chapters.length - 1; ii>=0; --ii) {
         const newChapter = fic.chapters[ii]
-        if (outFic.chapterExists(newChapter.link) || outFic.chapterExists(newChapter.fetchFrom)) break
+        if (outFic.chapterExists(newChapter.link) || outFic.chapterExists(newChapter.fetchFrom)) {
+          if (addAll) { continue } else { break }
+        }
         toAdd.unshift(newChapter)
       }
       // Find any chapters with created dates and update them if need be.
