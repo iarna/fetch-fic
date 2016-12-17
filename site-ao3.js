@@ -38,6 +38,7 @@ class ArchiveOfOurOwn extends Site {
     fic.link = this.link
     fic.publisher = this.publisherName
     fic.includeTOC = true
+    fic.chapterHeadings = true
     return fetch(this.chapterIndex()).spread((meta, html) => {
       const $ = cheerio.load(html)
       const base = $('base').attr('href') || this.chapterIndex()
