@@ -1,16 +1,17 @@
 'use strict'
-module.exports = ficToBbcode
+module.exports = ficToHTML
 const fs = require('fs')
 const promisify = require('./promisify')
 const mkdirp = promisify(require('mkdirp'))
 const writeFile = promisify(fs.writeFile)
 const commaNumber = require('comma-number')
+const XHTMLToArchive = require('./xhtml-to-archive')
 const sanitizeHtml = require('sanitize-html')
 const filenameize = require('./filenameize.js')
 const path = require('path')
 const Transform = require('readable-stream').Transform
 
-function ficToBbcode (fic, filename) {
+function ficToHTML (fic, filename) {
   const ready = mkdirp(filename).then(() => writeIndex(fic, filename))
   return new Transform({objectMode: true, transform: transformChapter(fic, filename, ready)})
 }
@@ -27,7 +28,7 @@ function transformChapter (fic, dirname, ready) {
       const filename = path.join(dirname, chapterFilename(chapter))
       if (chapter.image) return writeFile(filename, chapter.content)
       const index = chapter.order != null && (1 + chapter.order)
-      const content = sanitizeHtml(chapter.content, fic.site.sanitizeHtmlConfig())
+      const content = XHTMLToArchive(sanitizeHtml(chapter.content, fic.site.sanitizeHtmlConfig()))
       return writeFile(filename, content)
     }).catch(done).then(() => done())
   }
