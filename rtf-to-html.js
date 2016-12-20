@@ -2,7 +2,7 @@
 const iconv = require('iconv-lite')
 const Transform = require('stream').Transform
 const pump = require('pump')
-const parse5 = require('parse5')
+const normalizeHtml = require('./normalize-html.js')
 const concat = require('concat-stream')
 const Bluebird = require('bluebird')
 
@@ -288,7 +288,7 @@ module.exports = function (rtf) {
         new toHTML(),
         concat(data => {
           const emptyInlineTags = /<(em|strong|span)[^>]*>(\s*)<[/]\1>/g
-          const html = parse5.serialize(parse5.parse(data)).replace(emptyInlineTags, '$2')
+          const html = normalizeHtml(data).replace(emptyInlineTags, '$2')
           resolve(html)
         }),
         err => err && reject(err))

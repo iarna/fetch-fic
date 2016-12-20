@@ -4,6 +4,8 @@ const Bluebird = require('bluebird')
 const parse5 = require('parse5')
 const util = require('util')
 const parseCSS = require('css-parse')
+const html = require('./html-template-tag.js')
+const qw = require('qw')
 
 function HTMLToBBCode (html) {
   return new Parser().parse(html)
@@ -19,33 +21,6 @@ class Parser {
     this.accumulatingContent = true
 
     this.tags = {
-      b: this.inline('<strong>', '</strong>'),
-      i: this.inline('<i>', '</i>'),
-      u: this.inline('<u>', '</u>'),
-      s: this.inline('<s>', '</s>'),
-      dl: this.block(),
-      dt: this.block('<b><u>', '</u></b>'),
-      dd: this.block('<blockquote>', '</blockquote>'),
-      h1: this.paragraph('<h1>', '</h1>'),
-      h2: this.paragraph('<h2>', '</h2>'),
-      h3: this.paragraph('<h3>', '</h3>'),
-      h4: this.paragraph('<h4>', '</h4>'),
-      h5: this.paragraph('<h5>', '</h5>'),
-      h6: this.paragraph('<h6>', '</h6>'),
-      center: this.inline('<center>', '</center>'),
-      hr: this.block('<hr>', null, false),
-      table: this.inline('<table>', '</table>'),
-      tr: this.inline('<tr>', '</tr>'),
-      td: this.inline('<td>', '</td>'),
-      th: this.inline('<th>', '</th>'),
-      img: {
-        start: (tag, attrs) => {
-          const src = attrs.filter(attr => attr.name === 'src')
-          this.addText(`<img src="${src[0].value}">`)
-        },
-        end: () => {
-        }
-      },
       a: {
         start: (tag, attrs) => {
           const href = attrs.filter(attr => attr.name === 'href')
@@ -55,21 +30,88 @@ class Parser {
           this.addText('</a>')
         }
       },
-      span: this.inline(),
-      div: this.block('<div>', '</div>'),
-      pre: this.block('<pre>', '</pre>'),
-      aside: this.block(),
+      abbr: this.passthrough(qw`title`),
+      acronym: this.passthrough(qw`title`),
+      address: this.passthroughBlock(),
+      article: this.block('<div>', '</div>'),
+      aside: this.block('<div>', '</div>'),
+      b: this.inline('<strong>', '</strong>'),
+      big: this.passthrough(),
+      blockquote: this.passthroughBlock(),
+      // body: ignore
       br: {
-        start: () => this.endLine(),
-        end: nothing
+        start: (tag, attrs) => {
+          this.addText('<br>')
+          this.endLine()
+        },
+        end: () => {}
       },
-      sub: this.inline('<sub>', '</sub>'),
-      sup: this.inline('<sup>', '</sup>'),
+      caption: this.passthroughBlock(qw`align`),
+      center: this.block('<p style="text-align: center;">', '</p>'),
+      cite: this.passthrough(),
+      code: this.passthrough(),
+      col: this.passthrough(qw`align width`),
+      colgroup: this.passthrough(qw`align width`),
+      dd: this.passthrough(),
+      del: this.passthrough(),
+      dfn: this.passthrough(qw`title`),
+      div: this.passthroughBlock(),
+      dl: this.passthroughBlock(),
+      dt: this.passthrough(),
+      em: this.passthrough(),
+      figcaption: this.block(),
+      figure: this.block('<div>', '</div>'),
+      footer: this.block('<div>', '</div>'),
+      h1: this.passthroughBlock(),
+      h2: this.passthroughBlock(),
+      h3: this.passthroughBlock(),
+      h4: this.passthroughBlock(),
+      h5: this.passthroughBlock(),
+      h6: this.passthroughBlock(),
+      // head: ignore
+      header: this.block('<div>', '</div>'),
+      hgroup: this.block('<div>', '</div>'),
+      hr: this.passthroughBlock(qw`align width`),
+      // html: ignore
+      i: this.passthrough(),
+      img: this.passthrough(qw`align alt height name src width`),
+      ins: this.passthrough(),
+      kbd: this.passthrough(),
+      li: this.passthroughBlock(),
+      // link: supress
+      menu: this.block('<ul>', '</ul>'),
+      ol: this.passthroughBlock(),
+      output: this.inline(),
       p: this.paragraph(),
-      ul: this.block('<ul>','</ul>'),
-      ol: this.block('<ol>', '</ol>'),
-      li: this.block('<li>', '</li>'),
-      blockquote: this.inline('<blockquote>', '</blockquote>'),
+      pre: this.passthroughBlock(qw`width`),
+      q: this.passthrough(),
+      // ruby: ignore
+      // rp: ignore
+      // rt: ignore
+      s: this.passthrough(),
+      samp: this.passthrough(),
+      section: this.block('<div>', '</div>'),
+      small: this.passthrough(),
+      // source: supress (used w/ video)
+      span: this.inline(),
+      strike: this.passthrough(),
+      strong: this.passthrough(),
+      // style: suppress (BUT DON'T DO THIS FOREVER)
+      sub: this.passthrough(),
+      sup: this.passthrough(),
+      table: this.passthroughBlock(qw`align width`),
+      tbody: this.passthroughBlock(qw`align`),
+      td: this.passthrough(qw`align width`),
+      tfoot: this.passthroughBlock(qw`align`),
+      th: this.passthrough(qw`align width`),
+      thead: this.passthroughBlock(qw`align`),
+      time: this.inline(),
+      // title: suppress
+      tr: this.passthroughBlock(qw`align`),
+      u: this.passthrough(),
+      ul: this.passthroughBlock(),
+      var: this.passthrough(),
+      
       $ignore: {
         start: nothing,
         end: nothing
@@ -79,16 +121,19 @@ class Parser {
         end: () => this.resumeText()
       }
     }
-    this.tags.strong = this.tags.b
-    this.tags.em = this.tags.i
-    this.tags.strike = this.tags.s
-    this.tags.title = this.tags.$suppress
-    this.tags.script = this.tags.$suppress
-    this.tags.html = this.tags.$ignore
-    this.tags.head = this.tags.$ignore
     this.tags.body = this.tags.$ignore
-    this.tags.header = this.tags.$ignore
-    this.tags.tbody = this.tags.$ignore
+    this.tags.head = this.tags.$ignore
+    this.tags.hgroup = this.tags.$ignore
+    this.tags.html = this.tags.$ignore
+    this.tags.link = this.tags.$suppress
+    this.tags.ruby = this.tags.$ignore
+    this.tags.rp = this.tags.$ignore
+    this.tags.rt = this.tags.$ignore
+    this.tags.script = this.tags.$suppress
+    this.tags.source = this.tags.$suppress
+    this.tags.style = this.tags.$suppress
+    this.tags.time = this.tags.$ignore
+    this.tags.title = this.tags.$suppress
     this.tags.wbr = this.tags.$ignore
 
     this.styles = {
@@ -126,6 +171,10 @@ class Parser {
         return '</blockquote>'
       },
       'padding-left': () => {
+        this.addText('<blockquote>')
+        return '</blockquote>'
+      },
+      'margin-left': () => {
         this.addText('<blockquote>')
         return '</blockquote>'
       },
@@ -176,8 +225,8 @@ class Parser {
       'text-align': (tag, name, value) => {
         switch (value) {
           case 'center':
-            this.addText('<center>')
-            return '</center>'
+            this.addText('<p style="text-align: center;">')
+            return '</p>'
             break
           case 'right':
           case 'left':
@@ -189,8 +238,8 @@ class Parser {
     }
 
     this.textDecorationsMap = {
-      'underline': ['<u>', '</u>'],
-      'line-through': ['<s>', '</s>'],
+      'underline': qw`<u> </u>`,
+      'line-through': qw`<s> </s>`,
     }
   }
 
@@ -235,11 +284,11 @@ class Parser {
               closeWith = style(tag, decl.property, decl.value) + closeWith
               if (/^xenforo-/.test(decl.property)) break
             } else {
-              throw new Error(`UNKNOWN CSS: ${require('util').inspect(decl)} ${tag} ${require('util').inspect(attrs)}`)
+              console.log(`UNKNOWN CSS: ${require('util').inspect(decl)} ${tag} ${require('util').inspect(attrs)}`)
             }
           }
         } catch (ex) {
-          throw new Error('INVALID CSS value=' + attr.value + ', '  + ex.stack)
+          console.log('INVALID CSS value=' + attr.value + ', '  + ex.stack)
         }
       } else if (attr.name === 'id' || attr.name === 'epub:type') {
         // ignore
@@ -266,6 +315,45 @@ class Parser {
           const closeWith = this.tagBuffer[tag].pop()
           if (closeWith) this.addText(closeWith)
         }
+      }
+    }
+  }
+
+  passthrough (validAttrs, noStyle) {
+    if (!validAttrs) validAttrs = []
+    return {
+      start: (tag, attrs) => {
+        if (!noStyle) this.handleStyle(tag, attrs)
+        const attrStr = validAttrs.filter(n=>attrs[n]).map(n=>html`"${n}"="${attrs[n]}"`).join(' ')
+        this.addText(`<${tag}${attrStr ? ' ' + attrStr : ''}>`)
+      },
+      end: (tag) => {
+        this.addText(`</${tag}>`)
+        if (!noStyle) {
+          const closeWith = this.tagBuffer[tag].pop()
+          if (closeWith) this.addText(closeWith)
+        }
+      }
+    }
+  }
+
+  passthroughBlock (validAttrs, noStyle) {
+    if (!validAttrs) validAttrs = []
+    return {
+      start: (tag, attrs) => {
+        if (this.currentLine().length) this.endLine()
+
+        if (!noStyle) this.handleStyle(tag, attrs)
+        const attrStr = validAttrs.filter(n=>attrs[n]).map(n=>html`"${n}"="${attrs[n]}"`).join(' ')
+        this.addText(`<${tag}${attrStr ? ' ' + attrStr : ''}>`)
+      },
+      end: (tag) => {
+        this.addText(`</${tag}>`)
+        if (!noStyle) {
+          const closeWith = this.tagBuffer[tag].pop()
+          if (closeWith) this.addText(closeWith)
+        }
+        if (this.currentLine().length) this.endLine()
       }
     }
   }

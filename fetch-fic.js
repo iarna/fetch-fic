@@ -5,9 +5,7 @@ const simpleFetch = require('./simple-fetch')
 const fs = require('fs')
 const TOML = require('@iarna/toml')
 const getFic = require('./get-fic.js')
-const ficToEpub = require('./fic-to-epub.js')
-const ficToBbcode = require('./fic-to-bbcode.js')
-const ficToHtml = require('./fic-to-html.js')
+const Output = require('./output.js')
 const Gauge = require('gauge')
 const TrackerGroup = require('are-we-there-yet').TrackerGroup
 const spinWith = require('./spin-with.js')
@@ -23,7 +21,7 @@ const argv = require('yargs')
     alias: 'output',
     describe: 'Set output format',
     default: 'epub',
-    choices: ['epub', 'bbcode', 'html']
+    choices: Output.formats
   })
   .option('xf_session', {
     type: 'string',
@@ -57,7 +55,9 @@ const argv = require('yargs')
   .argv
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
-main()
+main().catch(err => {
+  console.error('TOP LEVEL ERROR', err.stack || err.message)
+})
 
 function main () {
   const output = argv.output
@@ -80,9 +80,7 @@ function main () {
   const trackers = argv._.map(() => trackerGroup.newItem(1))
   const spin = spinWith(gauge)
 
-  return Bluebird.each(argv._, fetchTopFic).catch(err => {
-    console.error('TOP LEVEL ERROR', err.stack || err.message)
-  })
+  return Bluebird.each(argv._, fetchTopFic)
 
   function fetchTopFic (ficFile, ficNum) {
     const topFic = Fic.fromJSON(TOML.parse(fs.readFileSync(ficFile, 'utf8')))
@@ -119,32 +117,11 @@ function main () {
       if (cookie) cookieJar.setCookieSync('xf_session=' + cookie, link)
       if (user) cookieJar.setCookieSync('xf_user=' + user, link)
       const ficStream = getFic(fetchWithOpts, fic)
-      if (output === 'epub') {
-        const filename = filenameize(fic.title) + '.epub'
-        return pipe(
-          ficStream,
-          ficToEpub(fic),
-          fs.createWriteStream(filename)
-        ).tap(() => {
-          gauge.hide()
-          process.stdout.write(`${filename}\n`)
-          gauge.show()
-        })
-      } else if (output === 'bbcode') {
-        const filename = filenameize(fic.title)
-        return pipe(ficStream, ficToBbcode(fic, filename)).tap(() => {
-          gauge.hide()
-          process.stdout.write(`${filename}\n`)
-          gauge.show()
-        })
-      } else if (output === 'html') {
-        const filename = filenameize(fic.title)
-        return pipe(ficStream, ficToHtml(fic, filename)).tap(() => {
-          gauge.hide()
-          process.stdout.write(`${filename}\n`)
-          gauge.show()
-        })
-      }
+      return Output.as(output).from(ficStream).write().then(filename => {
+        gauge.hide()
+        process.stdout.write(`${filename}\n`)
+        gauge.show()
+      })
     }
   }
 }

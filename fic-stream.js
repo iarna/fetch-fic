@@ -3,7 +3,7 @@ const Bluebird = require('bluebird')
 const Readable = require('readable-stream').Readable
 
 class FicStream extends Readable {
-  constructor (options) {
+  constructor (fic, options) {
     if (!options) options = {}
     options.objectMode = true
     if (!options.highWaterMark) options.highWaterMark = 4
@@ -13,6 +13,18 @@ class FicStream extends Readable {
       chapterBuffer: [],
       readyP: null,
       readyR: null
+    }
+    // ficstreams are also fics
+    for (let pp in fic) {
+      if (this[pp] != null) continue
+      if (typeof fic[pp] === 'function') {
+        const method = fic[pp]
+        this[pp] = function () { return method.apply(fic, arguments) }
+      } else {
+        Object.defineProperty(this, pp, {
+          get: () => fic[pp]
+        })
+      }
     }
   }
   queueChapter (chapter) {

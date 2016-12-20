@@ -9,7 +9,7 @@ const inherits = require('util').inherits
 const FicStream = require('./fic-stream.js')
 const path = require('path')
 const url = require('url')
-const html = require('html-template-tag')
+const html = require('./html-template-tag.js')
 
 function concurrently (_todo, concurrency, forEach) {
   const todo = Object.assign([], _todo)
@@ -120,7 +120,7 @@ function linklocalChapters (fic, externals) {
 }
 
 function getFic (fetch, fic) {
-  const stream = new FicStream({highWaterMark: 8})
+  const stream = new FicStream(fic, {highWaterMark: 8})
   const externals = {}
   const images = {}
   const chapters = fic.chapters
@@ -137,7 +137,8 @@ function getFic (fetch, fic) {
         const byline = !chapterInfo.author ? ''
           : (' by ' + (!chapterInfo.authorUrl ? chapterInfo.author
             : html`<a href="${chapterInfo.authorUrl}">${chapterInfo.author}</a>`))
-        chapter.content = `<header><h2>${headerName}${byline}</h2></header>` + chapter.content
+        const headerLine = `<header><h2>${headerName}${byline}</h2></header>`
+        chapter.content = headerLine + chapter.content
       }
       rewriteImages(fic, chapter, inlineImages(images))
       rewriteLinks(fic, chapter, (href, $a) => {
