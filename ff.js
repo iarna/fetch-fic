@@ -5,6 +5,12 @@ const yargs = require('yargs')
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
 
+let command
+
+function setCommand (cmd) {
+  return () => command = cmd
+}
+
 function networkOptions (yargs, cacheDefault) {
   return yargs.option('xf_user', {
     type: 'string',
@@ -51,7 +57,7 @@ const argv = yargs
       .demand(1, '<url> - The URL to fetch chapters for')
       networkOptions(yargs, false)
     },
-    handler: ffRead
+    handler: setCommand('./ff-read.js')
   })
   .command({
     command: 'update <fic...>',
@@ -73,7 +79,7 @@ const argv = yargs
       .demand(1, '<fic> - A fic metadata file to fetch a fic for. Typically ends in .fic.toml')
       networkOptions(yargs, false)
     },
-    handler: ffUpdate
+    handler: setCommand('./ff-update.js')
   })
   .command({
     command: 'gen <fic...>',
@@ -89,7 +95,7 @@ const argv = yargs
       networkOptions(yargs, true)
       yargs.demand(1, '<fic> - A fic metadata file to fetch a fic for. Typically ends in .fic.toml')
     },
-    handler: ffWrite
+    handler: setCommand('./ff-write.js')
   })
   .command({
     command: 'cache-clear <url>',
@@ -97,7 +103,7 @@ const argv = yargs
     builder: yargs => {
       yargs.demand(1, '<url> - A URL to remove from the cache.')
     },
-    handler: ffCacheClear
+    handler: setCommand('./ff-cache-clear.js')
   })
   .option('debug', {
     type: 'boolean',
@@ -109,29 +115,9 @@ const argv = yargs
   .help()
   .argv
 
-function globalArgs (args) {
-  if (args.debug) process.env.BLUEBIRD_DEBUG = '1'
-}
+if (argv.debug) process.env.BLUEBIRD_DEBUG = '1'
 
-function ffRead (args) {
-  globalArgs(args)
-  require('./ff-read.js')(args).catch(errorHandler)
-}
-
-function ffUpdate (args) {
-  globalArgs(args)
-  require('./ff-update.js')(args).catch(errorHandler)
-}
-
-function ffWrite (args) {
-  globalArgs(args)
-  require('./ff-write.js')(args).catch(errorHandler)
-}
-
-function ffCacheClear (args) {
-  globalArgs(args)
-  require('./ff-cache-clear.js')(args).catch(errorHandler)
-}
+require(command)(argv).catch(errorHandler).then(exitCodeHandler)
 
 function errorHandler (err) {
   if (argv.debug) {
@@ -143,4 +129,8 @@ function errorHandler (err) {
     console.log('An error occured: ' + err.message)
   }
   process.exit(1)
+}
+
+function exitCodeHandler (exitCode) {
+ if (typeof exitCode === 'number') process.exit(exitCode)
 }
