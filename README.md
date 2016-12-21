@@ -508,8 +508,10 @@ A chapter within a subfic. These have exactly the same properties as `[[chapters
 Stuff I'd like to see (user visible):
 
 * A web UI
-* Make the rtf handler more complete
-* Better stylesheet handling in output
+* Provide some examples of a publishing workflow, 'cause it's quite nice at
+  that.
+* Make the rtf handler more complete.
+* Better stylesheet handling in output.
 * More external site support:
   * Don't want to support every fic site ever, but…
   * More image sources for externing would be useful.
