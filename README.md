@@ -222,14 +222,14 @@ For `ff generate`, disable the use of the cache when fetching chapter data.
 Error if anything tries to access the network (on a cache-miss).  Note that
 `--no-cache` and `--no-network` used together are guaranteed to error out.
 
-## --requests-per-second=#
+### --requests-per-second=num
 
 The maximum number of network requests that will be made per second.  This
 defaults to `1` which seems to avoid everyone's flood protection, but if you
 know you're fetching from a site that allows it, increasing this can make fic
 downloading a lot faster.
 
-### --concurrency=#
+### --concurrency=num
 
 Set the maximum number of simultanteous network requests we'll do at a time.
 This is limited in conjunction with `requests-per-second` and so only comes
