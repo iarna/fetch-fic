@@ -23,14 +23,15 @@ function read (args) {
 }
 
 function update (args) {
+  let anyUpdates = false
   return track((gauge, group) => Bluebird.each(args.fic, fic => {
     return readFile(fic).then(toml => {
       return Fic.fromJSON(TOML.parse(toml))
     }).then(existingFic => {
       const updateFrom = existingFic.updateFrom || existingFic.link
       return main(args, updateFrom, gauge, group, existingFic, fic)
-    })
-  }))
+    }).then(thisUpdated => { if (thisUpdated) anyUpdates = true })
+  })).then(() => anyUpdates ? 1 : 0)
 }
 
 function track (cb) {
@@ -181,14 +182,14 @@ function main (args, toFetch, gauge, trackerGroup, existingFic, filename) {
     } else {
       outFic = fic
     }
-    if (changed || !changes.length && args.fic) return null
+    if (!changed && !changes.length || !args.fic) return null
     if (!filename) filename = filenameize(outFic.title) + '.fic.toml'
     return writeFile(filename, TOML.stringify(outFic)).then(() => {
       gauge.hide()
       process.stdout.write(filename + '\n')
       if (changes.length) process.stdout.write('    ' + changes.join('\n    ') + '\n')
       gauge.show()
-      return null
+      return true
     })
   })
 }
