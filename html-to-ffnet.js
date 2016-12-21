@@ -111,7 +111,7 @@ class Parser {
       u: this.passthrough(),
       ul: this.passthroughBlock(),
       var: this.passthrough(),
-      
+
       $ignore: {
         start: nothing,
         end: nothing
@@ -183,7 +183,7 @@ class Parser {
         if (!size) return ''
         let px = size[1]
         const unit = size[2] || 'px'
-        if (unit == 'pt') {
+        if (unit === 'pt') {
           px *= 1.33333
         } else if (unit === 'em') {
           px *= 13.33333
@@ -212,12 +212,10 @@ class Parser {
             if (tag === 'sup') return ''
             this.addText('<sup>')
             return '</sup>'
-            break
           case 'sub':
             if (tag === 'sub') return ''
             this.addText('<sub>')
             return '</sub>'
-            break
           default:
             return ''
         }
@@ -227,7 +225,6 @@ class Parser {
           case 'center':
             this.addText('<p style="text-align: center;">')
             return '</p>'
-            break
           case 'right':
           case 'left':
             break
@@ -239,7 +236,7 @@ class Parser {
 
     this.textDecorationsMap = {
       'underline': qw`<u> </u>`,
-      'line-through': qw`<s> </s>`,
+      'line-through': qw`<s> </s>`
     }
   }
 
@@ -271,7 +268,6 @@ class Parser {
   }
 
   handleStyle (tag, attrs) {
-  //span, attrs: [ { name: 'style', value: 'text-decoration: line-through' } ]
     let foundUnknown = false
     let closeWith = ''
     for (let attr of attrs) {
@@ -288,7 +284,7 @@ class Parser {
             }
           }
         } catch (ex) {
-          console.log('INVALID CSS value=' + attr.value + ', '  + ex.stack)
+          console.log('INVALID CSS value=' + attr.value + ', ' + ex.stack)
         }
       } else if (attr.name === 'id' || attr.name === 'epub:type') {
         // ignore
@@ -324,7 +320,7 @@ class Parser {
     return {
       start: (tag, attrs) => {
         if (!noStyle) this.handleStyle(tag, attrs)
-        const attrStr = validAttrs.filter(n=>attrs[n]).map(n=>html`"${n}"="${attrs[n]}"`).join(' ')
+        const attrStr = validAttrs.filter(n => attrs[n]).map(n => html`"${n}"="${attrs[n]}"`).join(' ')
         this.addText(`<${tag}${attrStr ? ' ' + attrStr : ''}>`)
       },
       end: (tag) => {
@@ -344,7 +340,7 @@ class Parser {
         if (this.currentLine().length) this.endLine()
 
         if (!noStyle) this.handleStyle(tag, attrs)
-        const attrStr = validAttrs.filter(n=>attrs[n]).map(n=>html`"${n}"="${attrs[n]}"`).join(' ')
+        const attrStr = validAttrs.filter(n => attrs[n]).map(n => html`"${n}"="${attrs[n]}"`).join(' ')
         this.addText(`<${tag}${attrStr ? ' ' + attrStr : ''}>`)
       },
       end: (tag) => {
@@ -425,7 +421,7 @@ class Parser {
     parser.on('text', text => this.addText(text))
 
     return Promise.resolve(html).then(html => {
-      return new Bluebird( (resolve, reject) => {
+      return new Bluebird((resolve, reject) => {
         parser.on('error', reject)
         parser.on('finish', () => {
           this.endLine()

@@ -45,8 +45,8 @@ class FanFictionNet extends Site {
       fic.link = this.normalizeLink(chapter.finalUrl)
       fic.author = chapter.author
       fic.authorUrl = chapter.authorUrl
-      fic.created = new Date(Number($($dates[1]).attr('data-xutime'))*1000)
-      fic.modified = new Date(Number($($dates[0]).attr('data-xutime'))*1000)
+      fic.created = new Date(Number($($dates[1]).attr('data-xutime')) * 1000)
+      fic.modified = new Date(Number($($dates[0]).attr('data-xutime')) * 1000)
       fic.publisher = this.publisherName
       fic.description = $meta.find('div.xcontrast_txt').text()
       const img = $('#img_large img').attr('data-original')
@@ -59,11 +59,8 @@ class FanFictionNet extends Site {
       if (infomatches) {
         const rated = infomatches[1]
         fic.language = infomatches[2]
-        fic.tags =  infomatches[3].split(/, /).concat(['rated:' + rated])
+        fic.tags = infomatches[3].split(/, /).concat(['rated:' + rated])
         fic.words = infomatches[4]
-        const reviews = infomatches[5]
-        const favs = infomatches[6]
-        const follows = infomatches[7]
       } else {
         console.error('NOMATCH:', infoline)
       }
@@ -93,7 +90,7 @@ class FanFictionNet extends Site {
       const links = $('a.xcontrast_txt')
       let authorName
       let authorUrl
-      links.each(function(ii, vv) {
+      links.each(function (ii, vv) {
         const href = $(vv).attr('href')
         if (/^[/]u[/]\d+[/]/.test(href)) {
           authorName = $(vv).text()
@@ -113,4 +110,5 @@ class FanFictionNet extends Site {
     })
   }
 }
+
 module.exports = FanFictionNet

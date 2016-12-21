@@ -6,7 +6,7 @@ const promisify = require('./promisify')
 const mkdirp = promisify(require('mkdirp'))
 const writeFile = promisify(fs.writeFile)
 const rename = promisify(fs.rename)
-const commaNumber = require('comma-number')
+const Bluebird = require('bluebird')
 const HTMLToFFNet = require('./html-to-ffnet.js')
 const filenameize = require('./filenameize.js')
 const path = require('path')
@@ -34,7 +34,7 @@ class OutputFFNet extends Output {
       if (chapter.content instanceof stream.Stream) {
         const tmpname = path.join(this.outname, 'cover-tmp')
         return new Bluebird((resolve, reject) => {
-          data.content.pipe(identifyStream(info => {
+          chapter.content.pipe(identifyStream(info => {
             const ext = info.extensions.length ? '.' + info.extensions[0] : ''
             this.coverName = 'cover' + ext
           })).pipe(fs.createWriteStream(tmpname)).on('error', reject).on('finish', () => {
@@ -48,7 +48,6 @@ class OutputFFNet extends Output {
         return writeFile(path.join(this.outname, this.coverName), chapter.content)
       }
     } else {
-      const index = chapter.order != null && (1 + chapter.order)
       const content = HTMLToFFNet(this.sanitizeHtml(chapter.content))
       return writeFile(filename, content)
     }
@@ -57,7 +56,6 @@ class OutputFFNet extends Output {
   writeIndex () {
     return writeFile(path.join(this.outname, 'index.html'), HTMLToFFNet(this.tableOfContentsHTML()))
   }
-
 
   htmlStyle () {
     return ''
@@ -91,6 +89,6 @@ module.exports = OutputFFNet
 
 function chapterFilename (chapter) {
   const index = 1 + chapter.order
-  const name = chapter.name || "Chapter " + index
+  const name = chapter.name || 'Chapter ' + index
   return chapter.filename && chapter.filename.replace('xhtml', 'html') || filenameize('chapter-' + name) + '.html'
 }

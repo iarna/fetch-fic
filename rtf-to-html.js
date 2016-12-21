@@ -9,9 +9,9 @@ const Bluebird = require('bluebird')
 class ParseRTF extends Transform {
   constructor () {
     super({objectMode: true})
-    this.charset = 'ascii' //'windows-1252'
-    this.char
-    this.path =  []
+    this.charset = 'ascii' // 'windows-1252'
+    this.char = null
+    this.path = []
     this.ctx = null
     this.buffer = ''
     this.cmd = ''
@@ -70,7 +70,7 @@ class ParseRTF extends Transform {
   }
   parserHexCharArgs (char) {
     this.arg += char
-    if (this.arg.length == 2) {
+    if (this.arg.length === 2) {
       this.buffer += iconv.decode(new Buffer(this.arg, 'hex'), this.charset)
       this.parserState = this.parserGeneral
     }
@@ -113,7 +113,7 @@ class ParseRTF extends Transform {
 
   endStr () {
     if (this.buffer === '') return
-    (this.ctx||this).push({command: 'text', args: [this.buffer]})
+    (this.ctx || this).push({command: 'text', args: [this.buffer]})
     this.buffer = ''
   }
 }
@@ -229,7 +229,7 @@ const htmlExpression = {
   }
 }
 
-class toHTML extends Transform {
+class ToHTML extends Transform {
   constructor () {
     super({objectMode: true})
     this.inPara = null
@@ -242,11 +242,11 @@ class toHTML extends Transform {
   }
   styleStr () {
     let style = []
-    if (this.style.size != this.defaultStyle.size) {
+    if (this.style.size !== this.defaultStyle.size) {
       const em = this.style.size / this.defaultStyle.size
       style.push(`font-size: ${em}em;`)
     }
-    if (this.style.align != this.defaultStyle.align) {
+    if (this.style.align !== this.defaultStyle.align) {
       style.push(`text-align: ${this.style.align};`)
     }
     if (!style.length) return ''
@@ -285,7 +285,7 @@ module.exports = function (rtf) {
     return new Bluebird((resolve, reject) => {
       pump(
         parser,
-        new toHTML(),
+        new ToHTML(),
         concat(data => {
           const emptyInlineTags = /<(em|strong|span)[^>]*>(\s*)<[/]\1>/g
           const html = normalizeHtml(data).replace(emptyInlineTags, '$2')

@@ -6,7 +6,7 @@ const promisify = require('./promisify')
 const mkdirp = promisify(require('mkdirp'))
 const writeFile = promisify(fs.writeFile)
 const rename = promisify(fs.rename)
-const commaNumber = require('comma-number')
+const Bluebird = require('bluebird')
 const filenameize = require('./filenameize.js')
 const path = require('path')
 const pump = promisify(require('pump'))
@@ -34,7 +34,7 @@ class OutputHTML extends Output {
       if (chapter.content instanceof stream.Stream) {
         const tmpname = path.join(this.outname, 'cover-tmp')
         return new Bluebird((resolve, reject) => {
-          data.content.pipe(identifyStream(info => {
+          chapter.content.pipe(identifyStream(info => {
             const ext = info.extensions.length ? '.' + info.extensions[0] : ''
             this.coverName = 'cover' + ext
           })).pipe(fs.createWriteStream(tmpname)).on('error', reject).on('finish', () => {
@@ -48,7 +48,6 @@ class OutputHTML extends Output {
         return writeFile(path.join(this.outname, this.coverName), chapter.content)
       }
     } else {
-      const index = chapter.order != null && (1 + chapter.order)
       const content = this.sanitizeHtml(chapter.content)
       return writeFile(filename, content)
     }
@@ -82,6 +81,6 @@ module.exports = OutputHTML
 
 function chapterFilename (chapter) {
   const index = 1 + chapter.order
-  const name = chapter.name || "Chapter " + index
+  const name = chapter.name || 'Chapter ' + index
   return chapter.filename && chapter.filename.replace('xhtml', 'html') || filenameize('chapter-' + name) + '.html'
 }

@@ -1,4 +1,5 @@
 'use strict'
+/* eslint-disable no-useless-escape */
 const url = require('url')
 const Site = require('./site.js')
 const cheerio = require('cheerio')
@@ -14,7 +15,6 @@ const knownSites = {
 class Xenforo extends Site {
   static matches (siteUrlStr) {
     const siteUrl = url.parse(siteUrlStr)
-    const hostname = siteUrl.hostname
     if (!/^[/](threads|posts)[/]|^[/]index[.]php[?]topic|^[/]goto[/]post[?]id/.test(siteUrl.path)) return false
     return true
   }
@@ -24,7 +24,7 @@ class Xenforo extends Site {
     const siteUrl = url.parse(siteUrlStr)
     const hostname = siteUrl.hostname
     if (!knownSites[hostname]) {
-      this.warnings.push(`Has not yet been tested with ${threadUrl.hostname}, may not work.`)
+      this.warnings.push(`Has not yet been tested with ${hostname}, may not work.`)
     }
     this.publisher = hostname
     this.publisherName = knownSites[hostname] || hostname
@@ -46,7 +46,7 @@ class Xenforo extends Site {
         fic.tags = tat.tags
       }
       let chapters = $('li.threadmarkItem')
-      if (chapters.length === 0) chapters = $('li.primaryContent') //qq
+      if (chapters.length === 0) chapters = $('li.primaryContent') // qq
       let leastRecent
       let mostRecent
       chapters.each((ii, chapter) => {
@@ -113,7 +113,7 @@ class Xenforo extends Site {
             next = next.prev
             nextText = $content(next).text().trim()
           }
-          if (next.type == 'text') {
+          if (next.type === 'text') {
             name = nextText
           }
         }
@@ -220,13 +220,11 @@ class Xenforo extends Site {
       const messageDate = this.dateTime($message.find('a.datePermalink .DateTime'))
       let baseLightness = 0
       if (/spacebattles/.test(chapter)) {
-        baseLightness = color.lightness(color.rgb(204,204,204))
-      }
-      else if (/questionablequesting/.test(chapter)) {
-        baseLightness = color.lightness(color.rgb(86,86,86))
-      }
-      else if (/sufficientvelocity/.test(chapter)) {
-        baseLightness = color.lightness(color.rgb(230,230,230))
+        baseLightness = color.lightness(color.rgb(204, 204, 204))
+      } else if (/questionablequesting/.test(chapter)) {
+        baseLightness = color.lightness(color.rgb(86, 86, 86))
+      } else if (/sufficientvelocity/.test(chapter)) {
+        baseLightness = color.lightness(color.rgb(230, 230, 230))
       }
       $content.find('[style *= color]').each((ii, vv) => {
         const style = $(vv).attr('style')
@@ -241,7 +239,7 @@ class Xenforo extends Site {
           opacity = lightness / baseLightness
           if (baseLightness < 0.5) opacity = 1 - opacity
           if (opacity < 0.25) opacity = 0.25
-          ns += 'opacity: ' +  opacity
+          ns += 'opacity: ' + opacity
         } else if (style === 'color: transparent') {
           opacity = 0.25
           ns += 'text-decoration: line-through; font-style: oblique; opacity: 0.25;'
@@ -348,7 +346,7 @@ class Xenforo extends Site {
     if (elem.attr('data-datestring')) {
       return new Date(elem.attr('data-datestring') + ' ' + elem.attr('data-timestring'))
     } else if (elem.attr('title')) {
-      return new Date(elem.attr('title').replace(/ at/,''))
+      return new Date(elem.attr('title').replace(/ at/, ''))
     }
   }
 
@@ -376,14 +374,14 @@ class Xenforo extends Site {
     }
     return {title, tags}
   }
-  
+
   normalizeLink (href, base) {
     // force ssl
     if (!/index.php/.test(href)) href = href.replace(/^http:/, 'https:')
     // resolve base url
     if (base) href = url.resolve(base, href)
-    // normalize post urls  
-    href = href.replace(/[/]threads[/][^/]+[/](?:page-\d+)?#post-(\d+)$/,'/posts/$1')
+    // normalize post urls
+    href = href.replace(/[/]threads[/][^/]+[/](?:page-\d+)?#post-(\d+)$/, '/posts/$1')
                .replace(/([/]posts[/][^/]+)[/]$/, '$1')
                .replace(/[/]goto[/]post[?]id=(\d+).*?$/, '/posts/$1')
     return href
@@ -393,10 +391,9 @@ class Xenforo extends Site {
     if (elem.attr('data-datestring')) {
       return new Date(elem.attr('data-datestring') + ' ' + elem.attr('data-timestring'))
     } else if (elem.attr('title')) {
-      return new Date(elem.attr('title').replace(/ at/,''))
+      return new Date(elem.attr('title').replace(/ at/, ''))
     }
   }
 }
-
 
 module.exports = Xenforo

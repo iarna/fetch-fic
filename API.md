@@ -24,7 +24,7 @@ converted to a Buffer and returned.
 Returns a promise that resolves if removing the file from the cache was
 successful.  If `filename` does not exist, this still resolves succesfully.
 
-## cache.readURL (url, onMiss)
+## cache.readUrl (url, onMiss)
 
 Returns a promise to a two element array.  The first element contains
 information about the resource, and the second element is a Buffer
@@ -55,7 +55,16 @@ And `<u1>` and `<u2>` are the first and second characters of `<urlsha>`.
 
 And `<ext>` is taken from the URL. If the URL has no extension in it then `data` is used.
 
-## cache.clearURL (url)
+## cache.clearUrl (url)
+
+Returns a promise that's resolved when all of the associated data is removed
+from the cache.
+
+## cache.invalidateUrl (url)
+
+Marks the url as dirty, so that future fetches will skip the cache, in THIS
+SESSION ONLY.
+
 
 # site.js
 

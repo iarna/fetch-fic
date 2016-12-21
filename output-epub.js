@@ -2,11 +2,8 @@
 const Output = require('./output.js')
 const Streampub = require('streampub')
 const chapterFilename = require('./chapter-filename.js')
-const url = require('url')
 const fs = require('fs')
-const commaNumber = require('comma-number')
 const html = require('./html-template-tag.js')
-const Transform = require('readable-stream').Transform
 const promisify = require('./promisify')
 const pump = promisify(require('pump'))
 const filenameize = require('./filenameize.js')
@@ -29,7 +26,7 @@ class OutputEpub extends Output {
       modified: this.fic.modified,
       numberTOC: this.fic.numberTOC
     })
-    
+
     epub.write(Streampub.newChapter('Title Page', this.titlePageHTML(), 0, 'top.xhtml'))
     if (this.fic.includeTOC) {
       epub.write(Streampub.newChapter('Table of Contents', this.tableOfContentsHTML(), 1, 'toc.xhtml'))

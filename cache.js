@@ -6,18 +6,14 @@ const Bluebird = require('bluebird')
 const promisify = require('./promisify')
 const path = require('path')
 const pathDirname = promisify.sync(path.dirname)
-const pathRelative = promisify.sync(path.relative)
 const mkdirp = promisify(require('mkdirp'))
 const fs = require('fs')
 const fsReadFile = promisify(fs.readFile)
 const fsWriteFile = promisify(fs.writeFile)
 const fsUnlink = promisify(fs.unlink)
-const fsSymlink = promisify(fs.symlink)
-const fsReadlink = promisify(fs.readlink)
 const zlib = require('zlib')
 const zlibGzip = promisify(zlib.gzip)
 const zlibGunzip = promisify(zlib.gunzip)
-const util = require('util')
 const inFlight = require('./in-flight.js')
 
 exports.readFile = readFile
@@ -48,7 +44,7 @@ function readFile (filename, onMiss) {
   function thenReadFile () {
     return fsReadFile(cacheFile).catch(elseHandleMiss)
   }
-  function elseHandleMiss () {  
+  function elseHandleMiss () {
     return resolveCall(onMiss).then(content => writeFile(filename, new Buffer(content)))
   }
 }
@@ -74,9 +70,11 @@ function readJSON (filename, onMiss) {
   }
 }
 
+/*
 function writeJSON (filename, content) {
   return writeFile(filename, JSON.stringify(content, null, 2))
 }
+*/
 
 function readGzipFile (filename, onMiss) {
   return readFile(filename, gzipOnMiss).then(buf => zlibGunzip(buf))
@@ -155,15 +153,14 @@ function readUrl (fetchUrl, onMiss) {
 
   function orFetchUrl () {
     return resolveCall(onMiss, fetchUrl, existingMeta).then(res => {
-      meta.finalUrl   = res.url || meta.startUrl
-      meta.status     = res.status
+      meta.finalUrl = res.url || meta.startUrl
+      meta.status = res.status
       meta.statusText = res.statusText
-      meta.headers    = res.headers.raw()
-      meta.fetchedAt  = fetchedAt
+      meta.headers = res.headers.raw()
+      meta.fetchedAt = fetchedAt
       if (meta.status && meta.status === 304) {
         return thenReadContent()
-      }
-      else if (meta.status && meta.status !== 200) {
+      } else if (meta.status && meta.status !== 200) {
         const non200 = new Error('Got status: ' + meta.status + ' ' + meta.statusText + ' for ' + fetchUrl)
         non200.meta = meta
         return Bluebird.reject(non200)
@@ -203,5 +200,5 @@ function clearUrl (fetchUrl) {
 }
 
 function invalidateUrl (fetchUrl) {
-  return Promise.resolve(fetchUrl).then(fetchUrl => invalidated[fetchUrl] = true)
+  return Promise.resolve(fetchUrl).then(fetchUrl => { invalidated[fetchUrl] = true })
 }

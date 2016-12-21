@@ -53,7 +53,7 @@ class Parser {
       div: this.block(),
       dl: this.block(),
       dt: this.block('[b][u]', '[/u][/b]'),
-      em:  this.inline('[i]', '[/i]'),
+      em: this.inline('[i]', '[/i]'),
       figcaption: this.block(),
       figure: this.block(),
       footer: this.block(),
@@ -111,7 +111,7 @@ class Parser {
       // title: suppress
       tr: this.inline('{tr}', '{/tr}'),
       u: this.inline('[u]', '[/u]'),
-      ul: this.block('[list]','[/list]'),
+      ul: this.block('[list]', '[/list]'),
       var: this.inline('[i]', '[/i]'),
 
       $ignore: {
@@ -191,7 +191,7 @@ class Parser {
         if (!size) return ''
         let px = size[1]
         const unit = size[2] || 'px'
-        if (unit == 'pt') {
+        if (unit === 'pt') {
           px *= 1.33333
         } else if (unit === 'em') {
           px *= 13.33333
@@ -220,12 +220,10 @@ class Parser {
             if (tag === 'sup') return ''
             this.addText('[sup]')
             return '[/sup]'
-            break
           case 'sub':
             if (tag === 'sub') return ''
             this.addText('[sub]')
             return '[/sub]'
-            break
           default:
             return ''
         }
@@ -235,15 +233,12 @@ class Parser {
           case 'center':
             this.addText('[center]')
             return '[/center]'
-            break
           case 'right':
             this.addText('[right]')
             return '[/right]'
-            break
           case 'left':
             this.addText('[left]')
             return '[/left]'
-            break
           default:
             throw new Error('Unknown text alignment: ', value)
         }
@@ -252,7 +247,7 @@ class Parser {
 
     this.textDecorationsMap = {
       'underline': ['[u]', '[/u]'],
-      'line-through': ['[s]', '[/s]'],
+      'line-through': ['[s]', '[/s]']
     }
 
     this.emojiMap = {
@@ -308,7 +303,6 @@ class Parser {
   }
 
   handleStyle (tag, attrs) {
-  //span, attrs: [ { name: 'style', value: 'text-decoration: line-through' } ]
     let foundUnknown = false
     let closeWith = ''
     for (let attr of attrs) {
@@ -325,7 +319,7 @@ class Parser {
             }
           }
         } catch (ex) {
-          console.log('INVALID CSS value=' + attr.value + ', '  + ex.stack)
+          console.log('INVALID CSS value=' + attr.value + ', ' + ex.stack)
         }
       } else if (attr.name === 'id' || attr.name === 'epub:type') {
         // ignore
@@ -421,7 +415,7 @@ class Parser {
     parser.on('text', text => this.addText(text))
 
     return Promise.resolve(html).then(html => {
-      return new Bluebird( (resolve, reject) => {
+      return new Bluebird((resolve, reject) => {
         parser.on('error', reject)
         parser.on('finish', () => {
           this.endLine()

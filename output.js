@@ -1,11 +1,11 @@
 'use strict'
-const qw = require('qw')
-const sanitizeHtml = require('sanitize-html')
-const Transform = require('readable-stream').Transform
-const html = require('./html-template-tag.js')
-const commaNumber = require('comma-number')
-const normalizeHtml = require('./normalize-html.js')
 const Bluebird = require('bluebird')
+const Transform = require('readable-stream').Transform
+const sanitizeHtml = require('sanitize-html')
+const commaNumber = require('comma-number')
+const html = require('./html-template-tag.js')
+const normalizeHtml = require('./normalize-html.js')
+const outputFormats = require('./output-formats.js')
 
 class Output {
   static register (shortname, output) {
@@ -35,13 +35,16 @@ class Output {
 
   transform () {
     const out = this
-    return new Transform({objectMode: true, transform: function (chapter, _, done) {
-      return new Bluebird(resolve => resolve(out.transformChapter(chapter))).then(result => {
-        if (result != null) this.push(result)
-        done()
-        return null
-      }).catch(err => done(err))
-    }})
+    return new Transform({
+      objectMode: true,
+      transform: function (chapter, _, done) {
+        return new Bluebird(resolve => resolve(out.transformChapter(chapter))).then(result => {
+          if (result != null) this.push(result)
+          done()
+          return null
+        }).catch(err => done(err))
+      }
+    })
   }
 
   titlePageHTML () {
@@ -202,10 +205,9 @@ class Output {
   }
 }
 Output.registered = {}
-Output.formats = qw`epub bbcode html ao3 ffnet`
 
 module.exports = Output
 
-for (let output of Output.formats) {
+for (let output of outputFormats) {
   Output.register(output, require(`./output-${output}.js`))
 }

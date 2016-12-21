@@ -4,8 +4,7 @@
   "description": "Package up delicious, delicious fanfic from various sources into epub ebooks ready for reading in your ereader of choice.",
   "main": "fic-to-epub.js",
   "bin": {
-    "fetch-fic": "fetch-fic.js",
-    "fetch-meta": "fetch-meta.js"
+    "ff": "ff.js"
   },
   "keywords": [
     "fanfic",
@@ -31,10 +30,8 @@
     "gauge": "^2.6.0",
     "html-escape": "^2.0.0",
     "iconv-lite": "^0.4.15",
-    "mississippi": "^1.2.0",
     "mkdirp": "^0.5.1",
     "node-fetch": "^1.6.0",
-    "os-homedir": "^1.0.1",
     "parse5": "^2.2.3",
     "pump": "^1.0.1",
     "qw": "^1.0.0",
@@ -44,15 +41,18 @@
     "tough-cookie": "^2.3.2",
     "uuid": "^3.0.0",
     "wordcount": "^1.1.1",
-    "yargs": "^5.0.0"
+    "yargs": "^6.5.0"
   },
   "files": [
     "cache.js",
     "call-limit.js",
     "chapter-filename.js",
-    "clear.js",
-    "fetch-fic.js",
-    "fetch-meta.js",
+    "ff.js",
+    "ff-cache-clear.js",
+    "ff-read-and-update.js",
+    "ff-read.js",
+    "ff-update.js",
+    "ff-write.js",
     "fic.js",
     "fic-stream.js",
     "filenameize.js",
@@ -68,10 +68,10 @@
     "output-bbcode.js",
     "output-epub.js",
     "output-ffnet.js",
+    "output-formats.js",
     "output-html.js",
     "promisify.js",
     "rtf-to-html.js",
-    "scrape-authors.js",
     "simple-fetch.js",
     "site.js",
     "site-ao3.js",
@@ -94,5 +94,6 @@
   "bugs": {
     "url": "https://github.com/iarna/fetch-fic/issues"
   },
-  "homepage": "https://github.com/iarna/fetch-fic"
+  "homepage": "https://github.com/iarna/fetch-fic",
+  "devDependencies": {}
 }

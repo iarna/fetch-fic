@@ -1,6 +1,7 @@
 'use strict'
-const Site = require('./site.js')
+const Bluebird = require('bluebird')
 const url = require('url')
+const Site = require('./site.js')
 
 class WpFacebook extends Site {
   static matches (siteUrlStr) {

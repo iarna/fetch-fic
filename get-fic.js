@@ -4,12 +4,10 @@ const Bluebird = require('bluebird')
 const Site = require('./site.js')
 const cheerio = require('cheerio')
 const chapterFilename = require('./chapter-filename.js')
-const Readable = require('readable-stream').Readable
-const inherits = require('util').inherits
 const FicStream = require('./fic-stream.js')
-const path = require('path')
 const url = require('url')
 const html = require('./html-template-tag.js')
+const fs = require('fs')
 
 function concurrently (_todo, concurrency, forEach) {
   const todo = Object.assign([], _todo)
@@ -145,7 +143,7 @@ function getFic (fetch, fic) {
         return linklocalChapters(fic, externals)(href, $a, (href) => {
           if (!chapterInfo.externals || !fic.externals) return
           try {
-            const site = Site.fromUrl(href)
+            Site.fromUrl(href)
           } catch (ex) {
             return
           }

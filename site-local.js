@@ -1,6 +1,5 @@
 'use strict'
 const Site = require('./site.js')
-const cheerio = require('cheerio')
 const Bluebird = require('bluebird')
 const path = require('path')
 const fs = require('fs')
@@ -26,7 +25,7 @@ class Local extends Site {
   }
 
   getFicMetadata (fetch, fic) {
-    fic.id =  'urn:uuid:' + uuid.v4()
+    fic.id = 'urn:uuid:' + uuid.v4()
     fic.publisher = this.publisherName
     fic.updateFrom = fic.link
     fic.link = null

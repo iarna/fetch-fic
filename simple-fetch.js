@@ -1,7 +1,6 @@
 'use strict'
 const cache = require('./cache.js')
 const Bluebird = require('bluebird')
-const promisify = require('./promisify')
 const callLimit = require('./call-limit')
 const rawFetch = require('node-fetch')
 rawFetch.Promise = Bluebird
@@ -10,7 +9,7 @@ const tough = require('tough-cookie')
 const CookieJar = tough.CookieJar
 const url = require('url')
 
-const cookieJar = new CookieJar();
+const cookieJar = new CookieJar()
 
 module.exports = function (_opts) {
   const fetch = callLimit(rawFetch, _opts.maxConcurrency || 4, 1000 / (_opts.requestsPerSecond || 1))

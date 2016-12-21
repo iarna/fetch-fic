@@ -41,7 +41,7 @@ class Wikipedia extends Site {
     return fetch(chapter).spread((meta, html) => {
       let $ = cheerio.load(html)
       let base = $('base').attr('href') || meta.finalUrl
-      let title =($('meta[property="og:title"]').attr('content')||'').replace(/- YouTube$/, '')
+      let title = ($('meta[property="og:title"]').attr('content') || '').replace(/- YouTube$/, '')
       if (!title) throw new Error('Skipping due to missing video or shutdown account.')
       let desc = $('meta[property="og:description"]').attr('content')
       let width = $('meta[property="og:video:width"]').attr('content')

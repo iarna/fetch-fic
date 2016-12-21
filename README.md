@@ -72,21 +72,15 @@ that reads that file, fetches everything and creates the epub for you.  The
 first tool can also UPDATE a fic instead of downloading it anew.
 
 ```
-Usage: fetch-meta <url> [options]
+Usage: ff read <url> [options]
 
 Options:
   --scrape                      scrape the index instead of using threadmarks
                                                                        [boolean]
   --and-scrape                  pull chapters from BOTH the index AND the
                                 threadmarks                            [boolean]
-  --xf_user                     value of your xf_user variable          [string]
-  --cache                       fetch from the network even if we have it cached
-                                                      [boolean] [default: false]
-  --network                     allow network access; when false, cache-misses
-                                are errors             [boolean] [default: true]
-  --concurrency                 maximum number of chapters/images/etc to fetch
-                                at a time                  [number] [default: 4]
-  --requests-per-second, --rps  maximum number of HTTP requests per second
+  --xf_user                     the value to set the xf_user cookie to, for
+                                authenticating with xenforo sites       [string]
                                                            [number] [default: 1]
 <url> - The URL of the threads you want to epubize. These fetches are not cached so you're
 guaranteed an up-to-date index.  This writes a metadata file out with the
@@ -94,73 +88,58 @@ extension `.fic.toml` for you to edit and pass to…
 ```
 
 ```
-Usage: fetch-meta <fanfiction.fic.toml> [options]
+Usage: ff update <fic…> [options]
 
 Options:
   --add-all                     if true, merge ALL missing chapters in instead
                                 of just NEW ones      [boolean] [default: false]
-  --cache                       fetch from the network even if we have it cached
-                                                      [boolean] [default: false]
-  --network                     allow network access; when false, cache-misses
-                                are errors             [boolean] [default: true]
-  --concurrency                 maximum number of chapters/images/etc to fetch
-                                at a time                  [number] [default: 4]
-  --requests-per-second, --rps  maximum number of HTTP requests per second
+  --xf_user                     the value to set the xf_user cookie to, for
+                                authenticating with xenforo sites       [string]
                                                            [number] [default: 1]
 
-<fanfiction.fic.toml> - This will update an existing metadata file with the latest chapters.
+<fic…> - The `.fic.toml` file(s) to download the latest chapters for.
 ```
 
 ```
-Usage: fetch-fic <fic(s)> [options] Options:
+Usage: ff generate <fic(s)> [options] Options:
   -o, --output                  Set output format
            [choices: "epub", "bbcode", "html", "ao3", "ffnet"] [default: "epub"]
-  --xf_user                     value of your xf_user variable          [string]
-  --cache                       fetch from the network even if we have it cached
-                                                       [boolean] [default: true]
-  --network                     allow network access; when false, cache-misses
-                                are errors             [boolean] [default: true]
-  --concurrency                 maximum number of chapters/images/etc to fetch
-                                at a time                  [number] [default: 4]
-  --requests-per-second, --rps  maximum number of HTTP requests per second
                                                            [number] [default: 1]
 
-<fic(s)> - The `.fic.toml` file(s) you want to get epubs for.  You'll get
-one epub for each `.fic.toml`.  Epubs are fetch in sequence, not in
-parallel.
+<fic(s)> - The `.fic.toml` file(s) you want to get generate readable output
+for. By default it'll make epubs, one for each file on the command line.
 ```
 
 ## EXAMPLE
 
 ```console
-$ fetch-meta https://forums.example.com/threads/example.12345/
+$ ff read https://forums.example.com/threads/example.12345/
 example.fic.toml
-$ fetch-fic example.fic.toml
+$ ff generate example.fic.toml
 ⸨░░░░░░░░░░░░░░    ⸩ ⠋ example: Fetching chapters
 ```
 
 … time passes …
+
 ```console
-$ fetch-meta example.fic.toml
+$ ff update example.fic.toml
 Added 2 new chapters
 Updated fic last udpate time from 2016-09-29T22:37:15Z to 2016-09-30T17:33:20Z
 example.fic.toml
+$ ff generate example.fic.toml
+example.epub
+$
 ```
 
 ## HINTS
 
-* Running `fetch-meta` with a fic file as an argument will update it.
 * Xenforo: Use `--scrape` if the thread doesn't have threadmarks but has an index post.
 * Xenforo: Use `--and-scrape` if the thread has extra stuff in the index post that's
-  not threadmarked.  This is commonly where meta-fanfic goes (aka in some
-  communities as "omake").
-* The fic files are [TOML](https://github.com/toml-lang/toml), but just open
-  them up in an editor, they're pretty straightforward.
+  not threadmarked.  This is commonly where omake/meta-fanfic and fanart go.
+* The fic files just text, open them up in an editor and they're pretty straightforward.
+  For the technically minded, they're strictly speaking [TOML](https://github.com/toml-lang/toml).
 * I often edit the fic files quite a bit.  The title determines the name of
   the epub file.
-* If the resulting epub isn't quite right, feel free to reuse `fetch-fic` as much
-  as you need to. It'll be super fast as it'll be working from a local copy of
-  the theads. (Fast and no hammering your favorite forum site.)
 
 ## EXPERIMENTAL BITS
 
@@ -169,7 +148,10 @@ complete enough just yet to work for you.
 
 * The `rtf` importer is distinctly incomplete, notably it's missing tables
   and stylesheets.  (But also tons of other less common things.) This
-  doesn't impact my writing but YMMV.
+  doesn't impact my writing but YMMV.  I ended up writing my own because the
+  other options available to me either didn't support how Scriviner closes
+  underlines or didn't support unicode.  So it at least does those things
+  right.  =p
 * The `bbcode`, `ao3` and `ffnet` outputters are still veeery fresh code and
   probably need some more laps around the yard before they're really done.
   `style` attributes ARE supported, but `style` tags are not (yet).  The
@@ -179,6 +161,20 @@ complete enough just yet to work for you.
 
 Still, all that said, they're getting the job done for me, vastly reducing
 the effort to post new fic chapters.
+
+## CACHE
+
+Yes, this thing has a cache.  It creates `~/.fetch-fic` (on Windows it does
+something...  not entirely nonsensical, but you'll still get a dot file like
+that).
+
+In `~/.fetch-fic` you'll find compressed copies of everything `fetch-fic`
+has ever downloaded.  If you remove the cache folder then `fetch-fic` will
+recreate it on its next run but should otherwise work correctly (albeit more
+slowly).
+
+Nothing is ever expired from the cache, so it can get pretty big (mine
+weighs ~1GB, but I also download an absurd amount of fic).
 
 ## DETAIL
 
@@ -214,12 +210,12 @@ duplicates but it's also often the only way to get _everything_.
 
 ### --cache
 
-For `fetch-meta`, forces the use of the cache instead of looking for a fresh
+For `ff read`, forces the use of the cache instead of looking for a fresh
 table of contents.
 
 ### --no-cache
 
-For `fetch-fic`, disable the use of the cache when fetching chapter data.
+For `ff generate`, disable the use of the cache when fetching chapter data.
 
 ### --no-network
 
@@ -244,21 +240,21 @@ many outstanding requests to a slow site are allowed.
 
 ### --output
 
-Select the output format for `fetch-fic`.  This defaults to `epub`, but can
+Select the output format for `ff generate`.  This defaults to `epub`, but can
 produce directories of files in `bbcode` and `html` formats.  Additionally
 and can produce HTML specifically designed for import into Archive of Our
 Own (`ao3`) and FanFiction.net (`ffnet`).
 
 ### --add-all
 
-Modifies `fetch-meta`'s behavior when updating an existing `.fic.toml` file.
+Modifies `ff read`'s behavior when updating an existing `.fic.toml` file.
 Ordinarily it will only add chapters NEWER then the oldest chapter already
 in your metadata file. If you pass in `--add-all` then it will add ANY chapter
 missing from your `.fic.toml` file, no matter how old.
 
 ## WHAT FIC FILES LOOK LIKE
 
-`fetch-meta` produces `.fic.toml` files…
+`ff read` produces `.fic.toml` files…
 
 If the original thread name was:
 
@@ -296,7 +292,7 @@ created = 2016-10-02T03:17:23Z
 ```
 
 Sometimes you might have a single thread that contains muliple stories.
-While `fetch-meta` will never produce a file like this, `fetch-fic` will
+While `ff read` will never produce a file like this, `ff generate` will
 produce multiple separate epubs if you give it something like this:
 
 ```toml
@@ -398,7 +394,7 @@ description for new readers. This is included in the title page and metadata.
 
 Optional.  The URL of an image file to embed as the cover of this work. 
 (Alternatively, this can be a filename, but it'll be relative to where you
-run `fetch-fic`, which is not great.)
+run `ff generate`, which is not great.)
 
 ### chapterHeadings
 
@@ -512,19 +508,12 @@ A chapter within a subfic. These have exactly the same properties as `[[chapters
 Stuff I'd like to see (user visible):
 
 * A web UI
+* Make the rtf handler more complete
+* Better stylesheet handling in output
 * More external site support:
   * Don't want to support every fic site ever, but…
   * More image sources for externing would be useful.
   * If generic wikia support is possible that would be super useful.
-* Update CLI-UI:
-  * More local fic sources. A directory of HTML at the very least.
-  * Make a single unified command with subcommands, eg:
-    * `ff meta <url|file>` - today's `fetch-meta`
-    * `ff fetch <file>` - today's `fetch-fic`
-    * `ff clear <url>` - what `clear.js` does
-    * Something for what `scrape-authors.js` does now (maybe fold into
-      `fetch-meta`)
-    * Maybe something for generating index sheets
 
 ## LIMITED XENFORO TESTING
 

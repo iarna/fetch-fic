@@ -68,14 +68,12 @@ class Worm extends Site {
         $comments.find('article.comment').replaceWith((ii, vv) => {
           const $comment = cheerio.load(vv)
           const $vcard = $comment('.vcard')
-          const author = $vcard.find('.fn').text().trim()
           const $links = $vcard.find('a')
-          const $lastLink = $($links[$links.length-1])
+          const $lastLink = $($links[$links.length - 1])
           const link = $lastLink.attr('href')
           const linkMatched = link.match(/#comment-(\d+)/)
           if (linkMatched) {
             const comment = linkMatched[1]
-            const time = $vcard.find('time').attr('datetime')
             $lastLink.replaceWith($lastLink.text())
             return '<p><a external="false" href="' + link + '"><em>Worm</em>, ' + name + ' (comment ' + comment + ')</a></p>' + $comment.html()
           } else {
@@ -99,7 +97,7 @@ class Worm extends Site {
           let para = 0
           $content.find('p').before((ii, vv) => {
             vv = vv.replace(/&#xA0;/g, ' ')
-            return vv.trim() ? '<p><a external="false" href="' + chapter+ '"><em>Worm</em>, ' + name + ' (para. ' + (++para) + ')</a></p>' : ''
+            return vv.trim() ? '<p><a external="false" href="' + chapter + '"><em>Worm</em>, ' + name + ' (para. ' + (++para) + ')</a></p>' : ''
           })
         }
         content = $content.html().trim()
@@ -111,8 +109,8 @@ class Worm extends Site {
         base: base,
         raw: html,
         content: content,
-        created: created == 'Invalid Date' ? null : created,
-        modified: modified == 'Invalid Date' ? null : modified,
+        created: created === 'Invalid Date' ? null : created,
+        modified: modified === 'Invalid Date' ? null : modified
       }
     })
   }
