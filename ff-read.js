@@ -30,7 +30,6 @@ function read (args) {
   const spinningFetch = progress.spinWhileAnd(boringFetch)
 
   function fetchFic () {
-    progress.show('Table of Contents', `Downloading ${args.url}`)
     if (fromThreadmarks && fromScrape) {
       return Fic.fromUrlAndScrape(spinningFetch, args.url)
     } else if (fromThreadmarks) {
@@ -40,10 +39,14 @@ function read (args) {
     }
   }
 
-  function enableNetwork () {
+  function enableCache () {
     fetchOpts.cacheBreak = false
   }
-  return ficInflate(fetchFic().finally(enableNetwork), spinningFetch).then(fic => {
+
+  const fetchTracker = progress.newWork('Table of Contents', 0)
+  progress.show('Table of Contents', `Downloading ${args.url}`)
+  const deflatedFic = progress.addWork(fetchTracker, fetchFic()).finally(enableCache)
+  return ficInflate(deflatedFic, spinningFetch).then(fic => {
     const filename = filenameize(fic.title) + '.fic.toml'
     return writeFile(filename, TOML.stringify(fic)).then(() => {
       progress.output(filename + '\n')

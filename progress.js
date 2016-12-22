@@ -8,7 +8,7 @@ exports.hide = hide
 exports.output = output
 exports.errput = errput
 exports.log = log
-exports.error = error
+exports.warn = warn
 exports.addWork = addWork
 exports.newWork = newWork
 exports.completeWorkWhenResolved = completeWorkWhenResolved
@@ -92,14 +92,14 @@ function log () {
   show()
 }
 
-function error () {
+function warn () {
   hide()
-  console.error.apply(console, arguments)
+  console.warn.apply(console, arguments)
   show()
 }
 
 function newWork (label, work) {
-  return tracker.newItem(label, work)
+  return trackerGroup.newItem(label, work)
 }
 
 function addWork (tracker, todo) {
