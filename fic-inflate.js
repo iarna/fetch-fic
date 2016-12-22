@@ -27,7 +27,6 @@ function ficInflate (fic, fetch, tracker) {
           chapter.words = countStoryWords(content)
           fic.words += chapter.words
           if (chapter.link == null) chapter.link = content.chapterLink
-          if (chapter.fetchFrom == null && chapter.link !== content.finalUrl) chapter.fetchFrom = content.finalUrl
           for (let prop in qw`name author authorUrl created modified headings`) {
             if (chapter[prop] == null) chapter[prop] = content[prop]
           }
