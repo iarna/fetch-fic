@@ -55,7 +55,7 @@ class Wikipedia extends Site {
         name: title,
         author: 'Wikipedia',
         authorUrl: link,
-        finalUrl: link,
+        finalUrl: link || meta.finalUrl,
         base: base,
         raw: html,
         content: $content.html()

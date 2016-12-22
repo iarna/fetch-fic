@@ -30,6 +30,10 @@ class Fic {
     this.scrapeMeta = null
   }
 
+  updateWith () {
+    return this.updateFrom || this.link
+  }
+
   chapterExists (link) {
     if (link == null) return false
     if (this.chapters.chapterExists(link, this)) return true
@@ -68,7 +72,7 @@ class Fic {
     if (raw.fics) {
       raw.fics.forEach(fic => this.fics.push(SubFic.fromJSON(this, fic)))
     }
-    this.site = Site.fromUrl(this.link || this.updateFrom)
+    this.site = Site.fromUrl(this.updateWith())
     this.externals = raw.externals != null ? raw.externals : true
     return this
   }
@@ -254,6 +258,9 @@ class Chapter {
   }
   static fromJSON (order, opts) {
     return new Chapter(Object.assign({order}, opts))
+  }
+  fetchWith () {
+    return this.fetchFrom || this.link
   }
 }
 

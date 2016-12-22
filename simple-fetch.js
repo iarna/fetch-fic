@@ -13,11 +13,16 @@ const cookieJar = new CookieJar()
 
 module.exports = function (_opts) {
   const fetch = callLimit(rawFetch, _opts.maxConcurrency || 4, 1000 / (_opts.requestsPerSecond || 1))
+  const ourCookieJar = _opts.cookieJar || cookieJar
+  const ourGlobalCookies = []
   function simpleFetch (what, noCache) {
     const opts = Object.assign({}, simpleFetch.options)
-    if (!opts.cookieJar) opts.cookieJar = cookieJar
+    if (!opts.cookieJar) opts.cookieJar = ourCookieJar
     if (noCache != null) opts.cacheBreak = noCache
     const href = what.href || what
+    for (let cookie of ourGlobalCookies) {
+      opts.cookieJar.setCookieSync(cookie, href)
+    }
     if (what.referer) {
       if (!opts.headers) opts.headers = {}
       opts.headers.Referer = what.referer
@@ -25,6 +30,8 @@ module.exports = function (_opts) {
     return fetchWithCache(fetch, href, opts)
   }
   simpleFetch.options = _opts || {}
+  simpleFetch.setCookieSync = function () { return ourCookieJar.setCookieSync.apply(ourCookieJar, arguments) }
+  simpleFetch.setGlobalCookie = cookie => ourGlobalCookies.push(cookie)
   return simpleFetch
 }
 

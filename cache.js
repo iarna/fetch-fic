@@ -51,7 +51,7 @@ function readFile (filename, onMiss) {
 
 function writeFile (filename, content) {
   const cacheFile = cacheFilename(filename)
-  return inFlight('write:' + filename, thenWriteFile).thenReturn(content)
+  return inFlight(['write:', filename], thenWriteFile).thenReturn(content)
 
   function thenWriteFile () {
     return mkdirp(pathDirname(cacheFile)).then(() => fsWriteFile(cacheFile, content))
@@ -84,6 +84,10 @@ function readGzipFile (filename, onMiss) {
   }
 }
 
+function writeGzipFile (filename, content) {
+  return writeFile(filename, zlibGzip(content)).thenReturn(content)
+}
+
 function getUrlHash (toFetch) {
   return Bluebird.resolve(toFetch).then(toFetch => {
     const parsed = url.parse(toFetch)
@@ -110,6 +114,9 @@ function cacheUrlContentName (fetchUrl) {
   })
 }
 
+const noMetadata = new Error('NOMETADATA')
+noMetadata.code = 'NOMETADATA'
+
 function readUrl (fetchUrl, onMiss) {
   const metafile = cacheUrlMetaName(fetchUrl)
   const content = cacheUrlContentName(fetchUrl)
@@ -119,26 +126,26 @@ function readUrl (fetchUrl, onMiss) {
     finalUrl: null
   }
   let existingMeta = {}
-  return inFlight(fetchUrl, thenReadExistingMetadata)
+  return inFlight(['readUrl:', fetchUrl], thenReadExistingMetadata)
 
   function thenReadExistingMetadata () {
-    return readJSON(metafile, () => existingMeta).then(meta => {
-      existingMeta = meta
-      // corrupt JSON, clear entry and start again
-      if (!existingMeta.finalUrl) {
-        existingMeta = {}
-        return clearUrl(fetchUrl).then(thenReadContent)
+    return readJSON(metafile, () => Promise.reject(noMetadata)).then(meta => {
+      // corrupt JSON, clear the entry
+      if (!meta || typeof meta !== 'object' || !meta.finalUrl) {
+        return clearUrl(fetchUrl)
       } else {
-        return thenReadContent()
+        existingMeta = meta
+        return null
       }
-    })
+    }).catch(err => err.code !== 'NOMETADATA' && Promise.reject(err))
+      .then(() => thenReadContent())
   }
 
   function thenReadContent () {
     let result
     if (invalidated[fetchUrl]) {
       delete invalidated[fetchUrl]
-      result = orFetchUrl()
+      result = writeGzipFile(content, orFetchUrl())
     } else {
       result = readGzipFile(content, orFetchUrl).catch(err => {
         // corrupted gzips we retry, anything else explode
@@ -159,7 +166,7 @@ function readUrl (fetchUrl, onMiss) {
       meta.headers = res.headers.raw()
       meta.fetchedAt = fetchedAt
       if (meta.status && meta.status === 304) {
-        return thenReadContent()
+        return thenReadContent().spread((_, data) => data)
       } else if (meta.status && meta.status !== 200) {
         const non200 = new Error('Got status: ' + meta.status + ' ' + meta.statusText + ' for ' + fetchUrl)
         non200.meta = meta

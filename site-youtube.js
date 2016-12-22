@@ -61,7 +61,7 @@ class Wikipedia extends Site {
         author: author,
         authorUrl: authorUrl,
         raw: html,
-        headers: true,
+        headings: true,
         content: `<a external="false" href="${link}"><img width="${width}" height="${height}" src="${image}" alt="${title} by ${author}"></a>`
       }
     })
