@@ -62,6 +62,7 @@ const argv = yargs
   .command({
     command: 'update <fic...>',
     desc: 'Update fic with latest chapter list',
+    aliases: ['up'],
     builder: yargs => {
       yargs.option('add-all', {
         type: 'boolean',
