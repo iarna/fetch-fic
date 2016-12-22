@@ -40,7 +40,7 @@ function networkOptions (yargs, cacheDefault) {
 }
 
 const argv = yargs
-//  .demand(1, 'ff <cmd> --help — for help on a specific command')
+  .demand(1, 'ff <cmd> --help — for help on a specific command')
   .command({
     command: 'read <url>',
     aliases: ['get', 'meta'],
@@ -110,7 +110,6 @@ const argv = yargs
     default: process.env.BLUEBIRD_DEBUG && process.env.BLUEBIRD_DEBUG !== '0',
     global: true
   })
-  .demand(1, ['debug'])
   .strict()
   .help()
   .argv
