@@ -102,11 +102,11 @@ function newWork (label, work) {
   return trackerGroup.newItem(label, work)
 }
 
-function addWork (tracker, todo) {
+function addWork (todo, tracker) {
   tracker.addWork(1)
-  return completeWorkWhenResolved(tracker, todo)
+  return completeWorkWhenResolved(todo, tracker)
 }
 
-function completeWorkWhenResolved (tracker, todo) {
+function completeWorkWhenResolved (todo, tracker) {
   return todo.finally(() => tracker.completeWork(1))
 }

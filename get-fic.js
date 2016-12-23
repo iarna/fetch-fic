@@ -8,6 +8,7 @@ const FicStream = require('./fic-stream.js')
 const url = require('url')
 const html = require('./html-template-tag.js')
 const fs = require('fs')
+const progress = require('./progress')
 
 function concurrently (_todo, concurrency, forEach) {
   const todo = Object.assign([], _todo)
@@ -124,7 +125,7 @@ function getFic (fetch, fic) {
   const chapters = fic.chapters
   const maxConcurrency = 40 // limit saves memory, not network, network is protected elsewhere
 
-  fetch.gauge.show(`Fetching chapters (${chapters.length})…`)
+  progress.show(`Fetching chapters (${chapters.length})…`)
   concurrently(chapters, maxConcurrency, (chapterInfo) => {
     return fic.getChapter(fetch, chapterInfo.fetchFrom || chapterInfo.link).then((chapter) => {
       chapter.order = chapterInfo.order
@@ -162,7 +163,7 @@ function getFic (fetch, fic) {
     })
   }).then(() => {
     fetch.tracker.addWork(Object.keys(externals).length)
-    fetch.gauge.show(`Fetching externals (${Object.keys(externals).length})…`)
+    progress.show(`Fetching externals (${Object.keys(externals).length})…`)
     const externalCount = Object.keys(externals).length
     const pages = externalCount === 1 ? 'page' : 'pages'
     return concurrently(Object.keys(externals), maxConcurrency, (href, exterNum) => {
@@ -202,7 +203,7 @@ function getFic (fetch, fic) {
     })
   }).then(() => {
     fetch.tracker.addWork(Object.keys(images).length)
-    fetch.gauge.show(`Fetching images (${Object.keys(images).length})…`)
+    progress.show(`Fetching images (${Object.keys(images).length})…`)
     return concurrently(Object.keys(images), maxConcurrency, (src, imageNum) => {
       return fetch(src).spread((meta, imageData) => {
         return stream.queueChapter({
@@ -216,7 +217,7 @@ function getFic (fetch, fic) {
     if (fic.cover) {
       if (/:/.test(fic.cover)) {
         fetch.tracker.addWork(1)
-        fetch.gauge.show('Fetching cover…')
+        progress.show('Fetching cover…')
         return fetch({href: fic.cover, referer: fic.link}).spread((meta, imageData) => {
           return stream.queueChapter({
             cover: true,

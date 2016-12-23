@@ -8,9 +8,8 @@ const fs = require('fs')
 const TOML = require('@iarna/toml')
 const getFic = require('./get-fic.js')
 const Output = require('./output.js')
-const Gauge = require('gauge')
-const TrackerGroup = require('are-we-there-yet').TrackerGroup
 const spinWith = require('./spin-with.js')
+const progress = require('./progress.js')
 const Fic = require('./fic.js')
 const url = require('url')
 
@@ -19,20 +18,17 @@ function write (args) {
   const user = args.xf_user
   const maxConcurrency = args.concurrency
   const requestsPerSecond = args['requests-per-second']
-  const cookieJar = new simpleFetch.CookieJar()
   const fetchOpts = {
     cacheBreak: !args.cache,
     noNetwork: !args.network,
-    cookieJar,
     maxConcurrency,
     requestsPerSecond
   }
-  const fetchWithCache = simpleFetch(fetchOpts)
-  const gauge = new Gauge()
-  const trackerGroup = new TrackerGroup()
-  trackerGroup.on('change', (name, completed) => gauge.show({completed: completed}))
-  const trackers = args.fic.map(() => trackerGroup.newItem(1))
-  const spin = spinWith(gauge)
+
+  const fetch = simpleFetch(fetchOpts).wrapWith(progress.spinWhileAnd)
+  if (args.xf_user) fetch.setGlobalCookie(`xf_user=${args.xf_user}`)
+
+  const trackers = args.fic.map(() => progress.tracker.newItem(1))
 
   return Bluebird.each(args.fic, fetchTopFic)
 
@@ -40,11 +36,11 @@ function write (args) {
     const topFic = Fic.fromJSON(TOML.parse(fs.readFileSync(ficFile, 'utf8')))
     let fics = (topFic.chapters.length ? [topFic] : []).concat(topFic.fics || [])
     const tracker = trackers[ficNum]
-    const fetchWithOpts = (url, noCache, binary) => {
-      return spin(fetchWithCache(url, noCache, binary)).finally(() => tracker.completeWork(1))
+    const completeWhenDone = (fetch) => {
+      return (href, opts) => fetch(href, opts).finally(() => tracker.completeWork(1))
     }
-    fetchWithOpts.gauge = gauge
-    fetchWithOpts.tracker = tracker
+    const fetchAndFinish = fetch.wrapWith(completeWhenDone)
+    fetchAndFinish.tracker = tracker
     fics = fics.filter((fic, ficNum) => {
       if (topFic === fic && topFic.fics && !topFic.chapters) return false
       for (let key of Object.keys(topFic)) {
@@ -52,28 +48,22 @@ function write (args) {
         if (!fic[key]) fic[key] = topFic[key]
       }
 
-      gauge.show(fic.title + ': Fetching fic')
+      progress.show(fic.title + ': Fetching fic')
       tracker.addWork(fic.chapters.length)
       return true
     })
 
-    return Bluebird.each(fics, fetchFic(fetchWithOpts))
+    return Bluebird.each(fics, fetchFic(fetchAndFinish))
       .finally(() => {
         tracker.finish()
-        gauge.hide()
+        progress.hide()
       })
   }
-  function fetchFic (fetchWithOpts) {
+  function fetchFic (fetch) {
     return (fic) => {
-      const linkP = url.parse(fic.updateFrom || fic.link)
-      linkP.pathname = ''
-      const link = url.format(linkP)
-      if (user) cookieJar.setCookieSync('xf_user=' + user, link)
-      const ficStream = getFic(fetchWithOpts, fic)
+      const ficStream = getFic(fetch, fic)
       return Output.as(output).from(ficStream).write().then(filename => {
-        gauge.hide()
-        process.stdout.write(`${filename}\n`)
-        gauge.show()
+        progress.output(`${filename}\n`)
       })
     }
   }

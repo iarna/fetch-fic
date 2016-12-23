@@ -48,6 +48,7 @@
     "call-limit.js",
     "chapter-filename.js",
     "count-story-words.js",
+    "curry-options.js",
     "ff.js",
     "ff-cache-clear.js",
     "ff-read.js",

@@ -23,19 +23,16 @@ function read (args) {
     maxConcurrency: args.concurrency,
     requestsPerSecond: args['requests-per-second']
   }
-  const boringFetch = simpleFetch(fetchOpts)
-
-  if (args.xf_user) boringFetch.setGlobalCookie('xf_user=' + args.xf_user)
-
-  const spinningFetch = progress.spinWhileAnd(boringFetch)
+  const fetch = simpleFetch(fetchOpts).wrapWith(progress.spinWhileAnd)
+  if (args.xf_user) fetch.setGlobalCookie(`xf_user=${args.xf_user}`)
 
   function fetchFic () {
     if (fromThreadmarks && fromScrape) {
-      return Fic.fromUrlAndScrape(spinningFetch, args.url)
+      return Fic.fromUrlAndScrape(fetch, args.url)
     } else if (fromThreadmarks) {
-      return Fic.fromUrl(spinningFetch, args.url)
+      return Fic.fromUrl(fetch, args.url)
     } else {
-      return Fic.scrapeFromUrl(spinningFetch, args.url)
+      return Fic.scrapeFromUrl(fetch, args.url)
     }
   }
 
@@ -45,8 +42,8 @@ function read (args) {
 
   const fetchTracker = progress.newWork('Table of Contents', 0)
   progress.show('Table of Contents', `Downloading ${args.url}`)
-  const deflatedFic = progress.addWork(fetchTracker, fetchFic()).finally(enableCache)
-  return ficInflate(deflatedFic, spinningFetch).then(fic => {
+  const deflatedFic = progress.addWork(fetchFic(), fetchTracker).finally(enableCache)
+  return ficInflate(deflatedFic, fetch).then(fic => {
     const filename = filenameize(fic.title) + '.fic.toml'
     return writeFile(filename, TOML.stringify(fic)).then(() => {
       progress.output(filename + '\n')

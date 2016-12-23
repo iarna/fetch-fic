@@ -8,34 +8,35 @@ const util = require('util')
 const tough = require('tough-cookie')
 const CookieJar = tough.CookieJar
 const url = require('url')
+const curryOptions = require('./curry-options.js')
 
 const cookieJar = new CookieJar()
+const globalCookies = []
 
-module.exports = function (_opts) {
-  const fetch = callLimit(rawFetch, _opts.maxConcurrency || 4, 1000 / (_opts.requestsPerSecond || 1))
-  const ourCookieJar = _opts.cookieJar || cookieJar
-  const ourGlobalCookies = []
-  function simpleFetch (what, noCache) {
-    const opts = Object.assign({}, simpleFetch.options)
-    if (!opts.cookieJar) opts.cookieJar = ourCookieJar
-    if (noCache != null) opts.cacheBreak = noCache
-    const href = what.href || what
-    for (let cookie of ourGlobalCookies) {
-      opts.cookieJar.setCookieSync(cookie, href)
-    }
-    if (what.referer) {
-      if (!opts.headers) opts.headers = {}
-      opts.headers.Referer = what.referer
-    }
-    return fetchWithCache(fetch, href, opts)
+const curriedFetch = module.exports = curryOptions(simpleFetch, addCookieFuncs, {cookieJar})
+
+let limitedFetch
+function simpleFetch (what, opts) {
+  const href = what.href || what
+  for (let cookie of globalCookies) {
+    opts.cookieJar.setCookieSync(cookie, href)
   }
-  simpleFetch.options = _opts || {}
-  simpleFetch.setCookieSync = function () { return ourCookieJar.setCookieSync.apply(ourCookieJar, arguments) }
-  simpleFetch.setGlobalCookie = cookie => ourGlobalCookies.push(cookie)
-  return simpleFetch
+  if (what.referer) {
+    if (!opts.headers) opts.headers = {}
+    opts.headers.Referer = what.referer
+  }
+  if (!limitedFetch) limitedFetch = callLimit(rawFetch, opts.maxConcurrency || 4, 1000 / (opts.requestsPerSecond || 1))
+  return fetchWithCache(limitedFetch, href, opts)
 }
 
-module.exports.CookieJar = CookieJar
+function addCookieFuncs (fetch) {
+  fetch.setCookieSync = function () {
+    const ourCookieJar = fetch.options.cookieJar
+    return ourCookieJar.setCookieSync.apply(ourCookieJar, arguments)
+  }
+  fetch.setGlobalCookie = cookie => globalCookies.push(cookie)
+  return fetch
+}
 
 function NoNetwork (toFetch, opts) {
   const err = new Error(`Not found in cache: ${toFetch} ${util.inspect(opts)}`)

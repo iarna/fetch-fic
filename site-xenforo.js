@@ -61,7 +61,7 @@ class Xenforo extends Site {
       })
       fic.created = leastRecent
       fic.modified = mostRecent
-      return this.getChapter(link => fetch(link, false), this.link).then((chapter) => {
+      return this.getChapter(link => fetch(link, {cacheBreak: false}), this.link).then((chapter) => {
         fic.author = chapter.author
         fic.authorUrl = chapter.authorUrl
         const $content = cheerio.load(chapter.content)
