@@ -3,20 +3,21 @@ module.exports = promisify
 const Bluebird = require('bluebird')
 
 function promisify (fn, bind) {
-  const pfn = Bluebird.promisify(fn)
   return function () {
     const self = bind || this
-    return Bluebird.all(arguments).spread(function () {
-      return pfn.apply(self, arguments)
+    return Bluebird.all(arguments).then(args => {
+      return new Bluebird((resolve, reject) => {
+        args.push((err, value) => err ? reject(err) : resolve(value))
+        return fn.apply(self, args)
+      })
     })
   }
 }
 
-promisify.sync = function (fn, bind) {
+promisify.args = function (fn, bind) {
   return function () {
     const self = bind || this
-    return Bluebird.all(arguments).spread(function () {
-      return fn.apply(self, arguments)
-    })
+    console.log('resolving', fn.name)
+    return Bluebird.all(arguments).then(args => { console.log('calling', fn.name, args) ; return fn.apply(self, args) })
   }
 }
