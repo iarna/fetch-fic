@@ -17,7 +17,6 @@ function promisify (fn, bind) {
 promisify.args = function (fn, bind) {
   return function () {
     const self = bind || this
-    console.log('resolving', fn.name)
-    return Bluebird.all(arguments).then(args => { console.log('calling', fn.name, args) ; return fn.apply(self, args) })
+    return Bluebird.all(arguments).then(args => fn.apply(self, args))
   }
 }

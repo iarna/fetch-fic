@@ -2,6 +2,7 @@
 'use strict'
 const outputFormats = require('./output-formats.js')
 const yargs = require('yargs')
+const onExit = require('signal-exit')
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
 
@@ -115,11 +116,10 @@ const argv = yargs
   .help()
   .argv
 
-if (argv.debug) process.env.BLUEBIRD_DEBUG = '1'
-
-require(command)(argv).catch(errorHandler).then(exitCodeHandler)
+let exited = false
 
 function errorHandler (err) {
+  exited = true
   if (argv.debug) {
     console.log(err.stack)
   } else if (err.code === 'ENOENT') {
@@ -132,5 +132,15 @@ function errorHandler (err) {
 }
 
 function exitCodeHandler (exitCode) {
+  exited = true
  if (typeof exitCode === 'number') process.exit(exitCode)
 }
+
+onExit(() => {
+  if (exited) return
+  console.log('Exited without resolving promises!')
+})
+
+if (argv.debug) process.env.BLUEBIRD_DEBUG = '1'
+
+require(command)(argv).catch(errorHandler).then(exitCodeHandler)
