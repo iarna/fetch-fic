@@ -45,7 +45,7 @@ function readFile (filename, onMiss) {
     return fsReadFile(cacheFile).catch(elseHandleMiss)
   }
   function elseHandleMiss () {
-    return resolveCall(onMiss).then(content => writeFile(filename, new Buffer(content)))
+    return resolveCall(onMiss).then(content => writeFile(filename, Buffer.from(content)))
   }
 }
 
