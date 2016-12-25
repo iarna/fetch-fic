@@ -88,8 +88,7 @@
     "site-worm.js",
     "site-wp-facebook.js",
     "site-xenforo.js",
-    "site-youtube.js",
-    "spin-with.js"
+    "site-youtube.js"
   ],
   "repository": {
     "type": "git",
