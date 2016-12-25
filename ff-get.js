@@ -37,13 +37,13 @@ function read (args) {
   }
 
   function enableCache () {
-    fetchOpts.cacheBreak = false
+    fetch.options.cacheBreak = false
   }
 
   const fetchTracker = progress.newWork('Table of Contents', 0)
   progress.show('Table of Contents', `Downloading ${args.url}`)
   const deflatedFic = progress.addWork(fetchFic(), fetchTracker).finally(enableCache)
-  return ficInflate(deflatedFic, fetch).then(fic => {
+  return ficInflate(deflatedFic, fetch.withOpts({cacheBreak: false})).then(fic => {
     const filename = filenameize(fic.title) + '.fic.toml'
     return writeFile(filename, TOML.stringify(fic)).then(() => {
       progress.output(filename + '\n')
