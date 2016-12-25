@@ -66,15 +66,19 @@ var fetchLatestVersion = promisify.args((fetch, existingFic, fromThreadmarks, fr
     thisFromScrape = existingFic.scrapeMeta
   }
 
-  let newFic
-  if (thisFromThreadmarks && thisFromScrape) {
-    newFic = Fic.fromUrlAndScrape(fetch, updateFrom)
-  } else if (thisFromThreadmarks) {
-    newFic = Fic.fromUrl(fetch, updateFrom)
-  } else {
-    newFic = Fic.scrapeFromUrl(fetch, updateFrom)
+  function getFic (fetch) {
+    if (thisFromThreadmarks && thisFromScrape) {
+      return Fic.fromUrlAndScrape(fetch, updateFrom)
+    } else if (thisFromThreadmarks) {
+      return Fic.fromUrl(fetch, updateFrom)
+    } else {
+      return Fic.scrapeFromUrl(fetch, updateFrom)
+    }
   }
 
+  // Fetch the fic from cache first, which ensures we get any cookies
+  // associated with it, THEN fetch it w/o the cache to get updates.
+  let newFic = getFic(fetch({cacheBreak: false})).then(()=> getFic(fetch))
   // BUGS: Updates done by `ficInflate` won't be noticed
   return ficInflate(newFic, fetch({cacheBreak: false}))
 })
