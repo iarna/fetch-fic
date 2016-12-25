@@ -29,7 +29,7 @@ function networkOptions (yargs, cacheDefault) {
   })
   .option('concurrency', {
     type: 'number',
-    default: 4,
+    default: 6,
     describe: 'maximum number of chapters/images/etc to fetch at a time'
   })
   .option('requests-per-second', {
