@@ -1,12 +1,14 @@
 'use strict'
-const Output = require('./output.js')
-const Streampub = require('streampub')
-const chapterFilename = require('./chapter-filename.js')
 const fs = require('fs')
+const Streampub = require('streampub')
+const TOML = require('@iarna/toml')
+const Output = require('./output.js')
+const chapterFilename = require('./chapter-filename.js')
 const html = require('./html-template-tag.js')
 const promisify = require('./promisify')
-const pump = promisify(require('pump'))
 const filenameize = require('./filenameize.js')
+
+const pump = promisify(require('pump'))
 
 class OutputEpub extends Output {
   from (fic) {
@@ -27,6 +29,12 @@ class OutputEpub extends Output {
       numberTOC: this.fic.numberTOC
     })
 
+    epub.write({
+      id: 'fic',
+      content: Buffer.from(TOML.stringify(this.fic)),
+      fileName: 'meta.fic.toml',
+      mime: 'text/x-toml'
+    })
     epub.write(Streampub.newChapter('Title Page', this.titlePageHTML(), 0, 'top.xhtml'))
     if (this.fic.includeTOC) {
       epub.write(Streampub.newChapter('Table of Contents', this.tableOfContentsHTML(), 1, 'toc.xhtml'))
