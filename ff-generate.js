@@ -24,7 +24,7 @@ function write (args) {
     requestsPerSecond
   }
 
-  const fetch = simpleFetch(fetchOpts).wrapWith(progress.spinWhileAnd)
+  const fetch = simpleFetch.withOpts(fetchOpts).wrapWith(progress.spinWhileAnd)
   if (args.xf_user) fetch.setGlobalCookie(`xf_user=${args.xf_user}`)
 
   const trackers = args.fic.map(() => progress.tracker.newItem(1))

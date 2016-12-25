@@ -23,7 +23,7 @@ function update (args) {
     maxConcurrency: args.concurrency,
     requestsPerSecond: args['requests-per-second']
   }
-  const fetch = simpleFetch(fetchOpts).wrapWith(progress.spinWhileAnd)
+  const fetch = simpleFetch.withOpts(fetchOpts).wrapWith(progress.spinWhileAnd)
   if (args.xf_user) fetch.setGlobalCookie(`xf_user=${args.xf_user}`)
 
   return Bluebird.map(args.fic, updateFic(fetch, args)).reduce((exit, result) => result != null ? result : exit)
@@ -78,9 +78,9 @@ var fetchLatestVersion = promisify.args((fetch, existingFic, fromThreadmarks, fr
 
   // Fetch the fic from cache first, which ensures we get any cookies
   // associated with it, THEN fetch it w/o the cache to get updates.
-  let newFic = getFic(fetch({cacheBreak: false})).then(()=> getFic(fetch))
+  let newFic = getFic(fetch.withOpts({cacheBreak: false})).then(()=> getFic(fetch))
   // BUGS: Updates done by `ficInflate` won't be noticed
-  return ficInflate(newFic, fetch({cacheBreak: false}))
+  return ficInflate(newFic, fetch.withOpts({cacheBreak: false}))
 })
 
 var mergeFic = promisify.args(function mergeFic (existingFic, newFic, addAll) {

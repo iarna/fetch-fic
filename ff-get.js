@@ -23,7 +23,7 @@ function read (args) {
     maxConcurrency: args.concurrency,
     requestsPerSecond: args['requests-per-second']
   }
-  const fetch = simpleFetch(fetchOpts).wrapWith(progress.spinWhileAnd)
+  const fetch = simpleFetch.withOpts(fetchOpts).wrapWith(progress.spinWhileAnd)
   if (args.xf_user) fetch.setGlobalCookie(`xf_user=${args.xf_user}`)
 
   function fetchFic () {
