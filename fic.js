@@ -205,7 +205,7 @@ class ChapterList extends Array {
       const normalizedLink = fic.normalizeLink(link)
       return this.some(chap => fic.normalizeLink(chap.link) === normalizedLink || chap.fetchFrom === normalizedLink)
     } else {
-      return this.some(chap => chap.link === link || chap.fetchFrom === normalizedLink)
+      return this.some(chap => chap.link === link || chap.fetchFrom === link)
     }
   }
   addChapter (opts) {
