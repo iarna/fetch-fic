@@ -59,12 +59,8 @@ function writeUpdatedFic (ficFile, existingFic, changes) {
 
 var fetchLatestVersion = promisify.args((fetch, existingFic, fromThreadmarks, fromScrape) => {
   const updateFrom = existingFic.updateWith()
-  let thisFromThreadmarks = fromThreadmarks
-  let thisFromScrape = fromScrape
-  if (existingFic.fetchMeta != null || existingFic.scrapeMeta != null) {
-    thisFromThreadmarks = existingFic.fetchMeta
-    thisFromScrape = existingFic.scrapeMeta
-  }
+  let thisFromThreadmarks = (!existingFic.scrapeMeta && fromThreadmarks) || existingFic.fetchMeta
+  let thisFromScrape = fromScrape || existingFic.scrapeMeta
 
   function getFic (fetch) {
     if (thisFromThreadmarks && thisFromScrape) {
@@ -79,7 +75,7 @@ var fetchLatestVersion = promisify.args((fetch, existingFic, fromThreadmarks, fr
   // Fetch the fic from cache first, which ensures we get any cookies
   // associated with it, THEN fetch it w/o the cache to get updates.
   let newFic = getFic(fetch.withOpts({cacheBreak: false})).then(()=> getFic(fetch))
-  // BUGS: Updates done by `ficInflate` won't be noticed
+
   return ficInflate(newFic, fetch.withOpts({cacheBreak: false}))
 })
 
@@ -109,6 +105,22 @@ var mergeFic = promisify.args(function mergeFic (existingFic, newFic, addAll) {
         changes.push(`Updated modification date for chapter "${newChapter.name}" from ${chapter.modified} to ${newChapter.modified}`)
         chapter.modified = newChapter.modified
       }
+      for (let prop of qw`name link fetchFrom author authorUrl tags words`) {
+        if (chapter[prop] == null && newChapter[prop] != null) {
+          chapter[prop] = newChapter[prop]
+          changes.push(`Set ${prop} for chapter "${newChapter.name}" to ${chapter[prop]}`)
+        }
+      }
+    }
+  }
+  if (existingFic.tags == null && newFic.tags != null && newFic.tags.length) {
+    existingFic.tags = newFic.tags
+    changes.push(`Set fic tags to ${newFic.tags.join(', ')}`)
+  }
+  for (let prop of qw`description publisher author authorUrl updateFrom link title`) {
+    if (existingFic[prop] == null && newFic[prop] != null) {
+      existingFic[prop] = newFic[prop]
+      changes.push(`Set fic ${prop} to ${existingFic[prop]}`)
     }
   }
   if (!dateEqual(existingFic.created, newFic.created) && existingFic.created > newFic.created) {
@@ -122,6 +134,11 @@ var mergeFic = promisify.args(function mergeFic (existingFic, newFic, addAll) {
   // finally, push on those chapters we flagged for addition earlier.
   existingFic.chapters.push.apply(existingFic.chapters, toAdd)
   if (toAdd.length) changes.push(`Added ${toAdd.length} new chapters`)
+
+  let words = existingFic.chapters.reduce((words, chapter) => { return words + chapter.words }, 0)
+  if (existingFic.words !== words) {
+    existingFic.words = words
+  }
 
   if (!changed && !changes.length) return null
   return changes
