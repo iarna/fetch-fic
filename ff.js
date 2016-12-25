@@ -41,10 +41,11 @@ function networkOptions (yargs, cacheDefault) {
 }
 
 const argv = yargs
+  .usage('Usage: $0 <cmd> [options…]')
   .demand(1, 'ff <cmd> --help — for help on a specific command')
   .command({
-    command: 'read <url>',
-    aliases: ['get', 'meta'],
+    command: 'get <url>',
+    aliases: [],
     desc: 'Get chapter list for a fic',
     builder: yargs => {
       yargs.option('scrape', {
@@ -58,7 +59,7 @@ const argv = yargs
       .demand(1, '<url> - The URL to fetch chapters for')
       networkOptions(yargs, false)
     },
-    handler: setCommand('./ff-read.js')
+    handler: setCommand('./ff-get.js')
   })
   .command({
     command: 'update <fic...>',
@@ -78,14 +79,14 @@ const argv = yargs
         type: 'boolean',
         describe: 'pull chapters from BOTH the index AND the threadmarks'
       })
-      .demand(1, '<fic> - A fic metadata file to fetch a fic for. Typically ends in .fic.toml')
+      .demand(1, '<fic> - A fic metadata file to update with the latest chapters. Typically ends in .fic.toml')
       networkOptions(yargs, false)
     },
     handler: setCommand('./ff-update.js')
   })
   .command({
-    command: 'gen <fic...>',
-    aliases: ['write', 'fetch', 'generate',],
+    command: 'generate <fic...>',
+    aliases: ['gen'],
     desc: 'Generate epub (or other) from fic',
     builder: yargs => {
       yargs.option('o', {
@@ -95,9 +96,9 @@ const argv = yargs
         choices: outputFormats
       })
       networkOptions(yargs, true)
-      yargs.demand(1, '<fic> - A fic metadata file to fetch a fic for. Typically ends in .fic.toml')
+      yargs.demand(1, '<fic> - A fic metadata file to generate an epub or other file format for. Typically ends in .fic.toml')
     },
-    handler: setCommand('./ff-write.js')
+    handler: setCommand('./ff-generate.js')
   })
   .command({
     command: 'cache-clear <url>',
