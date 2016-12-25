@@ -1,5 +1,5 @@
 'use strict'
-module.exports = HTMLToBBCode
+module.exports = HTMLToAO3
 const Bluebird = require('bluebird')
 const parse5 = require('parse5')
 const util = require('util')
@@ -7,7 +7,7 @@ const parseCSS = require('css-parse')
 const html = require('./html-template-tag.js')
 const qw = require('qw')
 
-function HTMLToBBCode (html) {
+function HTMLToAO3 (html) {
   return new Parser().parse(html)
 }
 
