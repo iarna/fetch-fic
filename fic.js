@@ -202,9 +202,10 @@ class ChapterList extends Array {
     if (link == null) {
       return
     } else if (fic) {
-      return this.some(chap => fic.normalizeLink(chap.link) === fic.normalizeLink(link))
+      const normalizedLink = fic.normalizeLink(link)
+      return this.some(chap => fic.normalizeLink(chap.link) === normalizedLink || chap.fetchFrom === normalizedLink)
     } else {
-      return this.some(chap => chap.link === link)
+      return this.some(chap => chap.link === link || chap.fetchFrom === normalizedLink)
     }
   }
   addChapter (opts) {
