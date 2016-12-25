@@ -280,7 +280,7 @@ class ToHTML extends Transform {
 }
 
 module.exports = function (rtf) {
-  return Promise.resolve(rtf).then((rtf) => {
+  return Promise.resolve(rtf).then(rtf => {
     var parser = new ParseRTF()
     return new Bluebird((resolve, reject) => {
       pump(
