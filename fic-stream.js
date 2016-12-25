@@ -2,6 +2,18 @@
 const Bluebird = require('bluebird')
 const Readable = require('readable-stream').Readable
 
+function proxy (from, prop, to) {
+  if (to[prop] != null) return
+  if (typeof from[prop] === 'function') {
+    const method = from[prop]
+    to[prop] = function () { return method.apply(from, arguments) }
+  } else {
+    Object.defineProperty(to, prop, {
+      get: () => from[prop]
+    })
+  }
+}
+
 class FicStream extends Readable {
   constructor (fic, options) {
     if (!options) options = {}
@@ -14,17 +26,12 @@ class FicStream extends Readable {
       readyP: null,
       readyR: null
     }
-    // ficstreams are also fics
+    // ficstreams also proxy everything from their source fic
     for (let pp in fic) {
-      if (this[pp] != null) continue
-      if (typeof fic[pp] === 'function') {
-        const method = fic[pp]
-        this[pp] = function () { return method.apply(fic, arguments) }
-      } else {
-        Object.defineProperty(this, pp, {
-          get: () => fic[pp]
-        })
-      }
+      proxy(fic, pp, this)
+    }
+    for (let pp of Object.getOwnPropertyNames(Object.getPrototypeOf(fic))) {
+      proxy(fic, pp, this)
     }
   }
   queueChapter (chapter) {
