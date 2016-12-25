@@ -1,6 +1,6 @@
 {
   "name": "fetch-fic",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "description": "Package up delicious, delicious fanfic from various sources into epub ebooks ready for reading in your ereader of choice.",
   "main": "fic-to-epub.js",
   "bin": {
