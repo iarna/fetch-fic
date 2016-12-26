@@ -93,51 +93,87 @@ var mergeFic = promisify.args(function mergeFic (existingFic, newFic, addAll) {
     }
     toAdd.unshift(newChapter)
   }
-  // Find any chapters with created dates and update them if need be.
-  for (let chapter of existingFic.chapters) {
-    const match = newFic.chapters.filter(andChapterEquals(chapter))
-    for (let newChapter of match) {
-      if (newChapter.created && !dateEqual(newChapter.created, chapter.created)) {
-        changes.push(`Updated creation date for chapter "${newChapter.name}" from ${chapter.created} to ${newChapter.created}`)
-        chapter.created = newChapter.created
-      }
-      if (newChapter.modified && !dateEqual(newChapter.modified, chapter.modified)) {
-        changes.push(`Updated modification date for chapter "${newChapter.name}" from ${chapter.modified} to ${newChapter.modified}`)
-        chapter.modified = newChapter.modified
-      }
-      for (let prop of qw`name link fetchFrom author authorUrl tags words`) {
-        if (chapter[prop] == null && newChapter[prop] != null) {
-          chapter[prop] = newChapter[prop]
-          changes.push(`Set ${prop} for chapter "${newChapter.name}" to ${chapter[prop]}`)
-        }
-      }
-    }
+
+  if (existingFic.description == null && newFic.description != null) {
+    existingFic.description = newFic.description
+    changes.push(`${existingFic.title}: Set fic ${description} to ${existingFic.description}`)
   }
   if (existingFic.tags == null && newFic.tags != null && newFic.tags.length) {
     existingFic.tags = newFic.tags
-    changes.push(`Set fic tags to ${newFic.tags.join(', ')}`)
+    changes.push(`${existingFic.title}: Set existingFic tags to ${newFic.tags.join(', ')}`)
   }
-  for (let prop of qw`description publisher author authorUrl updateFrom link title`) {
+  for (let prop of qw`publisher author authorUrl updateFrom link title`) {
     if (existingFic[prop] == null && newFic[prop] != null) {
       existingFic[prop] = newFic[prop]
-      changes.push(`Set fic ${prop} to ${existingFic[prop]}`)
+      changes.push(`${existingFic.title}: Set existingFic ${prop} to ${existingFic[prop]}`)
     }
   }
-  if (!dateEqual(existingFic.created, newFic.created) && existingFic.created > newFic.created) {
-    changes.push(`Updated fic publish time from ${existingFic.created} to ${newFic.created}`)
-    existingFic.created = newFic.created
-  }
-  if (!dateEqual(existingFic.modified, newFic.modified) && existingFic.modified < newFic.modified) {
-    changes.push(`Updated fic last update time from ${existingFic.modified} to ${newFic.modified}`)
-    existingFic.modified = newFic.modified
-  }
-  // finally, push on those chapters we flagged for addition earlier.
-  existingFic.chapters.push.apply(existingFic.chapters, toAdd)
-  if (toAdd.length) changes.push(`Added ${toAdd.length} new chapters`)
 
-  let words = existingFic.chapters.reduce((words, chapter) => { return words + chapter.words }, 0)
-  if (existingFic.words !== words) {
-    existingFic.words = words
+  existingFic.chapters.push.apply(existingFic.chapters, toAdd)
+  if (toAdd.length) changes.push(`${existingFic.title}: Added ${toAdd.length} new chapters`)
+
+  const fics = [existingFic].concat(existingFic.fics)
+  for (let fic of fics) {
+    // Find any chapters with created dates and update them if need be.
+    for (let chapter of fic.chapters) {
+      const match = newFic.chapters.filter(andChapterEquals(chapter))
+      for (let newChapter of match) {
+        if (newChapter.created && !dateEqual(newChapter.created, chapter.created)) {
+          changes.push(`${fic.title}: Updated creation date for chapter "${newChapter.name}" from ${chapter.created} to ${newChapter.created}`)
+          chapter.created = newChapter.created
+        }
+        if (newChapter.modified && !dateEqual(newChapter.modified, chapter.modified)) {
+          changes.push(`${fic.title}: Updated modification date for chapter "${newChapter.name}" from ${chapter.modified} to ${newChapter.modified}`)
+          chapter.modified = newChapter.modified
+        }
+        for (let prop of qw`name link fetchFrom author authorUrl tags words`) {
+          if (chapter[prop] == null && newChapter[prop] != null) {
+            chapter[prop] = newChapter[prop]
+            changes.push(`${fic.title}: Set ${prop} for chapter "${newChapter.name}" to ${chapter[prop]}`)
+          }
+        }
+      }
+    }
+    let now = new Date()
+    let then = new Date(0)
+    let created = fic.chapters.filter(c => c.created).reduce((ficCreated, chapter) => ficCreated < chapter.created ? ficCreated : chapter.created, now)
+    if (created !== now && !dateEqual(fic.created, created)) {
+      changes.push(`${fic.title}: Updated fic publish time from ${fic.created} to ${created} (from earliest chapter)`)
+      fic.created = created
+    }
+
+    let modified = fic.chapters.filter(c => c.modified || c.created).reduce((ficModified, chapter) => ficModified > (chapter.modified||chapter.created) ? ficModified : (chapter.modified||chapter.created), then)
+    if (modified !== then && !dateEqual(fic.modified, modified)) {
+      changes.push(`${fic.title}: Updated fic last update time from ${fic.modified} to ${modified} (from latest chapter)`)
+      fic.modified = modified
+    }
+
+    let words = fic.chapters.reduce((words, chapter) => { return words + (chapter.words||0) }, 0)
+    if (fic.words !== words) {
+      changes.push(`${fic.title}: Updated word count from ${fic.words} to ${words}`)
+      fic.words = words
+    }
+  }
+  if (existingFic.chapters.length === 0) {
+    let created = existingFic.fics.filter(f => f.created).reduce((ficCreated, subfic) => ficCreated < subfic.created ? ficCreated : subfic.created, existingFic.created)
+    if (!dateEqual(existingFic.created, created)) {
+      changes.push(`${existingFic.title}: Updated fic publish time from ${existingFic.created} to ${created} (from earliest subfic)`)
+      existingFic.created = created
+    }
+    let modified = existingFic.fics.filter(f => f.modified || f.created).reduce((ficModified, subfic) => ficModified > (subfic.modified||subfic.created) ? ficModified : (subfic.modified||subfic.created), existingFic.modified)
+    if (!dateEqual(existingFic.modified, modified)) {
+      changes.push(`${existingFic.title}: Updated fic last update time from ${existingFic.modified} to ${modified} (from latest subfic)`)
+      existingFic.modified = modified
+    }
+  } else {
+    if (existingFic.created == null && newFic.created != null) {
+      changes.push(`${existingFic.title}: Updated fic publish time from ${existingFic.created} to ${newFic.created} (from newFic)`)
+      existingFic.created = newFic.created
+    }
+    if (existingFic.modified == null && newFic.modified != null) {
+      changes.push(`${existingFic.title}: Updated fic last update time from ${existingFic.modified} to ${newFic.modified} (from newFic)`)
+      existingFic.modified = newFic.modified
+    }
   }
 
   if (!changed && !changes.length) return null
