@@ -145,7 +145,10 @@ function readUrl (fetchUrl, onMiss) {
     let result
     if (invalidated[fetchUrl]) {
       delete invalidated[fetchUrl]
-      result = writeGzipFile(content, orFetchUrl())
+      result = writeGzipFile(content, orFetchUrl()).catch(err => {
+        if (err.code !== 304) throw err
+        return thenReadContent()
+      })
     } else {
       result = readGzipFile(content, orFetchUrl).catch(err => {
         // corrupted gzips we retry, anything else explode
@@ -166,9 +169,14 @@ function readUrl (fetchUrl, onMiss) {
       meta.headers = res.headers.raw()
       meta.fetchedAt = fetchedAt
       if (meta.status && meta.status === 304) {
+        const err304 = new Error('Got status: ' + meta.status + ' ' + meta.statusText + ' for ' + fetchUrl)
+        err304.code = meta.status
+        err304.meta = meta
+        return Bluebird.reject(err304)
         return thenReadContent().spread((_, data) => data)
       } else if (meta.status && meta.status !== 200) {
         const non200 = new Error('Got status: ' + meta.status + ' ' + meta.statusText + ' for ' + fetchUrl)
+        non200.code = meta.status
         non200.meta = meta
         return Bluebird.reject(non200)
       }
