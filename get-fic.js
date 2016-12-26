@@ -222,7 +222,7 @@ function getFic (fetch, fic) {
       if (/:/.test(fic.cover)) {
         fetch.tracker.addWork(1)
         progress.show('Fetching cover…')
-        return fetch({href: fic.cover, referer: fic.link}).spread((meta, imageData) => {
+        return fetch(fic.cover, {referer: fic.link}).spread((meta, imageData) => {
           return stream.queueChapter({
             cover: true,
             content: imageData

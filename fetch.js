@@ -13,17 +13,16 @@ const curryOptions = require('./curry-options.js')
 const cookieJar = new CookieJar()
 const globalCookies = []
 
-const curriedFetch = module.exports = curryOptions(simpleFetch, addCookieFuncs, {cookieJar})
+const curriedFetch = module.exports = curryOptions(cookiedFetch, addCookieFuncs, {cookieJar})
 
 let limitedFetch
-function simpleFetch (what, opts) {
-  const href = what.href || what
+function cookiedFetch (href, opts) {
   for (let cookie of globalCookies) {
     opts.cookieJar.setCookieSync(cookie, href)
   }
-  if (what.referer) {
+  if (opts.referer) {
     if (!opts.headers) opts.headers = {}
-    opts.headers.Referer = what.referer
+    opts.headers.Referer = opts.referer
   }
   if (!limitedFetch) limitedFetch = callLimit(rawFetch, opts.maxConcurrency || 4, 1000 / (opts.requestsPerSecond || 1))
   return fetchWithCache(limitedFetch, href, opts)

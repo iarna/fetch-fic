@@ -559,23 +559,25 @@ TODO: Rewrite this to be three phase:
 const fetch = require('./fetch.js')
 ```
 
-## fetch (href | {href, referer}, opts) → [Object, Buffer]
+## fetch (href, opts) → [Object, Buffer]
 
 Fetches `href` using the cache via `node-fetch`.  Unlike `node-fetch` it
 returns an Array containing an Object and a Buffer instead of a result object.
-
-If an object is given instead of a URL then its `href` property will be used
-and its `referer` set as the `Referer` header.
 
 In addition to `node-fetch` options, `opts` may contain:
 
 * cookieJar — Provide your own cookiejar.  If not specified then a global
   persistent cookiejar will be used.
-* maxConcurrency — The maximum number of simultaneous requests.
-* requestsPerSecond — The maximum number of requests to make per second.
 * cacheBreak — If true, invalidate the cache entry for this href before
   fetching it.
 * noNetwork — If true then a cache miss will result in an error.
+* referer — The equivalent of setting opts.headers.Referer.
+
+And finally, these options can only be set on the first invocation.
+Changing them later will be ingnored.
+
+* maxConcurrency — The maximum number of simultaneous requests.
+* requestsPerSecond — The maximum number of requests to make per second.
 
 ## fetch.setCookieSync (cookie, href)
 
