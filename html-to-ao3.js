@@ -280,11 +280,11 @@ class Parser {
               closeWith = style(tag, decl.property, decl.value) + closeWith
               if (/^xenforo-/.test(decl.property)) break
             } else {
-              console.log(`UNKNOWN CSS: ${require('util').inspect(decl)} ${tag} ${require('util').inspect(attrs)}`)
+              process.emit('debug', `UNKNOWN CSS: ${require('util').inspect(decl)} ${tag} ${require('util').inspect(attrs)}`)
             }
           }
         } catch (ex) {
-          console.log('INVALID CSS value=' + attr.value + ', ' + ex.stack)
+          process.emit('debug', 'INVALID CSS value=' + attr.value + ', ' + ex.stack)
         }
       } else if (attr.name === 'id' || attr.name === 'epub:type') {
         // ignore
@@ -408,14 +408,14 @@ class Parser {
       if (this.tags[tag]) {
         this.tags[tag].start(tag, attrs, selfClosing, location)
       } else {
-        console.log('UNKNOWN', 'tag:', tag + ', attrs:', util.inspect(attrs) + ', selfClosing:', !!selfClosing + ', location:', location, '\n')
+        process.emit('debug', 'UNKNOWN', 'tag:', tag + ', attrs:', util.inspect(attrs) + ', selfClosing:', !!selfClosing + ', location:', location, '\n')
       }
     })
     parser.on('endTag', (tag, attrs, selfClosing, location) => {
       if (this.tags[tag]) {
         this.tags[tag].end(tag, attrs, selfClosing, location)
       } else {
-        console.log('UNKNOWN', 'endtag:', tag + ', attrs:', util.inspect(attrs) + ', selfClosing:', !!selfClosing + ', location:', location, '\n')
+        process.emit('debug', 'UNKNOWN', 'endtag:', tag + ', attrs:', util.inspect(attrs) + ', selfClosing:', !!selfClosing + ', location:', location, '\n')
       }
     })
     parser.on('text', text => this.addText(text))

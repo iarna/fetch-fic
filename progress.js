@@ -1,17 +1,27 @@
 'use strict'
-exports.spinStart = spinStart
-exports.spinStop = spinStop
-exports.spinWhile = spinWhile
-exports.spinWhileAnd = spinWhileAnd
-exports.show = show
-exports.hide = hide
-exports.output = output
-exports.errput = errput
-exports.log = log
-exports.warn = warn
-exports.addWork = addWork
-exports.newWork = newWork
-exports.completeWorkWhenResolved = completeWorkWhenResolved
+const progress = {}
+progress.id = Symbol()
+if (process.progress) {
+   if (progress.id !== process.progress.id) {
+      process.emit('warn', 'MULTIPLE VERSIONS OF progress LOADED')
+   }
+   module.exports = process.progress
+   return progress
+} else {
+   module.exports = process.progress = progress
+}
+//const getCallerFile = require('get-caller-file')
+const caller = require('./caller.js')
+
+progress.setVerbose = setVerbose
+progress.spinWhileAnd = spinWhileAnd
+progress.show = show
+progress.hide = hide
+progress.output = output
+progress.errput = errput
+progress.addWork = addWork
+progress.newWork = newWork
+progress.completeWorkWhenResolved = completeWorkWhenResolved
 
 const Gauge = require('gauge')
 const TrackerGroup = require('are-we-there-yet').TrackerGroup
@@ -33,7 +43,12 @@ const trackerGroup = new TrackerGroup({
     gauge.show({completed})
   }
 })
-exports.tracker = trackerGroup
+progress.tracker = trackerGroup
+
+let debugEnviron = process.env.NODE_DEBUG || '';
+function setVerbose (value) {
+  process.env.NODE_DEBUG = debugEnviron  = value
+}
 
 let spinning = 0
 let pulseInterval
@@ -86,17 +101,37 @@ function errput (line) {
   show()
 }
 
-function log () {
+process.on('log', function () {
+  const args = [].slice.call(arguments, 0)
   hide()
-  console.log.apply(console, arguments)
+  console.log.apply(console, args)
   show()
-}
+})
 
-function warn () {
+process.on('warn', function () {
+  const args = [].slice.call(arguments, 0)
   hide()
-  console.warn.apply(console, arguments)
+  console.warn.apply(console, ['WARN '].concat(args))
   show()
-}
+})
+
+process.on('error', function () {
+  const args = [].slice.call(arguments, 0)
+  hide()
+  console.warn.apply(console, ['ERROR'].concat(args))
+  show()
+})
+
+process.on('debug', function () {
+  if (!debugEnviron) return
+  const section = caller().replace(/^.*[/](.*?).js$/, '$1')
+  if (debugEnviron !== true && !new RegExp('\\b' + section + '\\b', 'i').test(debugEnviron)) return
+
+  const args = [].slice.call(arguments, 0)
+  hide()
+  console.warn.apply(console, ['DEBUG', section].concat(args))
+  show()
+})
 
 function newWork (label, work) {
   return trackerGroup.newItem(label, work)

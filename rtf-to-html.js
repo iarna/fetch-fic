@@ -182,7 +182,7 @@ const htmlExpression = {
     if (href) {
       return `<a href="${href[1]}">${args.slice(1).join('')}</a>`
     } else {
-//      console.error('FIELD', args)
+      process.emit('debug', 'FIELD', args)
       return args[1]
     }
   },
@@ -269,7 +269,7 @@ class ToHTML extends Transform {
         this.push(`${startP}${result}`)
       }
     } else {
-//      if (result == null) console.error(exp)
+      if (result == null) process.emit('debug', exp)
     }
     done()
   }

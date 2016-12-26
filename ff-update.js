@@ -8,7 +8,7 @@ const qw = require('qw')
 const Fic = require('./fic.js')
 const ficInflate = require('./fic-inflate.js')
 const progress = require('./progress.js')
-const simpleFetch = require('./simple-fetch.js')
+const fetch = require('./fetch.js')
 const filenameize = require('./filenameize.js')
 const promisify = require('./promisify.js')
 
@@ -23,10 +23,10 @@ function update (args) {
     maxConcurrency: args.concurrency,
     requestsPerSecond: args['requests-per-second']
   }
-  const fetch = simpleFetch.withOpts(fetchOpts).wrapWith(progress.spinWhileAnd)
-  if (args.xf_user) fetch.setGlobalCookie(`xf_user=${args.xf_user}`)
+  const fetchAndSpin = fetch.withOpts(fetchOpts).wrapWith(progress.spinWhileAnd)
+  if (args.xf_user) fetchAndSpin.setGlobalCookie(`xf_user=${args.xf_user}`)
 
-  return Bluebird.map(args.fic, updateFic(fetch, args)).reduce((exit, result) => result != null ? result : exit)
+  return Bluebird.map(args.fic, updateFic(fetchAndSpin, args)).reduce((exit, result) => result != null ? result : exit)
 }
 
 function readFic (fic) {

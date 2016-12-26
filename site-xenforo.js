@@ -190,7 +190,7 @@ class Xenforo extends Site {
         const $quote = $(quote)
         const $attribution = $quote.find('.attribution')
         if ($attribution.length !== 0) {
-          if (!$attribution.text().match(/(.*) said:/)) console.log('QUOTE', $quote.html())
+          if (!$attribution.text().match(/(.*) said:/)) process.emit('debug', 'QUOTE', $quote.html())
           const user = $attribution.text().match(/(.*) said:/)[1].trim()
           const postHref = $attribution.find('a').attr('href')
           if (postHref) {

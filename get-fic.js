@@ -125,6 +125,7 @@ function getFic (fetch, fic) {
   const chapters = fic.chapters
   const maxConcurrency = 40 // limit saves memory, not network, network is protected elsewhere
 
+  process.emit('debug', `Outputting ${chapters.length} chapters of ${fic.title}`)
   progress.show(`Fetching chapters (${chapters.length})…`)
   concurrently(chapters, maxConcurrency, (chapterInfo) => {
     return fic.getChapter(fetch, chapterInfo.fetchFrom || chapterInfo.link).then((chapter) => {
@@ -159,9 +160,10 @@ function getFic (fetch, fic) {
       rewriteIframes(fic, chapter)
       return stream.queueChapter(chapter)
     }).catch((err) => {
-      console.error('Error while fetching chapter', chapterInfo, err.stack)
+      process.emit('error', 'Error while fetching chapter', chapterInfo, err.stack)
     })
   }).then(() => {
+    process.emit('debug', `Outputting ${Object.keys(externals).length} externals of ${fic.title}`)
     fetch.tracker.addWork(Object.keys(externals).length)
     progress.show(`Fetching externals (${Object.keys(externals).length})…`)
     const externalCount = Object.keys(externals).length
@@ -192,7 +194,7 @@ function getFic (fetch, fic) {
         rewriteIframes(fic, external)
         return stream.queueChapter(external)
       }).catch((err) => {
-        console.error(`Warning, skipping external ${href}: ${err.stack}`)
+        process.emit('error', `Warning, skipping external ${href}: ${err.stack}`)
         return stream.queueChapter({
           order: 9000 + exterNum,
           name: `External Reference #${exterNum + 1}: ${externals[href].name}`,
@@ -211,10 +213,12 @@ function getFic (fetch, fic) {
           filename: images[src].filename,
           content: imageData
         })
-      }).catch(err => console.error(`Error while fetching image ${src}: ${require('util').inspect(err)}`))
+      }).catch(err => process.emit('error', `Error while fetching image ${src}: ${require('util').inspect(err)}`))
     })
   }).then(() => {
+    process.emit('debug', `Considering cover`)
     if (fic.cover) {
+      process.emit('debug', `Outputting cover image of ${fic.title}`)
       if (/:/.test(fic.cover)) {
         fetch.tracker.addWork(1)
         progress.show('Fetching cover…')
@@ -223,7 +227,7 @@ function getFic (fetch, fic) {
             cover: true,
             content: imageData
           })
-        }).catch(err => console.error(`Error while fetching cover ${fic.cover}: ${require('util').inspect(err)}`))
+        }).catch(err => process.emit('error', `Error while fetching cover ${fic.cover}: ${require('util').inspect(err)}`))
       } else {
         return stream.queueChapter({
           cover: true,
@@ -232,9 +236,10 @@ function getFic (fetch, fic) {
       }
     }
   }).then(() => {
+    process.emit('debug', `Outputting ${fic.title} complete`)
     return stream.queueChapter(null)
   }).catch(err => {
-    console.error(`Error in get fic ${err.stack}`)
+    process.emit('error', `Error in get fic ${err.stack}`)
   })
   return stream
 }

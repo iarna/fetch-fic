@@ -3,6 +3,7 @@
 const outputFormats = require('./output-formats.js')
 const yargs = require('yargs')
 const onExit = require('signal-exit')
+const progress = require('./progress')
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
 
@@ -113,6 +114,9 @@ const argv = yargs
     default: process.env.BLUEBIRD_DEBUG && process.env.BLUEBIRD_DEBUG !== '0',
     global: true
   })
+  .option('verbose', {
+    global: true
+  })
   .strict()
   .help()
   .argv
@@ -143,5 +147,5 @@ onExit(() => {
 })
 
 if (argv.debug) process.env.BLUEBIRD_DEBUG = '1'
-
+if (argv.verbose) progress.setVerbose(argv.verbose)
 require(command)(argv).catch(errorHandler).then(exitCodeHandler)

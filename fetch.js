@@ -75,6 +75,7 @@ function fetchWithCache (fetch, toFetch, opts) {
         if (meta.headers && meta.headers['last-modified']) {
           opts.headers['If-Modified-Since'] = meta.headers['last-modified']
         }
+        process.emit('debug', 'Downloading', toFetch)
         return fetch(domain, toFetch, opts)
       })
     })

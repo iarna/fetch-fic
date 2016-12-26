@@ -47,6 +47,7 @@
   "files": [
     "cache.js",
     "call-limit.js",
+    "caller.js",
     "chapter-filename.js",
     "count-story-words.js",
     "curry-options.js",
@@ -76,7 +77,7 @@
     "progress.js",
     "promisify.js",
     "rtf-to-html.js",
-    "simple-fetch.js",
+    "fetch.js",
     "site.js",
     "site-ao3.js",
     "site-deviantart.js",

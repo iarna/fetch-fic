@@ -23,7 +23,7 @@ class OutputFFNet extends Output {
       .then(() => pump(this.fic, this.transform()))
       .then(() => this.writeIndex())
       .then(() => this.outname)
-      .catch((er) => console.error(er.stack))
+      .catch((er) => process.emit('error', er.stack))
   }
 
   transformChapter (chapter) {

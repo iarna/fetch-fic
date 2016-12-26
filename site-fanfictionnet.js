@@ -62,7 +62,7 @@ class FanFictionNet extends Site {
         fic.tags = infomatches[3].split(/, /).concat(['rated:' + rated])
         fic.words = infomatches[4]
       } else {
-        console.error('NOMATCH:', infoline)
+        process.emit('error', 'NOMATCH:', infoline)
       }
 
       const $index = $($('#chap_select')[0])

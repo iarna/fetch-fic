@@ -77,7 +77,7 @@ class Worm extends Site {
             $lastLink.replaceWith($lastLink.text())
             return '<p><a external="false" href="' + link + '"><em>Worm</em>, ' + name + ' (comment ' + comment + ')</a></p>' + $comment.html()
           } else {
-            console.error($vcard.html())
+            process.emit('error', $vcard.html())
           }
         })
         $comments.find('div.reply').remove()

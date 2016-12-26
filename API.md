@@ -553,10 +553,10 @@ TODO: Rewrite this to be three phase:
 * AST → RTFDocument (object)
 * RTFDocument → HTML
 
-# simple-fetch.js
+# fetch.js
 
 ```js
-const fetch = require('./simple-fetch.js')
+const fetch = require('./fetch.js')
 ```
 
 ## fetch (href | {href, referer}, opts) → [Object, Buffer]
