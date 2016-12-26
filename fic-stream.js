@@ -43,7 +43,7 @@ class FicStream extends Readable {
       state.chapterBuffer.push(chapter)
     }
     if (state.reading) {
-      return null
+      return Bluebird.resolve()
     } else {
       if (state.readyP) return state.readyP
       state.readyP = new Bluebird(resolve => {
