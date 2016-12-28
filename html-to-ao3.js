@@ -289,14 +289,7 @@ class Parser {
         } catch (ex) {
           process.emit('debug', 'INVALID CSS value=' + attr.value + ', ' + ex.stack)
         }
-      } else if (attr.name === 'id' || attr.name === 'epub:type') {
-        // ignore
-      } else {
-        foundUnknown = true
       }
-    }
-    if (foundUnknown) {
-      throw new Error('UNKNOWN ATTRIBUTES', tag, attrs)
     }
     if (!this.tagBuffer[tag]) this.tagBuffer[tag] = []
     this.tagBuffer[tag].push(closeWith)
