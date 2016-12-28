@@ -1,27 +1,28 @@
 'use strict'
 const fs = require('fs')
 const path = require('path')
+const stream = require('stream')
 
 const Bluebird = require('bluebird')
 const identifyBuffer = require('buffer-signature').identify
 const identifyStream = require('buffer-signature').identifyStream
 const mkdirpCB = require('mkdirp')
 const pumpCB = require('pump')
-const stream = require('stream')
 
 const filenameize = use('filenameize')
-const HTMLToAO3 = use('html-to-ao3')
 const Output = use('output')
 const promisify = use('promisify')
 
+const HTMLToFFNet = require('./html-to-ffnet.js')
+
 const mkdirp = promisify(mkdirpCB)
-const pump = promisify(pumpCB)
 const writeFile = promisify(fs.writeFile)
 const rename = promisify(fs.rename)
+const pump = promisify(pumpCB)
 
-class OutputAO3 extends Output {
+class OutputFFNet extends Output {
   from (fic) {
-    return super.from(fic).to(filenameize(this.fic.title) + '.ao3')
+    return super.from(fic).to(filenameize(this.fic.title) + '.ffnet')
   }
   write () {
     return mkdirp(this.outname)
@@ -53,13 +54,13 @@ class OutputAO3 extends Output {
         return writeFile(path.join(this.outname, this.coverName), chapter.content)
       }
     } else {
-      const content = HTMLToAO3(this.sanitizeHtml(chapter.content))
+      const content = HTMLToFFNet(this.sanitizeHtml(chapter.content))
       return writeFile(filename, content)
     }
   }
 
   writeIndex () {
-    return writeFile(path.join(this.outname, 'index.html'), HTMLToAO3(this.tableOfContentsHTML()))
+    return writeFile(path.join(this.outname, 'index.html'), HTMLToFFNet(this.tableOfContentsHTML()))
   }
 
   htmlStyle () {
@@ -68,7 +69,7 @@ class OutputAO3 extends Output {
 
   htmlCoverImage () {
     if (!this.coverName) return ''
-    return `<p><center><img src="${this.coverName}"></center></p>`
+    return `<center><img src="${this.coverName}"></center>`
   }
 
   htmlSummaryTable (content) {
@@ -89,11 +90,11 @@ class OutputAO3 extends Output {
   }
 }
 
-OutputAO3.aliases = ['archiveofourown']
-module.exports = OutputAO3
+OutputFFNet.aliases = ['fanfiction.net']
+module.exports = OutputFFNet
 
 function chapterFilename (chapter) {
   const index = 1 + chapter.order
-  const name = chapter.name || `Chapter ${index}`
+  const name = chapter.name || 'Chapter ' + index
   return chapter.filename && chapter.filename.replace('xhtml', 'html') || filenameize('chapter-' + name) + '.html'
 }

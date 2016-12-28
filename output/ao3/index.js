@@ -1,33 +1,35 @@
 'use strict'
 const fs = require('fs')
 const path = require('path')
-const stream = require('stream')
 
 const Bluebird = require('bluebird')
 const identifyBuffer = require('buffer-signature').identify
 const identifyStream = require('buffer-signature').identifyStream
 const mkdirpCB = require('mkdirp')
 const pumpCB = require('pump')
+const stream = require('stream')
 
 const filenameize = use('filenameize')
-const HTMLToBBCode = use('html-to-bbcode')
 const Output = use('output')
 const promisify = use('promisify')
 
+const HTMLToAO3 = require('./html-to-ao3.js')
+
 const mkdirp = promisify(mkdirpCB)
+const pump = promisify(pumpCB)
 const writeFile = promisify(fs.writeFile)
 const rename = promisify(fs.rename)
-const pump = promisify(pumpCB)
 
-class OutputBBCode extends Output {
+class OutputAO3 extends Output {
   from (fic) {
-    return super.from(fic).to(filenameize(this.fic.title) + '.bbcode')
+    return super.from(fic).to(filenameize(this.fic.title) + '.ao3')
   }
   write () {
     return mkdirp(this.outname)
       .then(() => pump(this.fic, this.transform()))
       .then(() => this.writeIndex())
       .then(() => this.outname)
+      .catch((er) => process.emit('error', er.stack))
   }
 
   transformChapter (chapter) {
@@ -52,13 +54,13 @@ class OutputBBCode extends Output {
         return writeFile(path.join(this.outname, this.coverName), chapter.content)
       }
     } else {
-      const content = HTMLToBBCode(this.sanitizeHtml(chapter.content))
+      const content = HTMLToAO3(this.sanitizeHtml(chapter.content))
       return writeFile(filename, content)
     }
   }
 
   writeIndex () {
-    return writeFile(path.join(this.outname, 'index.bbcode'), HTMLToBBCode(this.tableOfContentsHTML()))
+    return writeFile(path.join(this.outname, 'index.html'), HTMLToAO3(this.tableOfContentsHTML()))
   }
 
   htmlStyle () {
@@ -67,7 +69,7 @@ class OutputBBCode extends Output {
 
   htmlCoverImage () {
     if (!this.coverName) return ''
-    return `<center><img src="${this.coverName}"></center>`
+    return `<p><center><img src="${this.coverName}"></center></p>`
   }
 
   htmlSummaryTable (content) {
@@ -88,11 +90,11 @@ class OutputBBCode extends Output {
   }
 }
 
-OutputBBCode.aliases = []
-module.exports = OutputBBCode
+OutputAO3.aliases = ['archiveofourown']
+module.exports = OutputAO3
 
 function chapterFilename (chapter) {
   const index = 1 + chapter.order
-  const name = chapter.name || 'Chapter ' + index
-  return chapter.filename && chapter.filename.replace('xhtml', 'bbcode') || filenameize('chapter-' + name) + '.bbcode'
+  const name = chapter.name || `Chapter ${index}`
+  return chapter.filename && chapter.filename.replace('xhtml', 'html') || filenameize('chapter-' + name) + '.html'
 }

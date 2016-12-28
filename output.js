@@ -210,5 +210,5 @@ Output.registered = {}
 module.exports = Output
 
 for (let output of outputFormats) {
-  Output.register(output, require(`./output-${output}.js`))
+  Output.register(output, require(`./output/${output}`))
 }

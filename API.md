@@ -4,10 +4,35 @@ Docs for the internal API
 There are no tests, because I'm a bad person who should feel bad.  First
 step: Write some tests to this doc.
 
+# NOTE
+
+One weird thing, I'm using a bit of an experimental module loader to make
+using intra-package modules easier, particularly when moving modules around.
+
+It works like so:
+
+```
+require('@iarna/lib')('util', 'other', path')
+```
+
+The above would use `__dirname/util`, `__dirname/other` and `__dirname/path`
+as your search path for intra-package modules.
+
+You can then require one with:
+
+```
+const myModule = use('my-module')
+```
+
+Which will ONLY search the paths you specified.  It won't look in
+node_modules folders.  Because it's based on the Node.js module loader it
+WILL load global modules if you ask it to. But don't.
+
+
 # cache.js
 
 ```js
-const cache = require('./cache.js')
+const cache = use('cache')
 ```
 
 Implements a generic read-through cache, and then builds a URL cache on top
@@ -81,7 +106,7 @@ SESSION ONLY.
 # call-limit.js
 
 ```js
-const callLimit = require('./call-limit.js')
+const callLimit = use('call-limit')
 ```
 
 This module provides our concurrency and requests per second limiting.
@@ -102,7 +127,7 @@ grouping. For our purposes this `grouping` is always a domain.
 # curry-options.js
 
 ```js
-const curryOptions = require('./curry-options.js')
+const curryOptions = use('curry-options')
 ```
 
 This takes a function that takes options as its final argument and
@@ -144,7 +169,7 @@ commands, all of which are expected to export a function that accepts a
 # fic-inflate.js
 
 ```js
-const ficInflate = require('fic-inflate.js')
+const ficInflate = use('fic-inflate')
 ```
 
 ## ficInflate (fic, fetch, tracker) → Promise(fic)
@@ -162,7 +187,7 @@ function are:
 # fic-stream.js
 
 ```js
-const FicStream = require('./fic-stream.js')
+const FicStream = use('fic-stream')
 const stream = new FicStream(fic)
 ```
 
@@ -180,7 +205,7 @@ while waiting on i/o.
 # fic.js
 
 ```js
-const Fic = require('./fic.js')
+const Fic = use('fic')
 ```
 
 When referenced, `fetch` is a function implementing `node-fetch`'s
@@ -368,7 +393,7 @@ Makes a serializable object out of a chapter.
 # filenameize.js
 
 ```js
-const filenameize = require('./filenameize.js')
+const filenameize = use('filenameize')
 ```
 
 ## filenameize (str) → String
@@ -380,7 +405,7 @@ trailing hyphens.
 # get-fic.js
 
 ```js
-const getFic = require('./get-fic.js')
+const getFic = use('get-fic')
 ```
 
 ## getFic (fetch, fic) → FicStream
@@ -391,7 +416,7 @@ the returned FicStream.
 # html-template-tag.js
 
 ```js
-const html = require('./html-template-tag.js')
+const html = use('html-template-tag')
 ```
 
 ## html`this is an ${'example <b>!'}` → 'this is an example &lt;b>!'
@@ -401,7 +426,7 @@ Uses `html-escape` to escape any values embedded in a template string.
 # html-to-ao3.js
 
 ```js
-const htmlToAo3 = require('./html-to-ao3.js')
+const htmlToAo3 = use('html-to-ao3')
 ```
 
 ## htmlToAo3(html) → String
@@ -413,7 +438,7 @@ preserve formatting even in the face of stylesheets.
 # html-to-bbcode.js
 
 ```js
-const htmlToBbcode = require('./html-to-bbcode.js')
+const htmlToBbcode = use('html-to-bbcode')
 ```
 
 ## htmlToBbcode(html) → String
@@ -424,7 +449,7 @@ forum sites.
 # html-to-ffnet.js
 
 ```js
-const htmlToFfnet = require('./html-to-ffnet.js')
+const htmlToFfnet = use('html-to-ffnet')
 ```
 
 ## htmlToFfnet(html) → String
@@ -436,7 +461,7 @@ preserve formatting even in the face of stylesheets.
 # in-flight.js
 
 ```js
-const inFlight = require('./in-flight.js')
+const inFlight = use('in-flight')
 ```
 
 ## inFlight (unique, todo) → Promise
@@ -459,7 +484,7 @@ call to `todo`.
 # normalize-html.js
 
 ```js
-const normalizeHtml = require('./normalize-html.js')
+const normalizeHtml = use('normalize-html')
 ```
 
 ## normalizeHtml (html) → String
@@ -470,7 +495,7 @@ result back to HTML.
 # output-formats.js
 
 ```js
-const outputFormats = require('./output-formats.js')
+const outputFormats = use('output-formats')
 ```
 
 `outputFormats` is an array of the names of the currently bundled output
@@ -481,7 +506,7 @@ formats. These are registered with `output.js` by default.
 # progress.js
 
 ```js
-const progress = require('./progress.js')
+const progress = use('progress')
 ```
 
 ## progress.spinWhileAnd (fn) → Function
@@ -519,7 +544,7 @@ Complete one unit of work on `tracker` when `promise` resolves.
 # promisify.js
 
 ```js
-const promisify = require('./promisify.js')
+const promisify = use('promisify')
 ```
 
 ## promisify (fn[, bind]) → Function
@@ -537,7 +562,7 @@ that accepts promisesa as arguments.
 # rtf-to-html.js
 
 ```js
-const rtfToHtml = require('./rtf-to-html.js')
+const rtfToHtml = use('rtf-to-html')
 ```
 
 ## rtfToHtml (rtf) → Promise(String)
@@ -556,7 +581,7 @@ TODO: Rewrite this to be three phase:
 # fetch.js
 
 ```js
-const fetch = require('./fetch.js')
+const fetch = use('fetch')
 ```
 
 ## fetch (href, opts) → [Object, Buffer]
@@ -603,7 +628,7 @@ to provide the interface described here.
 # site.js
 
 ```js
-const Site = require('./site.js')
+const Site = use('site')
 ```
 
 Site objects store all of the site-specific code.  Each site gets one class
@@ -615,7 +640,7 @@ plugins with `Site.register`.
 ## Site.register (siteclass)
 
 Register a site for use. This is called automatically for the following when
-you first `require('./site.js')`:
+you first `use('site')`:
 
 xenforo, fanfictionnet, deviantart, ao3, gravatar, wp-facebook, wikipedia,
 youtube, worm, generic-image, local

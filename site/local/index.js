@@ -6,8 +6,9 @@ const Bluebird = require('bluebird')
 const uuid = require('uuid')
 
 const promisify = use('promisify')
-const rtfToHTML = use('rtf-to-html')
 const Site = use('site')
+
+const rtfToHTML = require('./rtf-to-html.js')
 
 const readdir = promisify(fs.readdir)
 const readFile = promisify(fs.readFile)

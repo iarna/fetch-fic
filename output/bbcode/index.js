@@ -10,25 +10,25 @@ const mkdirpCB = require('mkdirp')
 const pumpCB = require('pump')
 
 const filenameize = use('filenameize')
-const HTMLToFFNet = use('html-to-ffnet')
 const Output = use('output')
 const promisify = use('promisify')
+
+const HTMLToBBCode = require('./html-to-bbcode.js')
 
 const mkdirp = promisify(mkdirpCB)
 const writeFile = promisify(fs.writeFile)
 const rename = promisify(fs.rename)
 const pump = promisify(pumpCB)
 
-class OutputFFNet extends Output {
+class OutputBBCode extends Output {
   from (fic) {
-    return super.from(fic).to(filenameize(this.fic.title) + '.ffnet')
+    return super.from(fic).to(filenameize(this.fic.title) + '.bbcode')
   }
   write () {
     return mkdirp(this.outname)
       .then(() => pump(this.fic, this.transform()))
       .then(() => this.writeIndex())
       .then(() => this.outname)
-      .catch((er) => process.emit('error', er.stack))
   }
 
   transformChapter (chapter) {
@@ -53,13 +53,13 @@ class OutputFFNet extends Output {
         return writeFile(path.join(this.outname, this.coverName), chapter.content)
       }
     } else {
-      const content = HTMLToFFNet(this.sanitizeHtml(chapter.content))
+      const content = HTMLToBBCode(this.sanitizeHtml(chapter.content))
       return writeFile(filename, content)
     }
   }
 
   writeIndex () {
-    return writeFile(path.join(this.outname, 'index.html'), HTMLToFFNet(this.tableOfContentsHTML()))
+    return writeFile(path.join(this.outname, 'index.bbcode'), HTMLToBBCode(this.tableOfContentsHTML()))
   }
 
   htmlStyle () {
@@ -89,11 +89,11 @@ class OutputFFNet extends Output {
   }
 }
 
-OutputFFNet.aliases = ['fanfiction.net']
-module.exports = OutputFFNet
+OutputBBCode.aliases = []
+module.exports = OutputBBCode
 
 function chapterFilename (chapter) {
   const index = 1 + chapter.order
   const name = chapter.name || 'Chapter ' + index
-  return chapter.filename && chapter.filename.replace('xhtml', 'html') || filenameize('chapter-' + name) + '.html'
+  return chapter.filename && chapter.filename.replace('xhtml', 'bbcode') || filenameize('chapter-' + name) + '.bbcode'
 }
