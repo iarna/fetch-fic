@@ -4,7 +4,7 @@ const url = require('url')
 const Bluebird = require('bluebird')
 const cheerio = require('cheerio')
 
-const Site = require('./site.js')
+const Site = use('site')
 
 class Wikipedia extends Site {
   static matches (siteUrlStr) {

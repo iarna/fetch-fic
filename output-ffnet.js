@@ -9,10 +9,10 @@ const identifyStream = require('buffer-signature').identifyStream
 const mkdirpCB = require('mkdirp')
 const pumpCB = require('pump')
 
-const filenameize = require('./filenameize.js')
-const HTMLToFFNet = require('./html-to-ffnet.js')
-const Output = require('./output.js')
-const promisify = require('./promisify')
+const filenameize = use('filenameize')
+const HTMLToFFNet = use('html-to-ffnet')
+const Output = use('output')
+const promisify = use('promisify')
 
 const mkdirp = promisify(mkdirpCB)
 const writeFile = promisify(fs.writeFile)

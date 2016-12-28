@@ -8,11 +8,11 @@ const url = require('url')
 const Bluebird = require('bluebird')
 const TOML = require('@iarna/toml')
 
-const fetch = require('./fetch')
-const Fic = require('./fic.js')
-const getFic = require('./get-fic.js')
-const Output = require('./output.js')
-const progress = require('./progress.js')
+const fetch = use('fetch')
+const Fic = use('fic')
+const getFic = use('get-fic')
+const Output = use('output')
+const progress = use('progress')
 
 function write (args) {
   const output = args.output

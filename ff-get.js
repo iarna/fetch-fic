@@ -4,12 +4,12 @@ module.exports = read
 const fs = require('fs')
 const TOML = require('@iarna/toml')
 
-const fetch = require('./fetch.js')
-const Fic = require('./fic.js')
-const ficInflate = require('./fic-inflate.js')
-const filenameize = require('./filenameize.js')
-const progress = require('./progress.js')
-const promisify = require('./promisify.js')
+const fetch = use('fetch')
+const Fic = use('fic')
+const ficInflate = use('fic-inflate')
+const filenameize = use('filenameize')
+const progress = use('progress')
+const promisify = use('promisify')
 
 const writeFile = promisify(fs.writeFile)
 

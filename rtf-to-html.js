@@ -6,7 +6,7 @@ const concat = require('concat-stream')
 const iconv = require('iconv-lite')
 const pumpCB = require('pump')
 
-const normalizeHtml = require('./normalize-html.js')
+const normalizeHtml = use('normalize-html')
 
 class ParseRTF extends Transform {
   constructor () {

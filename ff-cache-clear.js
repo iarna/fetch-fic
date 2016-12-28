@@ -1,7 +1,7 @@
 'use strict'
 module.exports = cacheClear
 
-const cache = require('./cache.js')
+const cache = use('cache')
 
 function cacheClear (args) {
   return cache.clearUrl(args.url).then(() =>

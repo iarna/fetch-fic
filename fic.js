@@ -2,7 +2,7 @@
 /* eslint-disable no-return-assign */
 const qw = require('qw')
 
-const Site = require('./site.js')
+const Site = use('site')
 
 class Fic {
   constructor (fetch) {

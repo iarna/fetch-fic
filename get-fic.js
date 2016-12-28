@@ -7,11 +7,11 @@ const url = require('url')
 const Bluebird = require('bluebird')
 const cheerio = require('cheerio')
 
-const chapterFilename = require('./chapter-filename.js')
-const FicStream = require('./fic-stream.js')
-const html = require('./html-template-tag.js')
-const progress = require('./progress')
-const Site = require('./site.js')
+const chapterFilename = use('chapter-filename')
+const FicStream = use('fic-stream')
+const html = use('html-template-tag')
+const progress = use('progress')
+const Site = use('site')
 
 function concurrently (_todo, concurrency, forEach) {
   const todo = Object.assign([], _todo)

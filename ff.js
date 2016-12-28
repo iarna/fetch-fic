@@ -1,10 +1,12 @@
 #!/usr/bin/env node
 'use strict'
+require('@iarna/lib')('util', '.')
+
 const onExit = require('signal-exit')
 const yargs = require('yargs')
 
-const outputFormats = require('./output-formats.js')
-const progress = require('./progress')
+const outputFormats = use('output-formats')
+const progress = use('progress')
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
 

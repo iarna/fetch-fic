@@ -1,7 +1,7 @@
 'use strict'
 module.exports = chapterFilename
 
-const filenameize = require('./filenameize.js')
+const filenameize = use('filenameize')
 
 function chapterFilename (chapter) {
   const index = 1 + chapter.order

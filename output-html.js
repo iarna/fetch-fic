@@ -9,9 +9,9 @@ const mkdirpCB = require('mkdirp')
 const path = require('path')
 const pumpCB = require('pump')
 
-const filenameize = require('./filenameize.js')
-const Output = require('./output.js')
-const promisify = require('./promisify')
+const filenameize = use('filenameize')
+const Output = use('output')
+const promisify = use('promisify')
 
 const mkdirp = promisify(mkdirpCB)
 const writeFile = promisify(fs.writeFile)

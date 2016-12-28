@@ -2,9 +2,9 @@
 'use strict'
 const fs = require('fs')
 
-const HTMLToBBCode = require('./html-to-bbcode.js')
-const promisify = require('./promisify.js')
-const rtfToHTML = require('./rtf-to-html.js')
+const HTMLToBBCode = use('html-to-bbcode')
+const promisify = use('promisify')
+const rtfToHTML = use('rtf-to-html')
 
 const readFile = promisify(fs.readFile)
 const stdoutWrite = promisify(process.stdout.write, process.stdout)

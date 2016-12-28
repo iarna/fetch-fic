@@ -4,7 +4,7 @@ const url = require('url')
 const Bluebird = require('bluebird')
 const cheerio = require('cheerio')
 
-const Site = require('./site.js')
+const Site = use('site')
 
 // This exists to support pulling in singular posts relating to Worm as
 // context in large works of fanfiction.

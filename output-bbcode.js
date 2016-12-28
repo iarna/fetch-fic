@@ -3,16 +3,16 @@ const fs = require('fs')
 const path = require('path')
 const stream = require('stream')
 
-const mkdirpCB = require('mkdirp')
 const Bluebird = require('bluebird')
-const pumpCB = require('pump')
-
 const identifyBuffer = require('buffer-signature').identify
 const identifyStream = require('buffer-signature').identifyStream
-const filenameize = require('./filenameize.js')
-const HTMLToBBCode = require('./html-to-bbcode')
-const Output = require('./output.js')
-const promisify = require('./promisify')
+const mkdirpCB = require('mkdirp')
+const pumpCB = require('pump')
+
+const filenameize = use('filenameize')
+const HTMLToBBCode = use('html-to-bbcode')
+const Output = use('output')
+const promisify = use('promisify')
 
 const mkdirp = promisify(mkdirpCB)
 const writeFile = promisify(fs.writeFile)

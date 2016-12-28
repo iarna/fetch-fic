@@ -3,16 +3,16 @@ const fs = require('fs')
 const path = require('path')
 
 const Bluebird = require('bluebird')
+const identifyBuffer = require('buffer-signature').identify
+const identifyStream = require('buffer-signature').identifyStream
 const mkdirpCB = require('mkdirp')
 const pumpCB = require('pump')
 const stream = require('stream')
 
-const identifyBuffer = require('buffer-signature').identify
-const identifyStream = require('buffer-signature').identifyStream
-const filenameize = require('./filenameize.js')
-const HTMLToAO3 = require('./html-to-ao3.js')
-const Output = require('./output.js')
-const promisify = require('./promisify')
+const filenameize = use('filenameize')
+const HTMLToAO3 = use('html-to-ao3')
+const Output = use('output')
+const promisify = use('promisify')
 
 const mkdirp = promisify(mkdirpCB)
 const pump = promisify(pumpCB)

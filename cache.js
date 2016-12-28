@@ -8,8 +8,8 @@ const path = require('path')
 const url = require('url')
 const zlib = require('zlib')
 
-const inFlight = require('./in-flight.js')
-const promisify = require('./promisify')
+const inFlight = use('in-flight')
+const promisify = use('promisify')
 
 const mkdirp = promisify(mkdirpCB)
 const pathDirname = promisify.args(path.dirname)

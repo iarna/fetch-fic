@@ -3,7 +3,7 @@ const url = require('url')
 
 const Bluebird = require('bluebird')
 
-const Site = require('./site.js')
+const Site = use('site')
 
 class Gravatar extends Site {
   static matches (siteUrlStr) {

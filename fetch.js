@@ -6,9 +6,9 @@ const Bluebird = require('bluebird')
 const rawFetch = require('node-fetch')
 const tough = require('tough-cookie')
 
-const cache = require('./cache.js')
-const callLimit = require('./call-limit')
-const curryOptions = require('./curry-options.js')
+const cache = use('cache')
+const callLimit = use('call-limit')
+const curryOptions = use('curry-options')
 
 rawFetch.Promise = Bluebird
 const CookieJar = tough.CookieJar

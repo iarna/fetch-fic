@@ -7,7 +7,7 @@ const parseCSS = require('css-parse')
 const parse5 = require('parse5')
 const qw = require('qw')
 
-const html = require('./html-template-tag.js')
+const html = use('html-template-tag')
 
 function HTMLToFFNet (html) {
   return new Parser().parse(html)

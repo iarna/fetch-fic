@@ -5,7 +5,7 @@ const url = require('url')
 const cheerio = require('cheerio')
 const color = require('color-ops')
 
-const Site = require('./site.js')
+const Site = use('site')
 
 const knownSites = {
   'forums.sufficientvelocity.com': 'Sufficient Velocity',

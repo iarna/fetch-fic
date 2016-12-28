@@ -18,6 +18,7 @@
   "author": "Rebecca Turner <me@re-becca.org> (http://re-becca.org/)",
   "license": "ISC",
   "dependencies": {
+    "@iarna/lib": "^1.0.0",
     "@iarna/toml": "^1.2.0",
     "are-we-there-yet": "^1.1.2",
     "bluebird": "^3.4.2",

@@ -10,8 +10,10 @@ if (process.progress) {
 } else {
    module.exports = process.progress = progress
 }
-//const getCallerFile = require('get-caller-file')
-const caller = require('./caller.js')
+const TrackerGroup = require('are-we-there-yet').TrackerGroup
+const Gauge = require('gauge')
+
+const caller = use('caller')
 
 progress.setVerbose = setVerbose
 progress.spinWhileAnd = spinWhileAnd
@@ -23,8 +25,6 @@ progress.addWork = addWork
 progress.newWork = newWork
 progress.completeWorkWhenResolved = completeWorkWhenResolved
 
-const Gauge = require('gauge')
-const TrackerGroup = require('are-we-there-yet').TrackerGroup
 
 const gauge = new Gauge()
 const sectionLabel = {}

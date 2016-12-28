@@ -4,9 +4,9 @@ const commaNumber = require('comma-number')
 const Transform = require('readable-stream').Transform
 const sanitizeHtml = require('sanitize-html')
 
-const html = require('./html-template-tag.js')
-const normalizeHtml = require('./normalize-html.js')
-const outputFormats = require('./output-formats.js')
+const html = use('html-template-tag')
+const normalizeHtml = use('normalize-html')
+const outputFormats = use('output-formats')
 
 class Output {
   static register (shortname, output) {
