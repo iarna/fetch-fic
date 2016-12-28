@@ -143,22 +143,23 @@ function readUrl (fetchUrl, onMiss) {
 
   function thenReadContent () {
     let result
+    let allow304 = false
     if (invalidated[fetchUrl]) {
       delete invalidated[fetchUrl]
-      result = writeGzipFile(content, orFetchUrl()).catch(err => {
+      allow304 = true
+      return writeGzipFile(content, orFetchUrl()).then(thenReadMetadata).catch(err => {
         if (err.code !== 304) throw err
         return thenReadContent()
       })
     } else {
-      result = readGzipFile(content, orFetchUrl).catch(err => {
+      return readGzipFile(content, orFetchUrl).catch(err => {
         // corrupted gzips we retry, anything else explode
         if (err.code !== 'Z_DATA_ERROR') throw err
         return clearUrl(fetchUrl).then(() => {
           return readGzipFile(content, orFetchUrl)
         })
-      })
+      }).then(thenReadMetadata)
     }
-    return result.then(thenReadMetadata)
   }
 
   function orFetchUrl () {
