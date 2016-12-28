@@ -1,24 +1,18 @@
 'use strict'
-const fs = require('fs')
 const path = require('path')
 
 const Bluebird = require('bluebird')
 const identifyBuffer = require('buffer-signature').identify
 const identifyStream = require('buffer-signature').identifyStream
-const mkdirpCB = require('mkdirp')
-const pumpCB = require('pump')
 const stream = require('stream')
 
 const filenameize = use('filenameize')
+const fs = use('fs-promises')
+const mkdirp = use('mkdirp')
 const Output = use('output')
-const promisify = use('promisify')
+const pump = use('pump')
 
 const HTMLToAO3 = require('./html-to-ao3.js')
-
-const mkdirp = promisify(mkdirpCB)
-const pump = promisify(pumpCB)
-const writeFile = promisify(fs.writeFile)
-const rename = promisify(fs.rename)
 
 class OutputAO3 extends Output {
   from (fic) {
@@ -35,7 +29,7 @@ class OutputAO3 extends Output {
   transformChapter (chapter) {
     const filename = path.join(this.outname, chapterFilename(chapter))
     if (chapter.image) {
-      return writeFile(filename, chapter.content)
+      return fs.writeFile(filename, chapter.content)
     } else if (chapter.cover) {
       if (chapter.content instanceof stream.Stream) {
         const tmpname = path.join(this.outname, 'cover-tmp')
@@ -44,23 +38,23 @@ class OutputAO3 extends Output {
             const ext = info.extensions.length ? '.' + info.extensions[0] : ''
             this.coverName = 'cover' + ext
           })).pipe(fs.createWriteStream(tmpname)).on('error', reject).on('finish', () => {
-            resolve(rename(tmpname, path.join(this.outname, this.coverName)))
+            resolve(fs.rename(tmpname, path.join(this.outname, this.coverName)))
           })
         })
       } else {
         const info = identifyBuffer(chapter.content)
         const ext = info.extensions.length ? '.' + info.extensions[0] : ''
         this.coverName = 'cover' + ext
-        return writeFile(path.join(this.outname, this.coverName), chapter.content)
+        return fs.writeFile(path.join(this.outname, this.coverName), chapter.content)
       }
     } else {
       const content = HTMLToAO3(this.sanitizeHtml(chapter.content))
-      return writeFile(filename, content)
+      return fs.writeFile(filename, content)
     }
   }
 
   writeIndex () {
-    return writeFile(path.join(this.outname, 'index.html'), HTMLToAO3(this.tableOfContentsHTML()))
+    return fs.writeFile(path.join(this.outname, 'index.html'), HTMLToAO3(this.tableOfContentsHTML()))
   }
 
   htmlStyle () {

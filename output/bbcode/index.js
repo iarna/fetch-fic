@@ -1,24 +1,17 @@
 'use strict'
-const fs = require('fs')
 const path = require('path')
 const stream = require('stream')
 
 const Bluebird = require('bluebird')
 const identifyBuffer = require('buffer-signature').identify
 const identifyStream = require('buffer-signature').identifyStream
-const mkdirpCB = require('mkdirp')
-const pumpCB = require('pump')
 
 const filenameize = use('filenameize')
+const fs = use('fs-promises')
 const Output = use('output')
-const promisify = use('promisify')
+const pump = use('pump')
 
 const HTMLToBBCode = require('./html-to-bbcode.js')
-
-const mkdirp = promisify(mkdirpCB)
-const writeFile = promisify(fs.writeFile)
-const rename = promisify(fs.rename)
-const pump = promisify(pumpCB)
 
 class OutputBBCode extends Output {
   from (fic) {
@@ -34,7 +27,7 @@ class OutputBBCode extends Output {
   transformChapter (chapter) {
     const filename = path.join(this.outname, chapterFilename(chapter))
     if (chapter.image) {
-      return writeFile(filename, chapter.content)
+      return fs.writeFile(filename, chapter.content)
     } else if (chapter.cover) {
       if (chapter.content instanceof stream.Stream) {
         const tmpname = path.join(this.outname, 'cover-tmp')
@@ -43,23 +36,23 @@ class OutputBBCode extends Output {
             const ext = info.extensions.length ? '.' + info.extensions[0] : ''
             this.coverName = 'cover' + ext
           })).pipe(fs.createWriteStream(tmpname)).on('error', reject).on('finish', () => {
-            resolve(rename(tmpname, path.join(this.outname, this.coverName)))
+            resolve(fs.rename(tmpname, path.join(this.outname, this.coverName)))
           })
         })
       } else {
         const info = identifyBuffer(chapter.content)
         const ext = info.extensions.length ? '.' + info.extensions[0] : ''
         this.coverName = 'cover' + ext
-        return writeFile(path.join(this.outname, this.coverName), chapter.content)
+        return fs.writeFile(path.join(this.outname, this.coverName), chapter.content)
       }
     } else {
       const content = HTMLToBBCode(this.sanitizeHtml(chapter.content))
-      return writeFile(filename, content)
+      return fs.writeFile(filename, content)
     }
   }
 
   writeIndex () {
-    return writeFile(path.join(this.outname, 'index.bbcode'), HTMLToBBCode(this.tableOfContentsHTML()))
+    return fs.writeFile(path.join(this.outname, 'index.bbcode'), HTMLToBBCode(this.tableOfContentsHTML()))
   }
 
   htmlStyle () {

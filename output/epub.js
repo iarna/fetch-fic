@@ -3,15 +3,12 @@ const fs = require('fs')
 
 const Streampub = require('streampub')
 const TOML = require('@iarna/toml')
-const pumpCB = require('pump')
 
 const chapterFilename = use('chapter-filename')
 const filenameize = use('filenameize')
 const html = use('html-template-tag')
 const Output = use('output')
-const promisify = use('promisify')
-
-const pump = promisify(pumpCB)
+const pump = use('pump')
 
 class OutputEpub extends Output {
   from (fic) {

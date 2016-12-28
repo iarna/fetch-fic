@@ -1,23 +1,18 @@
 'use strict'
 const Bluebird = require('bluebird')
 const crypto = require('crypto')
-const fs = require('fs')
 const mkdirpCB = require('mkdirp')
 const os = require('os')
 const path = require('path')
 const url = require('url')
-const zlib = require('zlib')
 
 const inFlight = use('in-flight')
+const fs = use('fs-promises')
+const mkdirp = use('mkdirp')
 const promisify = use('promisify')
+const zlib = use('zlib-promises')
 
-const mkdirp = promisify(mkdirpCB)
 const pathDirname = promisify.args(path.dirname)
-const fsReadFile = promisify(fs.readFile)
-const fsWriteFile = promisify(fs.writeFile)
-const fsUnlink = promisify(fs.unlink)
-const zlibGzip = promisify(zlib.gzip)
-const zlibGunzip = promisify(zlib.gunzip)
 
 exports.readFile = readFile
 exports.clearFile = clearFile
@@ -45,7 +40,7 @@ function readFile (filename, onMiss) {
   return inFlight(['read:', filename], thenReadFile)
 
   function thenReadFile () {
-    return fsReadFile(cacheFile).catch(elseHandleMiss)
+    return fs.readFile(cacheFile).catch(elseHandleMiss)
   }
   function elseHandleMiss () {
     return resolveCall(onMiss).then(content => writeFile(filename, Buffer.from(content)))
@@ -57,13 +52,13 @@ function writeFile (filename, content) {
   return inFlight(['write:', filename], thenWriteFile).thenReturn(content)
 
   function thenWriteFile () {
-    return mkdirp(pathDirname(cacheFile)).then(() => fsWriteFile(cacheFile, content))
+    return mkdirp(pathDirname(cacheFile)).then(() => fs.writeFile(cacheFile, content))
   }
 }
 
 function clearFile (filename) {
   const cacheFile = cacheFilename(filename)
-  return ignoreHarmlessErrors(fsUnlink(cacheFile))
+  return ignoreHarmlessErrors(fs.unlink(cacheFile))
 }
 
 function readJSON (filename, onMiss) {
@@ -80,15 +75,15 @@ function writeJSON (filename, content) {
 */
 
 function readGzipFile (filename, onMiss) {
-  return readFile(filename, gzipOnMiss).then(buf => zlibGunzip(buf))
+  return readFile(filename, gzipOnMiss).then(buf => zlib.gunzip(buf))
 
   function gzipOnMiss () {
-    return resolveCall(onMiss).then(result => zlibGzip(result))
+    return resolveCall(onMiss).then(result => zlib.gzip(result))
   }
 }
 
 function writeGzipFile (filename, content) {
-  return writeFile(filename, zlibGzip(content)).thenReturn(content)
+  return writeFile(filename, zlib.gzip(content)).thenReturn(content)
 }
 
 function getUrlHash (toFetch) {

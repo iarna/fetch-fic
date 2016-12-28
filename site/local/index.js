@@ -1,17 +1,13 @@
 'use strict'
-const fs = require('fs')
 const path = require('path')
 
 const Bluebird = require('bluebird')
 const uuid = require('uuid')
 
-const promisify = use('promisify')
+const fs = use('fs-promises')
 const Site = use('site')
 
 const rtfToHTML = require('./rtf-to-html.js')
-
-const readdir = promisify(fs.readdir)
-const readFile = promisify(fs.readFile)
 
 class Local extends Site {
   static matches (siteUrlStr) {
@@ -38,7 +34,7 @@ class Local extends Site {
   }
 
   recursedir (fic, dir) {
-    return readdir(dir).then(files => {
+    return fs.readdir(dir).then(files => {
       files.sort()
       const todo = []
       for (let file of files) {
@@ -61,7 +57,7 @@ class Local extends Site {
   }
 
   getChapter (fetch, chapter) {
-    return rtfToHTML(readFile(chapter, 'ascii')).then(result => {
+    return rtfToHTML(fs.readFile(chapter, 'ascii')).then(result => {
       return {
         'finalUrl': chapter,
         'content': result

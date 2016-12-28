@@ -90,7 +90,12 @@
     "site/worm.js",
     "site/wp-facebook.js",
     "site/xenforo.js",
-    "site/youtube.js"
+    "site/youtube.js",
+    "util/fs-promises.js",
+    "util/mkdirp.js",
+    "util/pump.js",
+    "util/toml.js",
+    "util/zlib-promises.js"
   ],
   "repository": {
     "type": "git",

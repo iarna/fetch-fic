@@ -1,22 +1,18 @@
 'use strict'
 module.exports = update
 
-const fs = require('fs')
-
 const Bluebird = require('bluebird')
 const qw = require('qw')
-const TOML = require('@iarna/toml')
+const syncTOML = require('@iarna/toml')
 
 const fetch = use('fetch')
 const Fic = use('fic')
 const ficInflate = use('fic-inflate')
 const filenameize = use('filenameize')
+const fs = use('fs-promises')
 const progress = use('progress')
 const promisify = use('promisify')
-
-const readFile = promisify(fs.readFile)
-const writeFile = promisify(fs.writeFile)
-const TOMLstringify = promisify.args(TOML.stringify)
+const TOML = use('toml')
 
 function update (args) {
   const fetchOpts = {
@@ -32,7 +28,7 @@ function update (args) {
 }
 
 function readFic (fic) {
-  return readFile(fic).then(toml => Fic.fromJSON(TOML.parse(toml)))
+  return fs.readFile(fic).then(toml => Fic.fromJSON(syncTOML.parse(toml)))
 }
 
 function updateFic (fetch, args) {
@@ -51,7 +47,7 @@ function updateFic (fetch, args) {
 function writeUpdatedFic (ficFile, existingFic, changes) {
   return Bluebird.resolve(changes).then(changes => {
     if (!changes) return null
-    return writeFile(ficFile, TOMLstringify(existingFic)).then(() => {
+    return fs.writeFile(ficFile, TOML.stringify(existingFic)).then(() => {
       progress.output(`${ficFile}\n`)
       if (changes.length) progress.output(`    ${changes.join('\n    ')} \n`)
       return 1

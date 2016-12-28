@@ -1,17 +1,14 @@
 'use strict'
 module.exports = read
 
-const fs = require('fs')
 const TOML = require('@iarna/toml')
 
 const fetch = use('fetch')
 const Fic = use('fic')
 const ficInflate = use('fic-inflate')
 const filenameize = use('filenameize')
+const fs = use('fs-promises')
 const progress = use('progress')
-const promisify = use('promisify')
-
-const writeFile = promisify(fs.writeFile)
 
 function read (args) {
   const addAll = args['add-all']
@@ -46,7 +43,7 @@ function read (args) {
   const deflatedFic = progress.addWork(fetchFic(), fetchTracker).finally(enableCache)
   return ficInflate(deflatedFic, fetchAndSpin.withOpts({cacheBreak: false})).then(fic => {
     const filename = filenameize(fic.title) + '.fic.toml'
-    return writeFile(filename, TOML.stringify(fic)).then(() => {
+    return fs.writeFile(filename, TOML.stringify(fic)).then(() => {
       progress.output(filename + '\n')
       return null
     })
