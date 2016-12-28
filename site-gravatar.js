@@ -1,7 +1,9 @@
 'use strict'
-const Bluebird = require('bluebird')
-const Site = require('./site.js')
 const url = require('url')
+
+const Bluebird = require('bluebird')
+
+const Site = require('./site.js')
 
 class Gravatar extends Site {
   static matches (siteUrlStr) {

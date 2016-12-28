@@ -1,8 +1,9 @@
 'use strict'
 const Bluebird = require('bluebird')
+const commaNumber = require('comma-number')
 const Transform = require('readable-stream').Transform
 const sanitizeHtml = require('sanitize-html')
-const commaNumber = require('comma-number')
+
 const html = require('./html-template-tag.js')
 const normalizeHtml = require('./normalize-html.js')
 const outputFormats = require('./output-formats.js')

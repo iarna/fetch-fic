@@ -2,15 +2,17 @@
 'use strict'
 module.exports = write
 
-const Bluebird = require('bluebird')
-const fetch = require('./fetch')
 const fs = require('fs')
+const url = require('url')
+
+const Bluebird = require('bluebird')
 const TOML = require('@iarna/toml')
+
+const fetch = require('./fetch')
+const Fic = require('./fic.js')
 const getFic = require('./get-fic.js')
 const Output = require('./output.js')
 const progress = require('./progress.js')
-const Fic = require('./fic.js')
-const url = require('url')
 
 function write (args) {
   const output = args.output

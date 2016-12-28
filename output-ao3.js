@@ -1,18 +1,23 @@
 'use strict'
-const stream = require('stream')
-const Bluebird = require('bluebird')
-const Output = require('./output.js')
 const fs = require('fs')
-const promisify = require('./promisify')
-const mkdirp = promisify(require('mkdirp'))
-const writeFile = promisify(fs.writeFile)
-const rename = promisify(fs.rename)
-const HTMLToAO3 = require('./html-to-ao3.js')
-const filenameize = require('./filenameize.js')
 const path = require('path')
-const pump = promisify(require('pump'))
+
+const Bluebird = require('bluebird')
+const mkdirpCB = require('mkdirp')
+const pumpCB = require('pump')
+const stream = require('stream')
+
 const identifyBuffer = require('buffer-signature').identify
 const identifyStream = require('buffer-signature').identifyStream
+const filenameize = require('./filenameize.js')
+const HTMLToAO3 = require('./html-to-ao3.js')
+const Output = require('./output.js')
+const promisify = require('./promisify')
+
+const mkdirp = promisify(mkdirpCB)
+const pump = promisify(pumpCB)
+const writeFile = promisify(fs.writeFile)
+const rename = promisify(fs.rename)
 
 class OutputAO3 extends Output {
   from (fic) {

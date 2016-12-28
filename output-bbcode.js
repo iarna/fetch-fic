@@ -1,18 +1,23 @@
 'use strict'
-const stream = require('stream')
-const Output = require('./output.js')
 const fs = require('fs')
-const promisify = require('./promisify')
-const mkdirp = promisify(require('mkdirp'))
-const writeFile = promisify(fs.writeFile)
-const rename = promisify(fs.rename)
-const Bluebird = require('bluebird')
-const HTMLToBBCode = require('./html-to-bbcode')
-const filenameize = require('./filenameize.js')
 const path = require('path')
-const pump = promisify(require('pump'))
+const stream = require('stream')
+
+const mkdirpCB = require('mkdirp')
+const Bluebird = require('bluebird')
+const pumpCB = require('pump')
+
 const identifyBuffer = require('buffer-signature').identify
 const identifyStream = require('buffer-signature').identifyStream
+const filenameize = require('./filenameize.js')
+const HTMLToBBCode = require('./html-to-bbcode')
+const Output = require('./output.js')
+const promisify = require('./promisify')
+
+const mkdirp = promisify(mkdirpCB)
+const writeFile = promisify(fs.writeFile)
+const rename = promisify(fs.rename)
+const pump = promisify(pumpCB)
 
 class OutputBBCode extends Output {
   from (fic) {

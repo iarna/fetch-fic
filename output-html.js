@@ -1,17 +1,22 @@
 'use strict'
-const stream = require('stream')
-const Output = require('./output.js')
 const fs = require('fs')
-const promisify = require('./promisify')
-const mkdirp = promisify(require('mkdirp'))
-const writeFile = promisify(fs.writeFile)
-const rename = promisify(fs.rename)
-const Bluebird = require('bluebird')
-const filenameize = require('./filenameize.js')
-const path = require('path')
-const pump = promisify(require('pump'))
+const stream = require('stream')
+
 const identifyBuffer = require('buffer-signature').identify
 const identifyStream = require('buffer-signature').identifyStream
+const Bluebird = require('bluebird')
+const mkdirpCB = require('mkdirp')
+const path = require('path')
+const pumpCB = require('pump')
+
+const filenameize = require('./filenameize.js')
+const Output = require('./output.js')
+const promisify = require('./promisify')
+
+const mkdirp = promisify(mkdirpCB)
+const writeFile = promisify(fs.writeFile)
+const rename = promisify(fs.rename)
+const pump = promisify(pumpCB)
 
 class OutputHTML extends Output {
   from (fic) {

@@ -1,12 +1,15 @@
 'use strict'
-const Site = require('./site.js')
-const Bluebird = require('bluebird')
-const path = require('path')
 const fs = require('fs')
+const path = require('path')
+
+const Bluebird = require('bluebird')
 const uuid = require('uuid')
+
 const promisify = require('./promisify')
-const readdir = promisify(fs.readdir)
 const rtfToHTML = require('./rtf-to-html.js')
+const Site = require('./site.js')
+
+const readdir = promisify(fs.readdir)
 const readFile = promisify(fs.readFile)
 
 class Local extends Site {

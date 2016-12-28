@@ -1,11 +1,14 @@
 'use strict'
 module.exports = HTMLToAO3
-const Bluebird = require('bluebird')
-const parse5 = require('parse5')
+
 const util = require('util')
+
+const Bluebird = require('bluebird')
 const parseCSS = require('css-parse')
-const html = require('./html-template-tag.js')
+const parse5 = require('parse5')
 const qw = require('qw')
+
+const html = require('./html-template-tag.js')
 
 function HTMLToAO3 (html) {
   return new Parser().parse(html)

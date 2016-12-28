@@ -3,8 +3,9 @@ module.exports = ficInflate
 
 const Bluebird = require('bluebird')
 const qw = require('qw')
-const progress = require('./progress')
+
 const countStoryWords = require('./count-story-words.js')
+const progress = require('./progress')
 
 // Take a fic and fetch all its chapters and ensure its per-chapter metadata
 // is fully complete.

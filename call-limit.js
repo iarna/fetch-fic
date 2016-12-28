@@ -1,5 +1,6 @@
 'use strict'
 const Bluebird = require('bluebird')
+
 const defaultMaxRunning = 50
 
 const limit = module.exports = (func, maxRunning, minTimeMS) => {

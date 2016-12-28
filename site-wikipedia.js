@@ -1,7 +1,8 @@
 'use strict'
-const Site = require('./site.js')
-const cheerio = require('cheerio')
 const Bluebird = require('bluebird')
+const cheerio = require('cheerio')
+
+const Site = require('./site.js')
 
 class Wikipedia extends Site {
   static matches (siteUrlStr) {

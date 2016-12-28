@@ -1,9 +1,11 @@
 'use strict'
 /* eslint-disable no-useless-escape */
 const url = require('url')
-const Site = require('./site.js')
+
 const cheerio = require('cheerio')
 const color = require('color-ops')
+
+const Site = require('./site.js')
 
 const knownSites = {
   'forums.sufficientvelocity.com': 'Sufficient Velocity',

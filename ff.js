@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 'use strict'
-const outputFormats = require('./output-formats.js')
-const yargs = require('yargs')
 const onExit = require('signal-exit')
+const yargs = require('yargs')
+
+const outputFormats = require('./output-formats.js')
 const progress = require('./progress')
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'

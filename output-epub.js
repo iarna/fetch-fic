@@ -1,12 +1,14 @@
 'use strict'
 const fs = require('fs')
+
 const Streampub = require('streampub')
 const TOML = require('@iarna/toml')
-const Output = require('./output.js')
+
 const chapterFilename = require('./chapter-filename.js')
-const html = require('./html-template-tag.js')
-const promisify = require('./promisify')
 const filenameize = require('./filenameize.js')
+const html = require('./html-template-tag.js')
+const Output = require('./output.js')
+const promisify = require('./promisify')
 
 const pump = promisify(require('pump'))
 

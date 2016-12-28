@@ -1,5 +1,6 @@
 'use strict'
 module.exports = countStoryWords
+
 const cheerio = require('cheerio')
 const wordcount = require('wordcount')
 

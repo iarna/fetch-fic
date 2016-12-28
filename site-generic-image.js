@@ -1,7 +1,9 @@
 'use strict'
-const Site = require('./site.js')
-const Bluebird = require('bluebird')
 const url = require('url')
+
+const Bluebird = require('bluebird')
+
+const Site = require('./site.js')
 
 class GenericImage extends Site {
   static matches (siteUrlStr) {

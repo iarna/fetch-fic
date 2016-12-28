@@ -1,14 +1,17 @@
 'use strict'
 module.exports = getFic
+
+const fs = require('fs')
+const url = require('url')
+
 const Bluebird = require('bluebird')
-const Site = require('./site.js')
 const cheerio = require('cheerio')
+
 const chapterFilename = require('./chapter-filename.js')
 const FicStream = require('./fic-stream.js')
-const url = require('url')
 const html = require('./html-template-tag.js')
-const fs = require('fs')
 const progress = require('./progress')
+const Site = require('./site.js')
 
 function concurrently (_todo, concurrency, forEach) {
   const todo = Object.assign([], _todo)

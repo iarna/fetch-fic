@@ -1,14 +1,17 @@
 'use strict'
-const cache = require('./cache.js')
-const Bluebird = require('bluebird')
-const callLimit = require('./call-limit')
-const rawFetch = require('node-fetch')
-rawFetch.Promise = Bluebird
-const util = require('util')
-const tough = require('tough-cookie')
-const CookieJar = tough.CookieJar
 const url = require('url')
+const util = require('util')
+
+const Bluebird = require('bluebird')
+const rawFetch = require('node-fetch')
+const tough = require('tough-cookie')
+
+const cache = require('./cache.js')
+const callLimit = require('./call-limit')
 const curryOptions = require('./curry-options.js')
+
+rawFetch.Promise = Bluebird
+const CookieJar = tough.CookieJar
 
 const cookieJar = new CookieJar()
 const globalCookies = []

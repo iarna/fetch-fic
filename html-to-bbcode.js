@@ -1,9 +1,11 @@
 'use strict'
 module.exports = HTMLToBBCode
-const Bluebird = require('bluebird')
-const parse5 = require('parse5')
+
 const util = require('util')
+
+const Bluebird = require('bluebird')
 const parseCSS = require('css-parse')
+const parse5 = require('parse5')
 
 function HTMLToBBCode (html) {
   return new Parser().parse(html)

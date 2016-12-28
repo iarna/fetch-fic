@@ -1,6 +1,8 @@
 'use strict'
-const Bluebird = require('bluebird')
 const url = require('url')
+
+const Bluebird = require('bluebird')
+
 const Site = require('./site.js')
 
 class WpFacebook extends Site {

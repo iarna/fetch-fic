@@ -1,5 +1,6 @@
 'use strict'
 module.exports = promisify
+
 const Bluebird = require('bluebird')
 
 function promisify (fn, bind) {

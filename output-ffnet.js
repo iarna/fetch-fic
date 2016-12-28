@@ -1,18 +1,23 @@
 'use strict'
-const stream = require('stream')
-const Output = require('./output.js')
 const fs = require('fs')
-const promisify = require('./promisify')
-const mkdirp = promisify(require('mkdirp'))
-const writeFile = promisify(fs.writeFile)
-const rename = promisify(fs.rename)
-const Bluebird = require('bluebird')
-const HTMLToFFNet = require('./html-to-ffnet.js')
-const filenameize = require('./filenameize.js')
 const path = require('path')
-const pump = promisify(require('pump'))
+const stream = require('stream')
+
+const Bluebird = require('bluebird')
 const identifyBuffer = require('buffer-signature').identify
 const identifyStream = require('buffer-signature').identifyStream
+const mkdirpCB = require('mkdirp')
+const pumpCB = require('pump')
+
+const filenameize = require('./filenameize.js')
+const HTMLToFFNet = require('./html-to-ffnet.js')
+const Output = require('./output.js')
+const promisify = require('./promisify')
+
+const mkdirp = promisify(mkdirpCB)
+const writeFile = promisify(fs.writeFile)
+const rename = promisify(fs.rename)
+const pump = promisify(pumpCB)
 
 class OutputFFNet extends Output {
   from (fic) {

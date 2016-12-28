@@ -1,10 +1,12 @@
 'use strict'
-const iconv = require('iconv-lite')
 const Transform = require('stream').Transform
-const pump = require('pump')
-const normalizeHtml = require('./normalize-html.js')
-const concat = require('concat-stream')
+
 const Bluebird = require('bluebird')
+const concat = require('concat-stream')
+const iconv = require('iconv-lite')
+const pumpCB = require('pump')
+
+const normalizeHtml = require('./normalize-html.js')
 
 class ParseRTF extends Transform {
   constructor () {
@@ -283,7 +285,7 @@ module.exports = function (rtf) {
   return Promise.resolve(rtf).then(rtf => {
     var parser = new ParseRTF()
     return new Bluebird((resolve, reject) => {
-      pump(
+      pumpCB(
         parser,
         new ToHTML(),
         concat(data => {

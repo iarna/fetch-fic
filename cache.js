@@ -1,20 +1,23 @@
 'use strict'
-const os = require('os')
-const url = require('url')
-const crypto = require('crypto')
 const Bluebird = require('bluebird')
-const promisify = require('./promisify')
-const path = require('path')
-const pathDirname = promisify.args(path.dirname)
-const mkdirp = promisify(require('mkdirp'))
+const crypto = require('crypto')
 const fs = require('fs')
+const mkdirpCB = require('mkdirp')
+const os = require('os')
+const path = require('path')
+const url = require('url')
+const zlib = require('zlib')
+
+const inFlight = require('./in-flight.js')
+const promisify = require('./promisify')
+
+const mkdirp = promisify(mkdirpCB)
+const pathDirname = promisify.args(path.dirname)
 const fsReadFile = promisify(fs.readFile)
 const fsWriteFile = promisify(fs.writeFile)
 const fsUnlink = promisify(fs.unlink)
-const zlib = require('zlib')
 const zlibGzip = promisify(zlib.gzip)
 const zlibGunzip = promisify(zlib.gunzip)
-const inFlight = require('./in-flight.js')
 
 exports.readFile = readFile
 exports.clearFile = clearFile
