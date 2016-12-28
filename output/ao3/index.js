@@ -4,7 +4,7 @@ const path = require('path')
 const Bluebird = require('bluebird')
 const identifyBuffer = require('buffer-signature').identify
 const identifyStream = require('buffer-signature').identifyStream
-const stream = require('stream')
+const stream = require('readable-stream')
 
 const filenameize = use('filenameize')
 const fs = use('fs-promises')

@@ -1,10 +1,9 @@
 'use strict'
-const Transform = require('stream').Transform
-
 const Bluebird = require('bluebird')
 const concat = require('concat-stream')
 const iconv = require('iconv-lite')
 const pumpCB = require('pump')
+const Transform = require('readable-stream').Transform
 
 const normalizeHtml = use('normalize-html')
 
