@@ -12,7 +12,7 @@ const pump = use('pump')
 
 class OutputEpub extends Output {
   from (fic) {
-    return super.from(fic).to(filenameize(this.fic.title) + '.epub')
+    return super.from(fic).to(filenameize(fic.title) + '.epub')
   }
   write () {
     const epub = new Streampub({
