@@ -46,11 +46,14 @@ function write (args) {
     fetchAndFinish.tracker = tracker
     fics = fics.filter((fic, ficNum) => {
       if (topFic === fic && topFic.fics && !topFic.chapters) return false
+      if (!fic.title) {
+        process.emit('warn', `Skipping #${ficNum} in ${ficFile}, missing title`)
+        return false
+      }
       for (let key of Object.keys(topFic)) {
         if (key === 'fics' || key === 'chapters') continue
         if (!fic[key]) fic[key] = topFic[key]
       }
-
       progress.show(fic.title, 'Fetching fic')
       tracker.addWork(fic.chapters.length)
       process.emit('debug', `Fetching #${ficNum} for ${ficFile}: ${fic.title}`)
