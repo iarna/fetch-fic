@@ -62,7 +62,7 @@ function write (args) {
 
     return Bluebird.each(fics, fetchFic(fetchAndFinish))
       .finally(() => {
-      process.emit('debug', `Fetching #${ficNum} for ${ficFile}: Complete`)
+        process.emit('debug', `Fetching #${ficNum} for ${ficFile}: Complete`)
         tracker.finish()
         progress.hide()
       })
