@@ -62,11 +62,11 @@ class Fic {
   }
 
   importFromJSON (raw) {
-    for (let prop of qw`
-         id link title author authorUrl created modified description tags
-         publisher cover chapterHeadings words updateFrom includeTOC numberTOC
-         fetchMeta scrapeMeta
-       `) {
+    const props = qw`id link title author authorUrl created modified
+     description tags publisher cover chapterHeadings words updateFrom
+     includeTOC numberTOC fetchMeta scrapeMeta`
+
+    for (let prop of props) {
       this[prop] = raw[prop]
     }
     this.chapters.importFromJSON(raw)
@@ -75,6 +75,12 @@ class Fic {
     }
     this.site = Site.fromUrl(this.updateWith())
     this.externals = raw.externals != null ? raw.externals : true
+    for (let prop of Object.keys(raw)) {
+      if (props.indexOf(prop) !== -1) continue
+      if (prop !== 'chapters' && prop !== 'fics' && prop !== 'externals') {
+        process.emit('warn', `Unknown property when importing fic: "${prop}"`)
+      }
+    }
     return this
   }
 
