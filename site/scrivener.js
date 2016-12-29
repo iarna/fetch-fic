@@ -31,10 +31,10 @@ class Scrivener extends Site {
   getFicMetadata (fetch, fic) {
     fic.id = 'urn:uuid:' + uuid.v4()
     fic.publisher = this.publisherName
-    fic.updateFrom = fic.link
+    fic.updateFrom = fic.link.replace(/[/]$/, '')
     fic.link = null
     const basename = path.basename(fic.updateFrom)
-    fic.title = basename
+    fic.title = basename.replace(/\.scriv$/, '')
     const scrivname = path.join(fic.updateFrom, basename + 'x')
     return this.fromScrivener(fic, scrivname)
   }
@@ -42,8 +42,8 @@ class Scrivener extends Site {
   fromScrivener (fic, scrivx) {
     return parseString(fs.readFile(scrivx)).then(data => {
       const props = this.scrivMap(data.ScrivenerProject, 'ProjectProperties')
-      fic.title = props.ProjectTitle
-      fic.author = props.FullName
+      if (props.ProjectTitle) fic.title = props.ProjectTitle
+      if (props.FullName) fic.author = props.FullName
       const items = this.scrivBinder(data.ScrivenerProject, 'Binder')
       return this.recurseItems(fic, items)
     })
@@ -63,7 +63,7 @@ class Scrivener extends Site {
   }
 
   scrivValue (obj, prop) {
-    return obj[prop][0]
+    return obj[prop] && obj[prop][0]
   }
 
   scrivMap (obj, prop) {
