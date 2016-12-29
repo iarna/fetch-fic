@@ -8,4 +8,5 @@ exports.readFile = promisify(fs.readFile, fs)
 exports.writeFile = promisify(fs.writeFile, fs)
 exports.rename = promisify(fs.rename, fs)
 exports.unlink = promisify(fs.unlink)
+exports.stat = promisify(fs.stat)
 exports.createWriteStream = fs.createWriteStream

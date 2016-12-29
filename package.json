@@ -43,6 +43,7 @@
     "tough-cookie": "^2.3.2",
     "uuid": "^3.0.0",
     "wordcount": "^1.1.1",
+    "xml2js": "^0.4.17",
     "yargs": "^6.5.0"
   },
   "files": [
@@ -85,7 +86,8 @@
     "site/fanfictionnet.js",
     "site/generic-image.js",
     "site/gravatar.js",
-    "site/local/index.js",
+    "site/local.js",
+    "site/scrivener.js",
     "site/wikipedia.js",
     "site/worm.js",
     "site/wp-facebook.js",
@@ -94,6 +96,7 @@
     "util/fs-promises.js",
     "util/mkdirp.js",
     "util/pump.js",
+    "util/rtf-to-html.js",
     "util/toml.js",
     "util/zlib-promises.js"
   ],

@@ -5,9 +5,8 @@ const Bluebird = require('bluebird')
 const uuid = require('uuid')
 
 const fs = use('fs-promises')
+const rtfToHTML = use('rtf-to-html')
 const Site = use('site')
-
-const rtfToHTML = require('./rtf-to-html.js')
 
 class Local extends Site {
   static matches (siteUrlStr) {
@@ -35,18 +34,16 @@ class Local extends Site {
 
   recursedir (fic, dir) {
     return fs.readdir(dir).then(files => {
-      files.sort()
+      const list = files.map(file => path.join(dir, file)).sort()
       const todo = []
-      for (let file of files) {
-        const filename = path.join(dir, file)
-        const info = fs.statSync(filename)
+      return Bluebird.map(list, filename => fs.stat(filename).then(info => {
         if (info.isDirectory()) {
-          todo.push(this.recursedir(fic, filename))
+          return filename
         } else if (/\.rtf$/.test(filename)) {
           const name = path.relative(fic.updateFrom, filename)
           fic.addChapter({name, fetchFrom: filename, created: info.birthtime, modified: info.mtime})
         }
-      }
+      })).each(filename => filename && this.recursedir(fic, filename))
       return Bluebird.all(todo).catch(x => process.emit('error', 'TAP', x))
     })
   }

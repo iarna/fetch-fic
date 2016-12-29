@@ -129,16 +129,14 @@ function doesPushable (obj) {
   return Object.assign(Object.create(Pushable), obj)
 }
 
-function evaluate (exp, state, content) {
-  return htmlExpression[exp.command] && htmlExpression[exp.command](exp, state, content)
-}
-
 // We assume formatting expressions are paired as they have to be in HTML.
 // They don't in RTF, so it's entirely possible for valid RTF to produce weird HTML.
 // This will likely be cleaned up by the parse/serialize step, but still.
 const htmlExpression = {
   group: (exp, state, content) => {
-    const group = exp.args.shift()
+    let group = exp.args.shift()
+    if (group.command === '*') group = exp.args.shift()
+//    console.log('STARTING', group, exp.args)
     return evaluate(group, state, exp.args.map(arg => evaluate(arg, state)))
   },
   fakeParagraph: (exp, state) => {
@@ -176,7 +174,11 @@ const htmlExpression = {
   field: (exp, state, content) => {
     const args = []
     for (let item of content) {
-      args.push.apply(args, item)
+      if (Array.isArray(item)) {
+        args.push.apply(args, item)
+      } else {
+        args.push(item)
+      }
     }
     const matchHyperlink = /HYPERLINK "(.*)"/
     const href = args[0].match(matchHyperlink)
@@ -220,6 +222,7 @@ const htmlExpression = {
     state.style.align = 'justify'
     return ''
   },
+/*
   cf: exp => {
 // foreground color
     return ''
@@ -227,7 +230,17 @@ const htmlExpression = {
   cb: exp => {
 // background color
     return ''
-  }
+  },
+  fonttbl: exp => '',
+  colortbl: exp => '',
+  expandedcolortbl: exp => ''
+*/
+}
+
+function evaluate (exp, state, content) {
+//  console.log('EVALUATE', exp.command, !!htmlExpression[exp.command])
+  const result =  htmlExpression[exp.command] && htmlExpression[exp.command](exp, state, content)
+  return result
 }
 
 class ToHTML extends Transform {
@@ -281,7 +294,7 @@ class ToHTML extends Transform {
 }
 
 module.exports = function (rtf) {
-  return Promise.resolve(rtf).then(rtf => {
+  return Bluebird.resolve(rtf).then(rtf => {
     var parser = new ParseRTF()
     return new Bluebird((resolve, reject) => {
       pumpCB(
