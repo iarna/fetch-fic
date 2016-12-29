@@ -416,7 +416,7 @@ class Parser {
     })
     parser.on('text', text => this.addText(text))
 
-    return Promise.resolve(html).then(html => {
+    return Bluebird.resolve(html).then(html => {
       return new Bluebird((resolve, reject) => {
         parser.on('error', reject)
         parser.on('finish', () => {

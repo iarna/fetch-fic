@@ -4,7 +4,6 @@ const fs = require('fs')
 const Streampub = require('streampub')
 const TOML = require('@iarna/toml')
 
-const chapterFilename = use('chapter-filename')
 const filenameize = use('filenameize')
 const html = use('html-template-tag')
 const Output = use('output')
@@ -14,6 +13,11 @@ class OutputEpub extends Output {
   from (fic) {
     return super.from(fic).to(filenameize(fic.title) + '.epub')
   }
+
+  chapterExt () {
+    return '.xhtml'
+  }
+
   write () {
     const epub = new Streampub({
       id: this.fic.id,
@@ -48,20 +52,20 @@ class OutputEpub extends Output {
   }
 
   transformChapter (chapter) {
-    if (chapter.image) {
+    if (chapter.type === 'image') {
       return Streampub.newFile(chapter.filename, chapter.content)
     }
-    if (chapter.cover) {
+    if (chapter.type === 'cover') {
       return Streampub.newCoverImage(chapter.content)
     }
     const index = chapter.order != null && (1 + chapter.order)
     const name = chapter.name
-    const filename = chapterFilename(chapter)
+    const filename = this.chapterFilename(chapter)
     const toSanitize = '<html xmlns:epub="http://www.idpf.org/2007/ops">' +
       (name ? html`<title>${name}</title></head>` : '') +
       '<section epub:type="chapter">' + chapter.content + '</section>' +
       '</html>'
-    return Streampub.newChapter(name, this.sanitizeHtml(toSanitize), 100 + index, filename)
+    return Streampub.newChapter(name, this.prepareHtml(toSanitize), 100 + index, filename)
   }
 
   html (content) {
@@ -98,6 +102,7 @@ class OutputEpub extends Output {
     if (!this.fic.description) return ''
     return `<section epub:type="abstract">${super.htmlDescription()}</section>`
   }
+
 }
 
 OutputEpub.aliases = []

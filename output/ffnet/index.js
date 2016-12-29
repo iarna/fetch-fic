@@ -18,6 +18,11 @@ class OutputFFNet extends Output {
   from (fic) {
     return super.from(fic).to(filenameize(this.fic.title) + '.ffnet')
   }
+
+  chapterExt () {
+    return '.html'
+  }
+
   write () {
     return mkdirp(this.outname)
       .then(() => pump(this.fic, this.transform()))
@@ -27,10 +32,10 @@ class OutputFFNet extends Output {
   }
 
   transformChapter (chapter) {
-    const filename = path.join(this.outname, chapterFilename(chapter))
-    if (chapter.image) {
+    const filename = path.join(this.outname, this.chapterFilename(chapter))
+    if (chapter.type === 'image') {
       return fs.writeFile(filename, chapter.content)
-    } else if (chapter.cover) {
+    } else if (chapter.type === 'cover') {
       if (chapter.content instanceof stream.Stream) {
         const tmpname = path.join(this.outname, 'cover-tmp')
         return new Bluebird((resolve, reject) => {
@@ -48,7 +53,7 @@ class OutputFFNet extends Output {
         return fs.writeFile(path.join(this.outname, this.coverName), chapter.content)
       }
     } else {
-      const content = HTMLToFFNet(this.sanitizeHtml(chapter.content))
+      const content = HTMLToFFNet(this.prepareHtml(chapter.content))
       return fs.writeFile(filename, content)
     }
   }
@@ -86,9 +91,3 @@ class OutputFFNet extends Output {
 
 OutputFFNet.aliases = ['fanfiction.net']
 module.exports = OutputFFNet
-
-function chapterFilename (chapter) {
-  const index = 1 + chapter.order
-  const name = chapter.name || 'Chapter ' + index
-  return chapter.filename && chapter.filename.replace('xhtml', 'html') || filenameize('chapter-' + name) + '.html'
-}

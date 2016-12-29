@@ -7,7 +7,6 @@ const url = require('url')
 const Bluebird = require('bluebird')
 const cheerio = require('cheerio')
 
-const chapterFilename = use('chapter-filename')
 const FicStream = use('fic-stream')
 const html = use('html-template-tag')
 const progress = use('progress')
@@ -84,6 +83,13 @@ function findChapter (href, fic) {
   return matching && matching[0]
 }
 
+function externalName (external) {
+  return `_LINK_external#LINK#${external.order}#LINK#${external.name||''}_LINK_`
+}
+function chapterLinkname (chapter) {
+  return `_LINK_chapter#LINK#${chapter.order}#LINK#${chapter.name||''}_LINK_`
+}
+
 function inlineImages (images) {
   return (src, $img) => {
     if (/clear[.]png$/.test(src)) return // xenforo
@@ -112,9 +118,9 @@ function linklocalChapters (fic, externals) {
     if ($a.attr('external') === 'false') return
     const linkedChapter = findChapter(href, fic)
     if (linkedChapter) {
-      return chapterFilename(linkedChapter)
+      return chapterLinkname(linkedChapter)
     } else if (externals[href]) {
-      return externals[href].filename
+      return externalName(externals[href])
     } else {
       return orElse(href) || href
     }
@@ -154,13 +160,14 @@ function getFic (fetch, fic) {
           }
           externals[href] = {
             name: $a.text(),
-            filename: `external-${Object.keys(externals).length + 1}.xhtml`,
+            order: Object.keys(externals).length,
             requestedBy: chapterInfo
           }
-          return externals[href].filename
+          return externalName(externals[href])
         })
       })
       rewriteIframes(fic, chapter)
+      chapter.type = 'chapter'
       return stream.queueChapter(chapter)
     }).catch((err) => {
       process.emit('error', 'Error while fetching chapter', chapterInfo, err.stack)
@@ -191,7 +198,8 @@ function getFic (fetch, fic) {
         }
         external.content = `${header}<hr>${external.content}`
         external.name = !exterNum && `External References (${externalCount} ${pages})`
-        external.filename = externals[href].filename
+        external.filename = externalName(externals[href])
+        external.type = 'external'
         rewriteImages(fic.site, external, inlineImages(images))
         rewriteLinks(fic.site, external, linklocalChapters(fic, externals))
         rewriteIframes(fic, external)
@@ -201,7 +209,7 @@ function getFic (fetch, fic) {
         return stream.queueChapter({
           order: 9000 + exterNum,
           name: `External Reference #${exterNum + 1}: ${externals[href].name}`,
-          filename: externals[href].filename,
+          filename: externalName(externals[href]),
           content: html`<p>External link to <a href="${href}">${href}</a></p><pre>${err.stack}</pre>`
         })
       })
@@ -212,7 +220,7 @@ function getFic (fetch, fic) {
     return concurrently(Object.keys(images), maxConcurrency, (src, imageNum) => {
       return fetch(src).spread((meta, imageData) => {
         return stream.queueChapter({
-          image: true,
+          type: 'image',
           filename: images[src].filename,
           content: imageData
         })
@@ -227,13 +235,13 @@ function getFic (fetch, fic) {
         progress.show('Fetching cover…')
         return fetch(fic.cover, {referer: fic.link}).spread((meta, imageData) => {
           return stream.queueChapter({
-            cover: true,
+            type: 'cover',
             content: imageData
           })
         }).catch(err => process.emit('error', `Error while fetching cover ${fic.cover}: ${require('util').inspect(err)}`))
       } else {
         return stream.queueChapter({
-          cover: true,
+          type: 'cover',
           content: fs.createReadStream(fic.cover)
         })
       }

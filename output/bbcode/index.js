@@ -10,6 +10,7 @@ const filenameize = use('filenameize')
 const fs = use('fs-promises')
 const Output = use('output')
 const pump = use('pump')
+const mkdirp = use('mkdirp')
 
 const HTMLToBBCode = require('./html-to-bbcode.js')
 
@@ -17,6 +18,15 @@ class OutputBBCode extends Output {
   from (fic) {
     return super.from(fic).to(filenameize(this.fic.title) + '.bbcode')
   }
+
+  chapterExt () {
+    return '.bbcode'
+  }
+
+  chapterLink (chapter) {
+    return chapter.link
+  }
+
   write () {
     return mkdirp(this.outname)
       .then(() => pump(this.fic, this.transform()))
@@ -25,10 +35,10 @@ class OutputBBCode extends Output {
   }
 
   transformChapter (chapter) {
-    const filename = path.join(this.outname, chapterFilename(chapter))
-    if (chapter.image) {
+    const filename = path.join(this.outname, this.chapterFilename(chapter))
+    if (chapter.type === 'image') {
       return fs.writeFile(filename, chapter.content)
-    } else if (chapter.cover) {
+    } else if (chapter.type === 'cover') {
       if (chapter.content instanceof stream.Stream) {
         const tmpname = path.join(this.outname, 'cover-tmp')
         return new Bluebird((resolve, reject) => {
@@ -46,7 +56,7 @@ class OutputBBCode extends Output {
         return fs.writeFile(path.join(this.outname, this.coverName), chapter.content)
       }
     } else {
-      const content = HTMLToBBCode(this.sanitizeHtml(chapter.content))
+      const content = HTMLToBBCode(this.prepareHtml(chapter.content))
       return fs.writeFile(filename, content)
     }
   }
@@ -84,9 +94,3 @@ class OutputBBCode extends Output {
 
 OutputBBCode.aliases = []
 module.exports = OutputBBCode
-
-function chapterFilename (chapter) {
-  const index = 1 + chapter.order
-  const name = chapter.name || 'Chapter ' + index
-  return chapter.filename && chapter.filename.replace('xhtml', 'bbcode') || filenameize('chapter-' + name) + '.bbcode'
-}

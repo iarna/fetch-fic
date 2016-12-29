@@ -18,6 +18,11 @@ class OutputAO3 extends Output {
   from (fic) {
     return super.from(fic).to(filenameize(this.fic.title) + '.ao3')
   }
+
+  chapterExt () {
+    return '.html'
+  }
+
   write () {
     return mkdirp(this.outname)
       .then(() => pump(this.fic, this.transform()))
@@ -27,10 +32,10 @@ class OutputAO3 extends Output {
   }
 
   transformChapter (chapter) {
-    const filename = path.join(this.outname, chapterFilename(chapter))
-    if (chapter.image) {
+    const filename = path.join(this.outname, this.chapterFilename(chapter))
+    if (chapter.type === 'image') {
       return fs.writeFile(filename, chapter.content)
-    } else if (chapter.cover) {
+    } else if (chapter.type === 'cover') {
       if (chapter.content instanceof stream.Stream) {
         const tmpname = path.join(this.outname, 'cover-tmp')
         return new Bluebird((resolve, reject) => {
@@ -48,7 +53,7 @@ class OutputAO3 extends Output {
         return fs.writeFile(path.join(this.outname, this.coverName), chapter.content)
       }
     } else {
-      const content = HTMLToAO3(this.sanitizeHtml(chapter.content))
+      const content = HTMLToAO3(this.prepareHtml(chapter.content))
       return fs.writeFile(filename, content)
     }
   }
@@ -86,9 +91,3 @@ class OutputAO3 extends Output {
 
 OutputAO3.aliases = ['archiveofourown']
 module.exports = OutputAO3
-
-function chapterFilename (chapter) {
-  const index = 1 + chapter.order
-  const name = chapter.name || `Chapter ${index}`
-  return chapter.filename && chapter.filename.replace('xhtml', 'html') || filenameize('chapter-' + name) + '.html'
-}

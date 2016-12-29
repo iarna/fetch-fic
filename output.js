@@ -7,6 +7,7 @@ const sanitizeHtml = require('sanitize-html')
 const html = use('html-template-tag')
 const normalizeHtml = use('normalize-html')
 const outputFormats = use('output-formats')
+const filenameize = use('filenameize')
 
 class Output {
   static register (shortname, output) {
@@ -30,8 +31,8 @@ class Output {
     return this
   }
 
-  sanitizeHtml (html) {
-    return sanitizeHtml(normalizeHtml(html), this.fic.site.sanitizeHtmlConfig())
+  prepareHtml (html) {
+    return sanitizeHtml(normalizeHtml(this.replaceLinks(html)), this.fic.site.sanitizeHtmlConfig())
   }
 
   transform () {
@@ -81,7 +82,7 @@ class Output {
   }
 
   chapterLink (chapter) {
-    return chapter.link
+    return this.chapterFilename({type: 'chapter', order: chapter.order, name: chapter.name, filename: chapter.filename})
   }
 
   html (content) {
@@ -203,6 +204,30 @@ class Output {
       content += ` [${commaNumber(chapter.words)} words]`
     }
     return content
+  }
+  chapterExt () {
+    return ''
+  }
+  chapterFilename (chapter) {
+    if (chapter.type === 'chapter') {
+      const index = 1 + chapter.order
+      const filename = `chapter-${index}${chapter.name ? ' ' + chapter.name : ''}`
+      return filenameize(filename) + this.chapterExt()
+    } else if (chapter.type === 'external') {
+      const index = 1 + chapter.order
+      const filename = `external-${index}${chapter.name ? ' ' + chapter.name : ''}`
+      return filenameize(filename) + this.chapterExt()
+    } else if (chapter.type === 'image') {
+      return chapter.filename
+    } else if (chapter.type === 'cover') {
+      return
+    } else {
+      throw new Error('Unknown chapter filename type: ' + chapter.type)
+    }
+  }
+  replaceLinks (content) {
+    return content.replace(/_LINK_(\w+)#LINK#(\d+)#LINK#(.*?)_LINK_/g,
+      (_, type, order, name) => this.chapterFilename({type, order, name}))
   }
 }
 Output.registered = {}

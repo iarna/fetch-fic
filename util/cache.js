@@ -127,7 +127,7 @@ function readUrl (fetchUrl, onMiss) {
   return inFlight(['readUrl:', fetchUrl], thenReadExistingMetadata)
 
   function thenReadExistingMetadata () {
-    return readJSON(metafile, () => Promise.reject(noMetadata)).then(meta => {
+    return readJSON(metafile, () => Bluebird.reject(noMetadata)).then(meta => {
       // corrupt JSON, clear the entry
       if (!meta || typeof meta !== 'object' || !meta.finalUrl) {
         return clearUrl(fetchUrl)
@@ -135,7 +135,7 @@ function readUrl (fetchUrl, onMiss) {
         existingMeta = meta
         return null
       }
-    }).catch(err => err.code !== 'NOMETADATA' && Promise.reject(err))
+    }).catch(err => err.code !== 'NOMETADATA' && Bluebird.reject(err))
       .then(() => thenReadContent())
   }
 
@@ -214,5 +214,5 @@ function clearUrl (fetchUrl) {
 }
 
 function invalidateUrl (fetchUrl) {
-  return Promise.resolve(fetchUrl).then(fetchUrl => { invalidated[fetchUrl] = true })
+  return Bluebird.resolve(fetchUrl).then(fetchUrl => { invalidated[fetchUrl] = true })
 }
