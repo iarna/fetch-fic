@@ -9,9 +9,8 @@ prepare it for sharing easy peasy.
 * Any [Xenforo](https://xenforo.com/) based forum, like: [spacebattles.com](https://forums.spacebattles.com/), [sufficientvelicity.com](https://forums.sufficientvelocity.com/), [questionablequesting.com](https://questionablequesting.com)
 * [Archive of Our Own](https://archiveofourown.org/)
 * [Fanfiction.Net](https://www.fanfiction.net/)
-* Local folders full of rtf files– I use it with synced folders from
-  Scriviner, though it should, to some degree, work on the actual Scriviner
-  data files too.
+* Local Scrivener save files/folders (tested on Mac)
+* Local folders full of rtf files
 
 ## IMPORT OTHER STUFF FROM:
 
@@ -642,3 +641,32 @@ Currently it will warn if you use it with another site.
 ## OTHER DOCS
 
 If you realllly, want to, docs on the internal API [are available](API.md).
+
+## FOR FUN
+
+So, with the addition of proper Scrivener support, I now have my publishing
+pipeline entirely automated.  I run a small shell script that updates the
+metadata from Scrivener and then produces a copy of my fic as:
+
+* epub, mobi, pdf, bbcode, AO3's HTML, FFNet's HTML and plain HTML
+
+I'm using calibre to produce the mobi and pdf.  The args passed into the pdf
+generator are mostly about getting something that looks passable on desktop.
+
+```sh
+#!/bin/sh
+EBOOK_CONVERT=/Applications/calibre.app/Contents/MacOS/ebook-convert
+
+ff update expiation.fic.toml && \
+ff generate expiation.fic.toml && \
+$EBOOK_CONVERT expiation.epub expiation.mobi --output-profile=kindle_voyage &&\
+$EBOOK_CONVERT expiation.epub expiation.pdf  --output-profile=tablet \
+  --margin-bottom=72 --margin-left=72 --margin-right=72 --margin-top=64 \
+  --paper-size letter --pdf-default-font-size 15 --pdf-mono-font-size 10 --pdf-serif-family Palatino \
+  --preserve-cover-aspect-ratio \
+  && \
+rm -fr expiation.bbcode && ff generate expiation.fic.toml -o bbcode && \
+rm -fr expiation.ao3 && ff generate expiation.fic.toml -o ao3 && \
+rm -fr expiation.ffnet && ff generate expiation.fic.toml -o ffnet && \
+rm -fr expiation.html && ff generate expiation.fic.toml -o html
+```
