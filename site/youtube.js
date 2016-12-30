@@ -6,7 +6,7 @@ const cheerio = require('cheerio')
 
 const Site = use('site')
 
-class Wikipedia extends Site {
+class Youtube extends Site {
   static matches (siteUrlStr) {
     return /youtube[.]com[/]watch[?]v=|youtu.be/.test(siteUrlStr)
   }
@@ -35,7 +35,7 @@ class Wikipedia extends Site {
   }
 
   scrapeFicMetadata (fetch, fic) {
-    // There's never any reason to scrape Wikipedia content.
+    // There's never any reason to scrape Youtube content.
     return Bluebird.resolve()
   }
 
@@ -69,4 +69,4 @@ class Wikipedia extends Site {
     })
   }
 }
-module.exports = Wikipedia
+module.exports = Youtube
