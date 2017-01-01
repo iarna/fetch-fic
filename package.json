@@ -44,7 +44,7 @@
     "uuid": "^3.0.0",
     "wordcount": "^1.1.1",
     "xml2js": "^0.4.17",
-    "yargs": "^6.5.0"
+    "yargs": "^6.6.0"
   },
   "files": [
     "util/cache.js",
