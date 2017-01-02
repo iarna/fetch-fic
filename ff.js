@@ -48,7 +48,7 @@ const argv = yargs
   .usage('Usage: $0 <cmd> [options…]')
   .demand(1, 'ff <cmd> --help — for help on a specific command')
   .command({
-    command: 'get <url>',
+    command: 'get <url|fic>',
     aliases: [],
     desc: 'Get chapter list for a fic',
     builder: yargs => {
@@ -90,7 +90,7 @@ const argv = yargs
   })
   .command({
     command: 'generate <fic...>',
-    aliases: ['gen'],
+    aliases: ['get', 'gen'],
     desc: 'Generate epub (or other) from fic',
     builder: yargs => {
       yargs.option('o', {

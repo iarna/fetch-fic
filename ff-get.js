@@ -1,6 +1,9 @@
 'use strict'
 module.exports = read
 
+const child_process = require('child_process')
+
+const Bluebird = require('bluebird')
 const TOML = require('@iarna/toml')
 
 const fetch = use('fetch')
@@ -11,6 +14,29 @@ const fs = use('fs-promises')
 const progress = use('progress')
 
 function read (args) {
+  return fs.stat(args.fic).then(_generateInstead, () => _reallyRead(args))
+}
+
+function _generateInstead () {
+  const args = [].concat(process.argv)
+  for (let ii in args) {
+    if (args[ii] === 'get') {
+      args[ii] = 'generate'
+      break
+    }
+  }
+  const nodejs = args.shift()
+  return new Bluebird((resolve, reject) => {
+    const child = child_process.spawn(nodejs, args, {
+      argv0: 'ff',
+      stdio: 'inherit',
+    })
+    child.on('error', reject)
+    child.on('close', resolve)
+  })
+}
+
+function _reallyRead (args) {
   const addAll = args['add-all']
   const fromThreadmarks = !args.scrape
   const fromScrape = args.scrape || args['and-scrape']

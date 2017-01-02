@@ -129,7 +129,7 @@ Usage: ff <cmd> [options…]
 Commands:
   get <url>          Get chapter list for a fic
   update <fic...>    Update fic with latest chapter list           [aliases: up]
-  generate <fic...>  Generate epub (or other) from fic            [aliases: gen]
+  generate <fic...>  Generate epub (or other) from fic       [aliases: get, gen]
   cache-clear <url>  Remove a URL from the cache
 
 Options:
