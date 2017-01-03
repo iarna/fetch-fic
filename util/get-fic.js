@@ -84,10 +84,10 @@ function findChapter (href, fic) {
 }
 
 function externalName (external) {
-  return `_LINK_external#LINK#${external.order}#LINK#${external.name||''}_LINK_`
+  return `_LINK_external#LINK#${external.num||external.order}#LINK#${external.linkName || external.name||''}_LINK_`
 }
 function chapterLinkname (chapter) {
-  return `_LINK_chapter#LINK#${chapter.order}#LINK#${chapter.name||''}_LINK_`
+  return `_LINK_chapter#LINK#${chapter.num||chapter.order}#LINK#${chapter.linkName || chapter.name||''}_LINK_`
 }
 
 function inlineImages (images) {
@@ -139,8 +139,8 @@ function getFic (fetch, fic) {
   concurrently(chapters, maxConcurrency, (chapterInfo) => {
     return fic.getChapter(fetch, chapterInfo.fetchFrom || chapterInfo.link).then((chapter) => {
       chapter.order = chapterInfo.order
-      const plainName = chapterInfo.name
-      chapter.name = chapterInfo.name = plainName + (chapterInfo.author ? ` (${chapter.author})` : '')
+      chapter.linkName = chapterInfo.name
+      chapter.name = chapterInfo.name = chapter.linkName + (chapterInfo.author ? ` (${chapter.author})` : '')
       if (fic.chapterHeadings || chapterInfo.headings) {
         const headerName = html`${chapterInfo.name}`
         const byline = !chapterInfo.author ? ''
@@ -196,6 +196,7 @@ function getFic (fetch, fic) {
           header += `<header><h2><div style="font-size: 11px"><a external="false" href="${href}">${wrappableLink}</a></div>`
           header += `by ${byline}</h2></header>`
         }
+        external.num = exterNum
         external.content = `${header}<hr>${external.content}`
         external.name = !exterNum && `External References (${externalCount} ${pages})`
         external.filename = externalName(externals[href])

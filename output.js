@@ -209,13 +209,14 @@ class Output {
     return ''
   }
   chapterFilename (chapter) {
+    const name = chapter.linkName || chapter.name || ''
     if (chapter.type === 'chapter') {
       const index = 1 + chapter.order
-      const filename = `chapter-${index}${chapter.name ? ' ' + chapter.name : ''}`
+      const filename = `chapter-${index}${name ? ' ' + name : ''}`
       return filenameize(filename) + this.chapterExt()
     } else if (chapter.type === 'external') {
-      const index = 1 + chapter.order
-      const filename = `external-${index}${chapter.name ? ' ' + chapter.name : ''}`
+      const index = chapter.num
+      const filename = `external-${index}${name ? ' ' + name : ''}`
       return filenameize(filename) + this.chapterExt()
     } else if (chapter.type === 'image') {
       return chapter.filename
