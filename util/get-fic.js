@@ -173,10 +173,10 @@ function getFic (fetch, fic) {
       process.emit('error', 'Error while fetching chapter', chapterInfo, err.stack)
     })
   }).then(() => {
-    process.emit('debug', `Outputting ${Object.keys(externals).length} externals of ${fic.title}`)
-    fetch.tracker.addWork(Object.keys(externals).length)
-    progress.show(`Fetching externals (${Object.keys(externals).length})…`)
     const externalCount = Object.keys(externals).length
+    process.emit('debug', `Outputting ${externalCount} externals of ${fic.title}`)
+    fetch.tracker.addWork(externalCount)
+    progress.show(`Fetching externals (${externalCount})…`)
     const pages = externalCount === 1 ? 'page' : 'pages'
     return concurrently(Object.keys(externals), maxConcurrency, (href, exterNum) => {
       const externalInfo = externals[href]
