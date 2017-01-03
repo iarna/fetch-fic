@@ -66,7 +66,7 @@ class OutputHTML extends Output {
 
   htmlCoverImage () {
     if (!this.coverName) return ''
-    return `<p><img style="display: block; margin-left: auto; margin-right: auto;" src="${this.coverName}"></p>`
+    return `<p><img style="display: block; margin-left: auto; margin-right: auto;" src="${this.coverName}"></p>\n`
   }
 
   tableOfContentsContent () {

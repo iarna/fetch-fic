@@ -86,15 +86,15 @@ class Output {
   }
 
   html (content) {
-    return `<html>${content}</html>`
+    return `<html>\n${content}</html>\n`
   }
 
   htmlHead (header) {
-    return `<head>${header}</head>`
+    return `<head>\n${header}</head>\n`
   }
 
   htmlHeaderTitle () {
-    return `<title>${this.fic.title}</title>`
+    return `<title>${this.fic.title}</title>\n`
   }
 
   htmlStyle () {
@@ -115,20 +115,20 @@ class Output {
   th:after {
     content: ":";
   }
-</style>`
+</style>\n`
   }
 
   htmlBody (body) {
-    return `<body>${body}</body>`
+    return `<body>\n${body}</body>\n`
   }
 
   htmlTitle () {
-    return html`<h1 style="text-align: center;">${this.fic.title}</h1>`
+    return html`<h1 style="text-align: center;">${this.fic.title}</h1>\n`
   }
 
   htmlByline () {
     if (!this.fic.author) return ''
-    return `<h3 style="text-align: center;">by ${this.htmlAuthor(this.fic.author, this.fic.authorUrl)}</h3>`
+    return `<h3 style="text-align: center;">by ${this.htmlAuthor(this.fic.author, this.fic.authorUrl)}</h3>\n`
   }
 
   htmlAuthor (author, authorUrl) {
@@ -143,7 +143,7 @@ class Output {
   }
 
   htmlSummaryTable (content) {
-    return `<table>${content}</table>`
+    return `<table>\n${content}</table>\n`
   }
 
   htmlSummaryContent () {
@@ -162,16 +162,16 @@ class Output {
   }
 
   htmlSummaryRow (key, value) {
-    return `<tr><th>${key}</th><td>${value}</td></tr>`
+    return `<tr><th>${key}</th><td>${value}</td></tr>\n`
   }
 
   htmlDescription () {
     if (!this.fic.description) return ''
-    return `<p>${this.fic.description}</p>`
+    return `<p>${this.fic.description}</p>\n`
   }
 
   htmlChapterList (list) {
-    return `<ol style="margin-left: 3em;">${list}</ol>`
+    return `<ol style="margin-left: 3em;">\n${list}</ol>\n`
   }
 
   htmlChapterLink (chapter) {
@@ -187,7 +187,7 @@ class Output {
   }
 
   htmlChapterListItem (item) {
-    return `<li>${item}</li>`
+    return `  <li>${item}</li>\n`
   }
 
   htmlChapter (chapter) {
