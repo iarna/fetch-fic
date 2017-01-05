@@ -39,14 +39,16 @@ function updateFic (fetch, args) {
   return ficFile => {
     const existingFic = readFic(ficFile)
     const newFic = fetchLatestVersion(fetch, existingFic, fromThreadmarks, fromScrape)
-    const changes = mergeFic(existingFic, newFic, addAll)
-    return writeUpdatedFic(ficFile, existingFic, changes)
+    return mergeFic(existingFic, newFic, addAll).then(changes => {
+      const inflatedFic = ficInflate(existingFic, fetch.withOpts({cacheBreak: false}))
+      return writeUpdatedFic(ficFile, inflatedFic, refreshMetadata(inflatedFic, changes))
+    })
   }
 }
 
 function writeUpdatedFic (ficFile, existingFic, changes) {
   return Bluebird.resolve(changes).then(changes => {
-    if (!changes) return null
+    if (!changes.length) return null
     return fs.writeFile(ficFile, TOML.stringify(existingFic)).then(() => {
       progress.output(`${ficFile}\n`)
       if (changes.length) progress.output(`    ${changes.join('\n    ')} \n`)
@@ -78,7 +80,6 @@ var fetchLatestVersion = promisify.args((fetch, existingFic, fromThreadmarks, fr
 })
 
 var mergeFic = promisify.args(function mergeFic (existingFic, newFic, addAll) {
-  let changed = false
   const changes = []
   const toAdd = []
   // Walk from the newest to the oldest marking chapters to add.
@@ -132,6 +133,24 @@ var mergeFic = promisify.args(function mergeFic (existingFic, newFic, addAll) {
         }
       }
     }
+  }
+  if (existingFic.chapters.length !== 0) {
+    if (existingFic.created == null && newFic.created != null) {
+      changes.push(`${existingFic.title}: Updated fic publish time from ${existingFic.created} to ${newFic.created} (from newFic)`)
+      existingFic.created = newFic.created
+    }
+    if (existingFic.modified == null && newFic.modified != null) {
+      changes.push(`${existingFic.title}: Updated fic last update time from ${existingFic.modified} to ${newFic.modified} (from newFic)`)
+      existingFic.modified = newFic.modified
+    }
+  }
+
+  return changes
+})
+
+var refreshMetadata = promisify.args(function mergeFic (existingFic, changes) {
+  const fics = [existingFic].concat(existingFic.fics)
+  for (let fic of fics) {
     let now = new Date()
     let then = new Date(0)
     let created = fic.chapters.filter(c => c.created).reduce((ficCreated, chapter) => ficCreated < chapter.created ? ficCreated : chapter.created, now)
@@ -163,18 +182,7 @@ var mergeFic = promisify.args(function mergeFic (existingFic, newFic, addAll) {
       changes.push(`${existingFic.title}: Updated fic last update time from ${existingFic.modified} to ${modified} (from latest subfic)`)
       existingFic.modified = modified
     }
-  } else {
-    if (existingFic.created == null && newFic.created != null) {
-      changes.push(`${existingFic.title}: Updated fic publish time from ${existingFic.created} to ${newFic.created} (from newFic)`)
-      existingFic.created = newFic.created
-    }
-    if (existingFic.modified == null && newFic.modified != null) {
-      changes.push(`${existingFic.title}: Updated fic last update time from ${existingFic.modified} to ${newFic.modified} (from newFic)`)
-      existingFic.modified = newFic.modified
-    }
   }
-
-  if (!changed && !changes.length) return null
   return changes
 })
 
