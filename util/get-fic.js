@@ -201,8 +201,8 @@ function getFic (fetch, fic) {
         external.name = !exterNum && `External References (${externalCount} ${pages})`
         external.filename = externalName(externals[href])
         external.type = 'external'
-        rewriteImages(fic.site, external, inlineImages(images))
-        rewriteLinks(fic.site, external, linklocalChapters(fic, externals))
+        rewriteImages(fic, external, inlineImages(images))
+        rewriteLinks(fic, external, linklocalChapters(fic, externals))
         rewriteIframes(fic, external)
         return stream.queueChapter(external)
       }).catch((err) => {
