@@ -20,13 +20,13 @@ function ficInflate (fic, fetch, tracker) {
     }
     return Bluebird.map(fics, fic => {
       const tracker = completion.get(fic)
-      fic.words = 0
+      let words = 0
       return Bluebird.map(fic.chapters, chapter => {
         const chapterContent = fic.getChapter(fetch, chapter.fetchWith())
         return progress.completeWorkWhenResolved(chapterContent, tracker).then(content => {
           progress.show(fic.title, `${chapter.name}`)
           chapter.words = countStoryWords(content)
-          fic.words += chapter.words
+          words += chapter.words
           if (chapter.link == null) chapter.link = content.chapterLink
           for (let prop of qw`name author authorUrl created modified headings`) {
             if (chapter[prop] == null) chapter[prop] = content[prop]
@@ -36,7 +36,10 @@ function ficInflate (fic, fetch, tracker) {
             chapter.authorUrl = null
           }
         })
-      }).finally(() => tracker.finish())
+      }).finally(() => {
+        if (!fic.words) fic.words = words
+        tracker.finish()
+      })
     })
   }).thenReturn(fic)
 }
