@@ -5,8 +5,8 @@ const fs = require('fs')
 const url = require('url')
 
 const Bluebird = require('bluebird')
-const cheerio = require('cheerio')
 
+const Chapter = use('fic').Chapter
 const FicStream = use('fic-stream')
 const html = use('html-template-tag')
 const progress = use('progress')
@@ -38,9 +38,8 @@ function concurrently (_todo, concurrency, forEach) {
 }
 
 function rewriteLinks (fic, chapter, handleLink) {
-  const $ = cheerio.load(chapter.content)
-  $('a').each((ii, a) => {
-    const $a = $(a)
+  chapter.$content.find('a').each((ii, a) => {
+    const $a = chapter.$content.find(a)
     const startAs = $a.attr('href')
     if (!startAs) {
       $a.remove()
@@ -51,23 +50,19 @@ function rewriteLinks (fic, chapter, handleLink) {
     const newHref = handleLink(fic.normalizeLink(src, chapter.base), $a)
     $a.attr('href', newHref || src)
   })
-  chapter.content = $.html()
 }
 
 function rewriteIframes (fic, chapter) {
-  const $ = cheerio.load(chapter.content)
-  $('iframe').each((ii, iframe) => {
-    const $iframe = $(iframe)
+  chapter.$content.find('iframe').each((ii, iframe) => {
+    const $iframe = chapter.$content.find(iframe)
     const src = url.resolve(chapter.base, $iframe.attr('src'))
     $iframe.replaceWith(`<a href="${src}">Video Link</a>`)
   })
-  chapter.content = $.html()
 }
 
 function rewriteImages (fic, chapter, handleImage) {
-  const $ = cheerio.load(chapter.content)
-  $('img').each((ii, img) => {
-    const $img = $(img)
+  chapter.$content.find('img').each((ii, img) => {
+    const $img = chapter.$content.find(img)
     const startAs = ($img.attr('src') || '').replace(/(https?:[/])([^/])/, '$1/$2')
     if (!startAs) return
     const src = url.resolve(chapter.base, startAs)
@@ -75,7 +70,6 @@ function rewriteImages (fic, chapter, handleImage) {
     const newsrc = handleImage(fic.normalizeLink(src, chapter.base), $img)
     $img.attr('src', newsrc || src)
   })
-  chapter.content = $.html()
 }
 
 function findChapter (href, fic) {
@@ -137,7 +131,7 @@ function getFic (fetch, fic) {
   process.emit('debug', `Outputting ${chapters.length} chapters of ${fic.title}`)
   progress.show(`Fetching chapters (${chapters.length})…`)
   concurrently(chapters, maxConcurrency, (chapterInfo) => {
-    return fic.getChapter(fetch, chapterInfo.fetchFrom || chapterInfo.link).then((chapter) => {
+    return fic.getChapter(fetch, chapterInfo).then(chapter => {
       chapter.order = chapterInfo.order
       chapter.linkName = chapterInfo.name
       chapter.name = chapterInfo.name = chapter.linkName + (chapterInfo.author ? ` (${chapter.author})` : '')
@@ -180,7 +174,7 @@ function getFic (fetch, fic) {
     const pages = externalCount === 1 ? 'page' : 'pages'
     return concurrently(Object.keys(externals), maxConcurrency, (href, exterNum) => {
       const externalInfo = externals[href]
-      return fic.getChapter(fetch, href).then((external) => {
+      return fic.getChapter(fetch, href).then(external => {
         external.order = 9000 + exterNum
         const name = external.name || external.ficTitle
         let header = ''

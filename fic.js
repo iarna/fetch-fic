@@ -2,7 +2,7 @@
 /* eslint-disable no-return-assign */
 const qw = require('qw')
 
-const Site = use('site')
+let Site
 
 class Fic {
   constructor (fetch) {
@@ -51,9 +51,12 @@ class Fic {
     }
   }
 
-  getChapter (fetch, link) {
-    const site = Site.fromUrl(link)
-    return site.getChapter(fetch, link)
+  getChapter (fetch, chapter) {
+    if (typeof chapter === 'string') {
+      chapter = new Chapter({link: chapter})
+    }
+    const site = Site.fromUrl(chapter.fetchWith())
+    return site.getChapter(fetch, chapter)
   }
 
   addChapter (opts) {
@@ -239,6 +242,7 @@ class Chapter {
     this.order = opts.order
     this.name = opts.name
     this.link = opts.link
+    this.description = opts.description
     this.fetchFrom = opts.fetchFrom
     this.created = opts.created
     this.modified = opts.modified
@@ -252,12 +256,13 @@ class Chapter {
   toJSON () {
     return {
       name: this.name,
+      description: this.description,
       link: this.link,
       fetchFrom: this.fetchFrom,
       author: this.author,
       authorUrl: this.authorUrl,
-      created: this.created,
-      modified: this.modified,
+      created: this.created === 'Invalid Date' ? null : this.created,
+      modified: this.modified === 'Invalid Date' ? null : this.modified,
       tags: this.tags,
       externals: this.externals !== true ? this.externals : null,
       headings: this.headings,
@@ -273,3 +278,7 @@ class Chapter {
 }
 
 module.exports = Fic
+module.exports.Chapter = Chapter
+
+// defer 'cause `class` definitions don't hoist
+Site = use('site')

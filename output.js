@@ -123,7 +123,7 @@ class Output {
   }
 
   htmlTitle () {
-    return html`<h1 style="text-align: center;">${this.fic.title}</h1>\n`
+    return html`<h1 style="text-align: center;">${this.fic.title}</h1>` + '\n'
   }
 
   htmlByline () {

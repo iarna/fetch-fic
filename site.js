@@ -1,5 +1,6 @@
 'use strict'
 const url = require('url')
+const wordcount = require('wordcount')
 
 const qw = require('qw')
 
@@ -61,6 +62,9 @@ class Site {
       return {tagName: 'span'}
     }
     return {tagName: tagName, attribs: attribs}
+  }
+  countStoryWords (chapter) {
+    return wordcount(chapter.$content.text().trim())
   }
 }
 

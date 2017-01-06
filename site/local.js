@@ -4,6 +4,7 @@ const path = require('path')
 const Bluebird = require('bluebird')
 const uuid = require('uuid')
 
+const ChapterContent = use('chapter-content')
 const fs = use('fs-promises')
 const rtfToHTML = use('rtf-to-html')
 const Site = use('site')
@@ -54,12 +55,8 @@ class Local extends Site {
   }
 
   getChapter (fetch, chapter) {
-    return rtfToHTML(fs.readFile(chapter, 'ascii')).then(result => {
-      return {
-        'finalUrl': chapter,
-        'content': result
-      }
-    })
+    return rtfToHTML(fs.readFile(chapter.fetchWith(), 'ascii'))
+      .then(content => new ChapterContent(chapter, {site: this, content}))
   }
 }
 module.exports = Local

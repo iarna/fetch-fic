@@ -4,6 +4,7 @@ const path = require('path')
 const Bluebird = require('bluebird')
 const uuid = require('uuid')
 
+const ChapterContent = use('chapter-content')
 const fs = use('fs-promises')
 const Site = use('site')
 const promisify = use('promisify')
@@ -99,12 +100,9 @@ class Scrivener extends Site {
   }
 
   getChapter (fetch, chapter) {
-    return rtfToHTML(fs.readFile(chapter, 'ascii')).then(result => {
-      return {
-        'finalUrl': chapter,
-        'content': result
-      }
-    }).catch(() => { return {finalUrl: chapter, content: ''} })
+    return rtfToHTML(fs.readFile(chapter.fetchWith(), 'ascii'))
+      .then(content => new ChapterContent(chapter, {site: this, content}))
+      .catch(() => new ChapterContent(chapter, {site: this, content: ''}))
   }
 }
 module.exports = Scrivener

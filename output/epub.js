@@ -77,7 +77,7 @@ class OutputEpub extends Output {
   }
 
   htmlTitle () {
-    return html`<section epub:type="title"><h1 style="text-align: center;">${this.fic.title}</h1></section>\n`
+    return html`<section epub:type="title"><h1 style="text-align: center;">${this.fic.title}</h1></section>` + '\n'
   }
 
   htmlByline () {

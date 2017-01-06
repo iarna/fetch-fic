@@ -4,7 +4,6 @@ module.exports = ficInflate
 const Bluebird = require('bluebird')
 const qw = require('qw')
 
-const countStoryWords = use('count-story-words')
 const progress = use('progress')
 
 // Take a fic and fetch all its chapters and ensure its per-chapter metadata
@@ -21,19 +20,19 @@ function ficInflate (fic, fetch, tracker) {
     return Bluebird.map(fics, fic => {
       const tracker = completion.get(fic)
       let words = 0
-      return Bluebird.map(fic.chapters, chapter => {
-        const chapterContent = fic.getChapter(fetch, chapter.fetchWith())
-        return progress.completeWorkWhenResolved(chapterContent, tracker).then(content => {
-          progress.show(fic.title, `${chapter.name}`)
-          chapter.words = countStoryWords(content)
+      return Bluebird.map(fic.chapters, chapterInfo => {
+        const chapterContent = fic.getChapter(fetch, chapterInfo)
+        return progress.completeWorkWhenResolved(chapterContent, tracker).then(chapter => {
+          progress.show(fic.title, `${chapterInfo.name}`)
+          chapterInfo.words = chapter.words
           words += chapter.words
-          if (chapter.link == null) chapter.link = content.chapterLink
+          if (chapterInfo.link == null) chapterInfo.link = chapter.chapterLink
           for (let prop of qw`name author authorUrl created modified headings`) {
-            if (chapter[prop] == null) chapter[prop] = content[prop]
+            if (chapterInfo[prop] == null) chapterInfo[prop] = chapter[prop]
           }
-          if (chapter.author === fic.author || chapter.authorUrl === fic.authorUrl) {
-            chapter.author = null
-            chapter.authorUrl = null
+          if (chapterInfo.author === fic.author || chapterInfo.authorUrl === fic.authorUrl) {
+            chapterInfo.author = null
+            chapterInfo.authorUrl = null
           }
         })
       }).finally(() => {

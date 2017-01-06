@@ -1,7 +1,7 @@
 'use strict'
 const Bluebird = require('bluebird')
-const cheerio = require('cheerio')
 
+const ChapterContent = use('chapter-content')
 const Site = use('site')
 
 class DeviantArt extends Site {
@@ -21,47 +21,42 @@ class DeviantArt extends Site {
     fic.link = this.link
     fic.publisher = this.publisherName
     // currently we only support /art/ urls, which can only have one thing on them
-    return this.getChapter(fetch, this.link).then(info => {
-      fic.title = info.name
-      fic.link = this.normalizeLink(info.finalUrl)
-      fic.author = info.author
-      fic.authorUrl = info.authorUrl
+    return this.getChapter(fetch, new ChapterContent({link: this.link})).then(chapter => {
+      fic.title = chapter.name
+      fic.link = this.normalizeLink(chapter.link)
+      fic.author = chapter.author
+      fic.authorUrl = chapter.authorUrl
       fic.publisher = this.publisherName
-      fic.description = info.description
-      fic.addChapter({name: info.name || info.author, link: this.normalizeLink(info.finalUrl)})
+      fic.description = chapter.description
+      fic.addChapter(chapter)
     })
   }
 
   scrapeFicMetadata (fetch, fic) {
-    // There's never any reason to scrape Divant Art content.
+    // There's never any reason to scrape Deviant Art content.
     return Bluebird.resolve()
   }
 
-  getChapter (fetch, chapter) {
-    return fetch(chapter).spread((meta, html) => {
-      let $ = cheerio.load(html)
-      let base = $('base').attr('href') || meta.finalUrl
-      let title = $('meta[property="og:title"]').attr('content')
-      let desc = $('div.dev-description').find('div.text').html() || $('meta[property="og:description"]').attr('content')
-      let image = $('meta[property="og:image"]').attr('content')
-      let width = $('meta[property="og:image:width"]').attr('content')
-      let height = $('meta[property="og:image:height"]').attr('content')
-      let link = $('meta[property="og:url"]').attr('content')
-      let author = $($('a.username')[0])
-      let authorName = author.text()
-      let authorUrl = author.attr('href')
-      return {
-        meta: chapter,
-        name: title,
-        description: desc,
-        finalUrl: link,
-        base: base,
-        author: authorName,
-        authorUrl: authorUrl,
-        raw: html,
-        headers: true,
-        content: `<img width="${width}" height="${height}" src="${image}" alt="${title} by ${authorName}">`
+  getChapter (fetch, chapterInfo) {
+    return fetch(chapterInfo.fetchWith()).spread((meta, html) => {
+      const chapter = new ChapterContent(chapterInfo, {html, site: this})
+      chapter.description = chapter.$('div.dev-description').find('div.text').html() || chapter.$('meta[property="og:description"]').attr('content')
+      const image = chapter.$('meta[property="og:image"]').attr('content')
+      const width = chapter.$('meta[property="og:image:width"]').attr('content')
+      const height = chapter.$('meta[property="og:image:height"]').attr('content')
+      const link = chapter.$('meta[property="og:url"]').attr('content') || meta.finalUrl
+      if (link !== chapter.link) {
+        chapter.fetchFrom = chapter.link
+        chapter.link = link
       }
+      chapter.base = chapter.$('base').attr('href') || link
+      const author = chapter.$(chapter.$('a.username')[0])
+      chapter.author = author.text()
+      chapter.authorUrl = author.attr('href')
+      chapter.content = `<img width="${width}" height="${height}" src="${image}" alt="${chapter.name} by ${chapter.author}">`
+      chapter.headings = true
+      chapter.name = chapter.$('meta[property="og:title"]').attr('content') || chapter.author
+      return chapter
     })
   }
 }

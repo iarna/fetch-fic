@@ -4,6 +4,7 @@ const url = require('url')
 const Bluebird = require('bluebird')
 const cheerio = require('cheerio')
 
+const ChapterContent = use('chapter-content')
 const Site = use('site')
 
 // This exists to support pulling in singular posts relating to Worm as
@@ -52,68 +53,62 @@ class Worm extends Site {
     return Bluebird.resolve()
   }
 
-  getChapter (fetch, chapter) {
-    const chapterUrl = url.parse(chapter)
+  getChapter (fetch, chapterInfo) {
+    const chapterUrl = url.parse(chapterInfo.fetchWith())
     const firstChapter = chapterUrl.path === '/2011/06/11/1-1/'
     const annotate = chapterUrl.hash === '#annotate'
     const useComments = chapterUrl.hash === '#comments'
-    return fetch(chapter).spread((meta, html) => {
-      const $ = cheerio.load(html)
-      const base = $('base').attr('href') || meta.finalUrl
-      const name = $('h1.entry-title').text().trim()
-      const created = new Date($('meta[property="article:published_time"]').attr('content') || $('time.entry-date').attr('datetime'))
-      const modified = new Date($('meta[property="article:modified_time"]').attr('content'))
+    return fetch(chapterInfo.fetchWith()).spread((meta, html) => {
+      const chapter = new ChapterContent(chapterInfo, {site: this, html})
+      chapter.base = chapter.$('base').attr('href') || meta.finalUrl
+      if (meta.finalUrl !== chapter.link) {
+        chapter.fetchFrom = chapter.link
+        chapter.link = meta.finalUrl
+      }
+      chapter.name = chapter.$('h1.entry-title').text().trim()
+      chapter.created = new Date(chapter.$('meta[property="article:published_time"]').attr('content') || chapter.$('time.entry-date').attr('datetime'))
+      chapter.modified = new Date(chapter.$('meta[property="article:modified_time"]').attr('content'))
 
-      let content
       if (useComments) {
-        const $comments = $('#comments')
+        const $comments = chapter.$('#comments')
         $comments.find('article.comment').replaceWith((ii, vv) => {
           const $comment = cheerio.load(vv)
           const $vcard = $comment('.vcard')
           const $links = $vcard.find('a')
-          const $lastLink = $($links[$links.length - 1])
+          const $lastLink = chapter.$($links[$links.length - 1])
           const link = $lastLink.attr('href')
           const linkMatched = link.match(/#comment-(\d+)/)
           if (linkMatched) {
             const comment = linkMatched[1]
             $lastLink.replaceWith($lastLink.text())
-            return '<p><a external="false" href="' + link + '"><em>Worm</em>, ' + name + ' (comment ' + comment + ')</a></p>' + $comment.html()
+            return '<p><a external="false" href="' + link + '"><em>Worm</em>, ' + chapter.name + ' (comment ' + comment + ')</a></p>' + $comment.html()
           } else {
             process.emit('error', $vcard.html())
           }
         })
         $comments.find('div.reply').remove()
         $comments.find('#respond').remove()
-        content = $comments.html().trim()
+        chapter.$content = $comments
       } else {
-        const $content = $('div.entry-content')
+        const $content = chapter.$('div.entry-content')
         $content.find('a:contains("Last Chapter")').parent().remove()
         $content.find('a:contains("Next Chapter")').parent().remove()
         $content.find('#jp-post-flair').remove()
         if (firstChapter) {
           const paras = $content.find('p')
-          $(paras[0]).remove()
-          $(paras[1]).remove()
+          chapter.$(paras[0]).remove()
+          chapter.$(paras[1]).remove()
         }
         if (annotate) {
           let para = 0
           $content.find('p').before((ii, vv) => {
             vv = vv.replace(/&#xA0;/g, ' ')
-            return vv.trim() ? '<p><a external="false" href="' + chapter + '"><em>Worm</em>, ' + name + ' (para. ' + (++para) + ')</a></p>' : ''
+            return vv.trim() ? '<p><a external="false" href="' + chapterInfo.link + '"><em>Worm</em>, ' + chapter.name + ' (para. ' + (++para) + ')</a></p>' : ''
           })
         }
-        content = $content.html().trim()
+        chapter.$content = $content
       }
-      return {
-        name: name,
-        chapterLink: chapter,
-        finalUrl: meta.finalUrl,
-        base: base,
-        raw: html,
-        content: content,
-        created: created === 'Invalid Date' ? null : created,
-        modified: modified === 'Invalid Date' ? null : modified
-      }
+      return chapter
     })
   }
 }

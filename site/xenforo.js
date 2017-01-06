@@ -4,7 +4,9 @@ const url = require('url')
 
 const cheerio = require('cheerio')
 const color = require('color-ops')
+const wordcount = require('wordcount')
 
+const ChapterContent = use('chapter-content')
 const Site = use('site')
 
 const knownSites = {
@@ -63,57 +65,59 @@ class Xenforo extends Site {
       })
       fic.created = leastRecent
       fic.modified = mostRecent
-      return this.getChapter(link => fetch(link, {cacheBreak: false}), this.link).then((chapter) => {
+      return this.getChapter(fetch.withOpts({cacheBreak: false}), fic.chapters[0]).then(chapter => {
         fic.author = chapter.author
         fic.authorUrl = chapter.authorUrl
-        const $content = cheerio.load(chapter.content)
-        fic.description = $content.text().trim().replace(/^([^\n]+)[\s\S]*?$/, '$1')
+        fic.description = chapter.$content.text().trim().replace(/^([^\n]+)[\s\S]*?$/, '$1')
       })
     })
   }
 
   scrapeFicMetadata (fetch, fic) {
-    if (!fic.link) fic.link = this.link
     if (!fic.publisher) fic.publisher = this.publisherName
     if (fic.includeTOC == null) fic.includeTOC = true
-    return this.getChapter(fetch, this.link).then(chapter => {
-      const $ = cheerio.load(chapter.raw)
+    return this.getChapter(fetch, new ChapterContent({link: this.link})).then(chapter => {
       // we guard all the fic metadata updates because we might be
       // acting in addition to the result from getFicMetadata
-      if (!fic.link) fic.link = this.normalizeLink(chapter.finalUrl)
-      if (!fic.created) fic.created = this.dateTime($('.DateTime'))
-      if (!fic.title) fic.title = chapter.ficTitle
-      if (!fic.tags) fic.tags = chapter.ficTags
+      if (!fic.link) fic.link = this.normalizeLink(chapter.link)
+      if (!fic.created) fic.created = this.dateTime(chapter.$('.DateTime'))
+      if (!fic.title || !fic.tags) {
+        const tat = this.detagTitle(this.scrapeTitle(chapter.$))
+        const ficTitle = tat.title
+        const ficTags = tat.tags
+        if (!fic.title) fic.title = ficTitle
+        if (!fic.tags) fic.tags = ficTags
+      }
       if (!fic.author) fic.author = chapter.author
       if (!fic.authorUrl) fic.authorUrl = chapter.authorUrl
 
-      const $content = cheerio.load(chapter.content)
-      const firstPara = $content.text().trim().replace(/^([^\n]+)[\s\S]*?$/, '$1')
+      const firstPara = chapter.$content.text().trim().replace(/^([^\n]+)[\s\S]*?$/, '$1')
       if (!fic.description) fic.description = firstPara
-      const links = $content('a')
-      const indexLink = this.normalizeLink(chapter.finalUrl)
+      const links = chapter.$content('a')
       if (links.length === 0) {
-        fic.addChapter({name: chapter.title || fic.title, link: indexLink, created: chapter.created})
+        if (!chapter.name) chapter.name = fic.title
+        fic.addChapter(chapter)
       } else {
-        fic.addChapter({name: 'Table of Contents', link: indexLink, created: chapter.created})
+        chapter.name = 'Table of Contents'
+        fic.addChapter(chapter)
         fic.includeTOC = false
       }
       links.each((_, link) => {
-        const $link = $content(link)
+        const $link = chapter.$content(link)
         const href = this.normalizeLink($link.attr('href'), chapter.base)
         let name = $link.text().trim()
         if (name === '↑') return // don't add links to quoted text as chapters
         // if the name is a link, try to find one elsewhere
         if (/^https?:[/][/]/.test(name) || / \| Page \d+$/.test(name)) {
           let next = $link[0].prev
-          let nextText = $content(next).text().trim()
+          let nextText = chapter.$content(next).text().trim()
           if (next.type === 'text' && nextText === '') {
             next = next.prev
-            nextText = $content(next).text().trim()
+            nextText = chapter.$content(next).text().trim()
           }
           if (next.type !== 'text') {
             next = next.prev
-            nextText = $content(next).text().trim()
+            nextText = chapter.$content(next).text().trim()
           }
           if (next.type === 'text') {
             name = nextText
@@ -128,21 +132,22 @@ class Xenforo extends Site {
       }
       if (fic.modified || fic.chapters.length === 0) return
       const lastChapter = fic.chapters.slice(-1)[0]
-      return fic.getChapter(link => fetch(link, false), lastChapter.fetchFrom || lastChapter.link).then((chapter) => {
+      return fic.getChapter(fetch.withOpts({cacheBreak: false}), lastChapter).then((chapter) => {
         fic.modified = chapter.created
       })
     })
   }
 
-  getChapter (fetch, chapter, noCache) {
-    return fetch(chapter, noCache).catch(err => {
+  getChapter (fetch, chapterInfo) {
+    return fetch(chapterInfo.fetchWith()).catch(err => {
       if (err.meta && err.meta.status === 404) {
         throw new Error('No chapter found at ' + chapter)
       } else {
         throw err
       }
     }).spread((meta, html) => {
-      const chapterHash = url.parse(chapter).hash
+      const chapter = new ChapterContent(chapterInfo, {site: this, html})
+      const chapterHash = url.parse(chapter.link).hash
       const parsed = url.parse(meta.finalUrl)
       let id
       if (/^#post/.test(chapterHash)) {
@@ -155,16 +160,19 @@ class Xenforo extends Site {
         parsed.hash = id
         finalUrl = url.format(parsed)
       }
-      const $ = cheerio.load(html)
+      if (finalUrl !== chapter.link) {
+        chapter.fetchFrom = chapter.link
+        chapter.link = finalUrl
+      }
       let $message
       if (id.length > 1) {
-        $message = $('li.message#' + id.slice(1).replace(/[)]$/, ''))
+        $message = chapter.$('li.message#' + id.slice(1).replace(/[)]$/, ''))
       } else {
-        $message = $($('li.message')[0])
+        $message = chapter.$(chapter.$('li.message')[0])
       }
       const $content = $message.find('article')
       if ($content.length === 0) {
-        const $error = $('div.errorPanel')
+        const $error = chapter.$('div.errorPanel')
         if ($error.length === 0) {
           if (noCache || !meta.fromCache) {
             throw new Error('No chapter found at ' + chapter)
@@ -176,10 +184,6 @@ class Xenforo extends Site {
         }
       }
 
-      const tat = this.detagTitle(this.scrapeTitle($))
-      const ficTitle = tat.title
-      const ficTags = tat.tags
-
       // at least on qq
       const $contentWarning = $content.find('dl.adv_accordion')
       if ($contentWarning.length) {
@@ -189,7 +193,7 @@ class Xenforo extends Site {
       }
 
       $content.find('.quoteContainer < aside').each((ii, quote) => {
-        const $quote = $(quote)
+        const $quote = chapter.$(quote)
         const $attribution = $quote.find('.attribution')
         if ($attribution.length !== 0) {
           if (!$attribution.text().match(/(.*) said:/)) process.emit('debug', 'QUOTE', $quote.html())
@@ -215,11 +219,11 @@ class Xenforo extends Site {
       } else {
         $spoiler.find('.bbCodeSpoilerButton').replaceWith(`<b>${spoilerLabel}</b><br/>`)
       }
-      const base = $('base').attr('href') || finalUrl
-      const $author = $($message.find('a.username')[0])
-      const authorUrl = url.resolve(base, $author.attr('href'))
-      const authorName = $author.text()
-      const messageDate = this.dateTime($message.find('a.datePermalink .DateTime'))
+      chapter.base = chapter.$('base').attr('href') || finalUrl
+      const $author = chapter.$($message.find('a.username')[0])
+      chapter.authorUrl = url.resolve(chapter.base, $author.attr('href'))
+      chapter.author = $author.text().trim()
+      chapter.created = this.dateTime($message.find('a.datePermalink .DateTime'))
       let baseLightness = 0
       if (/spacebattles/.test(chapter)) {
         baseLightness = color.lightness(color.rgb(204, 204, 204))
@@ -229,7 +233,7 @@ class Xenforo extends Site {
         baseLightness = color.lightness(color.rgb(230, 230, 230))
       }
       $content.find('[style *= color]').each((ii, vv) => {
-        const style = $(vv).attr('style')
+        const style = chapter.$(vv).attr('style')
         let ns = `xenforo-color: ${style};`
         const colorMatch = style.match(/color: #(\S\S)(\S\S)(\S\S)/)
         let opacity = 1
@@ -262,27 +266,15 @@ class Xenforo extends Site {
         } else if (style === 'color: #b30000') {
           ns += 'border-style: hidden solid;'
         }
-        $(vv).attr('style', ns)
+        chapter.$(vv).attr('style', ns)
       })
       $content.find('div.messageTextEndMarker').remove()
-      return {
-        ficTitle: ficTitle,
-        ficTags: ficTags,
-        chapterLink: chapter,
-        finalUrl: finalUrl,
-        base: base,
-        author: authorName,
-        authorUrl: authorUrl,
-        created: messageDate,
-        raw: html,
-        content: $content.html().trim()
+      chapter.content =  $content.html().trim()
           // content is blockquoted, for some reason
           .replace(/^\s*<blockquote[^>]*>([\s\S]+)<[/]blockquote>\s*$/, '$1')
           // bullshit sv holloween thingy
           .replace(/^<p style="padding: 5px 0px; font-weight: bold; font-style: oblique; text-align: center; font-size: 12pt">.*?<[/]p>/g, '')
-          // trim the lines
-          .replace(/^\s+|\s+$/mg, '')
-      }
+      return chapter
     })
   }
 
@@ -394,6 +386,17 @@ class Xenforo extends Site {
       return new Date(elem.attr('data-datestring') + ' ' + elem.attr('data-timestring'))
     } else if (elem.attr('title')) {
       return new Date(elem.attr('title').replace(/ at/, ''))
+    }
+  }
+
+  countStoryWords (chapter) {
+    let $content
+    if (/[.]bbCodeQuote/.test(chapter.content)) {
+      const $content = cheerio.load(chapter.content)
+      $content('.bbCodeQuote').remove()
+      return wordcount($content.text().trim())
+    } else {
+      return wordcount(chapter.$content.text().trim())
     }
   }
 }

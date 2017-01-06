@@ -3,6 +3,7 @@ const url = require('url')
 
 const Bluebird = require('bluebird')
 
+const ChapterContent = use('chapter-content')
 const Site = use('site')
 
 class GenericImage extends Site {
@@ -17,7 +18,6 @@ class GenericImage extends Site {
   }
 
   normalizeLink (href, base) {
-    // resolve base url
     if (base) href = url.resolve(base, href)
     return href
   }
@@ -26,25 +26,21 @@ class GenericImage extends Site {
     fic.title = this.link
     fic.link = this.link
     fic.publisher = this.publisher
-    // currently we only support /art/ urls, which can only have one thing on them
-    return this.getChapter(fetch, this.link).then(info => {
-      fic.link = this.normalizeLink(info.finalUrl)
-      fic.addChapter({name: this.link, link: fic.link})
-    })
-  }
-
-  scrapeFicMetadata (fetch, fic) {
-    // There's never any reason to scrape Divant Art content.
+    fic.link = this.normalizeLink(this.link)
+    fic.addChapter({name: this.link, link: fic.link})
     return Bluebird.resolve()
   }
 
-  getChapter (fetch, chapter) {
-    return Bluebird.resolve({
-      meta: chapter,
-      finalUrl: chapter,
-      base: chapter,
-      content: `<img src="${chapter}">`
-    })
+  scrapeFicMetadata (fetch, fic) {
+    return Bluebird.resolve()
+  }
+
+  getChapter (fetch, chapterInfo) {
+    return Bluebird.resolve(new ChapterContent(chapterInfo, {
+      site: this,
+      base: chapterInfo.link,
+      content: `<img src="${chapterInfo.fetchWith()}">`
+    }))
   }
 }
 module.exports = GenericImage

@@ -4,6 +4,7 @@ const url = require('url')
 const Bluebird = require('bluebird')
 const cheerio = require('cheerio')
 
+const ChapterContent = use('chapter-content')
 const Site = use('site')
 
 class Youtube extends Site {
@@ -23,14 +24,14 @@ class Youtube extends Site {
     fic.link = this.link
     fic.publisher = this.publisherName
     // currently we only support /art/ urls, which can only have one thing on them
-    return this.getChapter(fetch, this.link).then(info => {
-      fic.title = info.name
-      fic.link = this.normalizeLink(info.finalUrl)
-      fic.author = info.author
-      fic.authorUrl = info.authorUrl
+    return this.getChapter(fetch, new ChapterContent({link: this.link})).then(chapter => {
+      fic.title = chapter.name
+      fic.link = this.normalizeLink(chapter.link)
+      fic.author = chapter.author
+      fic.authorUrl = chapter.authorUrl
       fic.publisher = this.publisherName
-      fic.description = info.description
-      fic.addChapter({name: info.name || info.author, link: this.normalizeLink(info.finalUrl)})
+      fic.description = chapter.description
+      fic.addChapter(chapter)
     })
   }
 
@@ -39,33 +40,26 @@ class Youtube extends Site {
     return Bluebird.resolve()
   }
 
-  getChapter (fetch, chapter) {
-    return fetch(chapter).spread((meta, html) => {
-      let $ = cheerio.load(html)
-      let base = $('base').attr('href') || meta.finalUrl
-      let title = ($('meta[property="og:title"]').attr('content') || '').replace(/- YouTube$/, '')
+  getChapter (fetch, chapterInfo) {
+    return fetch(chapterInfo.fetchWith()).spread((meta, html) => {
+      const chapter = new ChapterContent(chapterInfo, {site: this, html})
+      chapter.base = chapter.$('base').attr('href') || meta.finalUrl
+      const title = (chapter.$('meta[property="og:title"]').attr('content') || '').replace(/- YouTube$/, '')
       if (!title) throw new Error('Skipping due to missing video or shutdown account.')
-      let desc = $('meta[property="og:description"]').attr('content')
-      let width = $('meta[property="og:video:width"]').attr('content')
-      let height = $('meta[property="og:video:height"]').attr('content')
-      let link = $('meta[property="og:url"]').attr('content')
-      let image = $('link[itemprop="thumbnailUrl"]').attr('href')
-      let $author = $('div.yt-user-info')
-      let author = $author.find('a').text()
-      let authorUrl = url.resolve(base, $author.find('a').attr('href'))
-
-      return {
-        meta: chapter,
-        name: title,
-        description: desc,
-        finalUrl: link,
-        base: base,
-        author: author,
-        authorUrl: authorUrl,
-        raw: html,
-        headings: true,
-        content: `<a external="false" href="${link}"><img width="${width}" height="${height}" src="${image}" alt="${title} by ${author}"></a>`
-      }
+      chapter.name = `Watch ${title} on Youtube`
+      chapter.description = chapter.$('meta[property="og:description"]').attr('content')
+      let width = chapter.$('meta[property="og:video:width"]').attr('content')
+      let height = chapter.$('meta[property="og:video:height"]').attr('content')
+      let link = chapter.$('meta[property="og:url"]').attr('content')
+      let image = chapter.$('link[itemprop="thumbnailUrl"]').attr('href')
+      let $author = chapter.$('div.yt-user-info')
+      chapter.author = $author.find('a').text()
+      chapter.authorUrl = url.resolve(chapter.base, $author.find('a').attr('href'))
+      chapter.headings = true
+      chapter.content = `<p><a external="false" href="${chapter.fetchWith()}">` +
+        `<img width="${width}" height="${height}" src="${image}" alt="${title} by ${chapter.author}">`+
+        `</a></p><p>${chapter.description}</p>`
+      return chapter
     })
   }
 }

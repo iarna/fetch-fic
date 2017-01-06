@@ -600,7 +600,8 @@ Stuff I'd like to see (user visible):
 
 * A web UI
 * Make the rtf handler more complete.
-* Better stylesheet handling in output.
+* Better stylesheet handling when outputting to formats that don't support
+  them, eg, ao3, ffnet, bbcode.
 * More external site support:
   * Don't want to support every fic site ever, but…
   * More image sources for externing would be useful.

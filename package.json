@@ -51,7 +51,6 @@
     "util/call-limit.js",
     "util/caller.js",
     "util/chapter-filename.js",
-    "util/count-story-words.js",
     "util/curry-options.js",
     "ff.js",
     "ff-cache-clear.js",
@@ -98,7 +97,8 @@
     "util/pump.js",
     "util/rtf-to-html.js",
     "util/toml.js",
-    "util/zlib-promises.js"
+    "util/zlib-promises.js",
+    "util/chapter-content.js"
   ],
   "repository": {
     "type": "git",

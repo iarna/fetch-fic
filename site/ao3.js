@@ -4,6 +4,7 @@ const url = require('url')
 const Bluebird = require('bluebird')
 const cheerio = require('cheerio')
 
+const ChapterContent = use('chapter-content')
 const Site = use('site')
 
 class ArchiveOfOurOwn extends Site {
@@ -57,17 +58,16 @@ class ArchiveOfOurOwn extends Site {
         const created = new Date($vv.find('span.datetime').text().replace(/\((.*)\)/, '$1'))
         fic.addChapter({name, link, created})
       })
-      return this.getChapter(fetch, fic.chapters[0].link)
+      return this.getChapter(fetch, new ChapterContent({link: fic.chapters[0].link}))
     }).then(chapter => {
-      const $ = cheerio.load(chapter.raw)
-      const $meta = $('dl.meta')
-      const ratings = this.tagGroup($, 'rating', $meta.find('dd.rating'))
-      const warnings = this.tagGroup($, 'warning', $meta.find('dd.warnings'))
+      const $meta = chapter.$('dl.meta')
+      const ratings = this.tagGroup(chapter.$, 'rating', $meta.find('dd.rating'))
+      const warnings = this.tagGroup(chapter.$, 'warning', $meta.find('dd.warnings'))
         .filter(warn => !/No Archive Warnings Apply/.test(warn))
-      const category = this.tagGroup($, 'category', $meta.find('dd.category'))
-      const fandom = this.tagGroup($, 'fandom', $meta.find('dd.fandom'))
-      const characters = this.tagGroup($, 'character', $meta.find('dd.character'))
-      const freeform = this.tagGroup($, 'freeform', $meta.find('dd.freeform'))
+      const category = this.tagGroup(chapter.$, 'category', $meta.find('dd.category'))
+      const fandom = this.tagGroup(chapter.$, 'fandom', $meta.find('dd.fandom'))
+      const characters = this.tagGroup(chapter.$, 'character', $meta.find('dd.character'))
+      const freeform = this.tagGroup(chapter.$, 'freeform', $meta.find('dd.freeform'))
       const language = 'language:' + $meta.find('dd.language').text().trim()
       fic.tags = [].concat(ratings, warnings, category, fandom, characters, freeform, language)
       const $stats = $meta.find('dl.stats')
@@ -79,8 +79,8 @@ class ArchiveOfOurOwn extends Site {
       fic.kudos = Number($stats.find('dd.kudos').text().trim())
       fic.bookmarks = Number($stats.find('dd.bookmarks').text().trim())
       fic.hits = Number($stats.find('dd.hits').text().trim())
-      fic.title = $('h2.title').text().trim()
-      fic.description = $('.summary').find('p').html()
+      fic.title = chapter.$('h2.title').text().trim()
+      fic.description = chapter.$('.summary').find('p').html()
     })
   }
 
@@ -89,30 +89,31 @@ class ArchiveOfOurOwn extends Site {
     return Bluebird.resolve()
   }
 
-  getChapter (fetch, chapter) {
-    return fetch(chapter).spread((meta, html) => {
-      const $ = cheerio.load(html)
-      if ($('p.caution').length) {
-        return this.getChapter(fetch, chapter + '?view_adult=true')
+  getChapter (fetch, chapterInfo) {
+    return fetch(chapterInfo.fetchWith()).spread((meta, html) => {
+      const chapter = new ChapterContent(chapterInfo, {html, site: this})
+      if (chapter.$('p.caution').length) {
+        chapterInfo.fetchFrom = chapterInfo.fetchWith() + '?view_adult=true'
+        return this.getChapter(chapterInfo)
       }
-      const base = $('base').attr('href') || meta.finalUrl
-      const $content = $('div[role="article"]')
+      chapter.base = chapter.$('base').attr('href') || meta.finalUrl
+      if (meta.finalUrl !== chapter.link) {
+        chapter.fetchFrom = chapter.link
+        chapter.link = meta.finalUrl
+      }
+      const $content = chapter.$('div[role="article"]')
       $content.find('h3.landmark').remove()
-      const notes = $('#notes').find('p').html()
-      const endNotes = $('div.end').find('p').html()
+
+      const notes = chapter.$('#notes').find('p').html()
+      const endNotes = chapter.$('div.end').find('p').html()
       let content = ''
       if (notes && !/\(See the end of the chapter for.*notes.*.\)/.test(notes)) {
         content += `<aside style="border: solid black 1px; padding: 1em">${notes}</aside>`
       }
       content += $content.html()
       if (endNotes) content += `<aside epub:type="endnote" style="border: solid black 1px; padding: 1em">${endNotes}</aside>`
-      return {
-        chapterLink: chapter,
-        finalUrl: meta.finalUrl,
-        base: base,
-        raw: html,
-        content: content
-      }
+      chapter.content = content
+      return chapter
     })
   }
 }
