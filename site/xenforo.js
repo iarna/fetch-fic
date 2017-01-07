@@ -4,7 +4,7 @@ const url = require('url')
 
 const cheerio = require('cheerio')
 const color = require('color-ops')
-const wordcount = require('wordcount')
+const wordcount = require('@iarna/word-count')
 
 const ChapterContent = use('chapter-content')
 const Site = use('site')

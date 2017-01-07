@@ -638,6 +638,11 @@ Currently it will warn if you use it with another site.
   sites, deviant art and sta.sh.  It makes some different formatting
   choices, of particular note is displaying spoilers as footnotes (which
   show up as popup windows in ereaders). [(Python)](https://github.com/kemayo/leech)
+* [fetch_story](https://metacpan.org/pod/distribution/WWW-FetchStory/scripts/fetch_story)
+  is another command line tool that supports a whole slew of sites that the
+  others don't. In addition to the big one's that everyone supports (AO3, FFNET) it
+  supports some unusual sources like LiveJournal, Project Gutenberg and many
+   many more. [(Perl)](https://github.com/rubykat/WWW-FetchStory)
 
 ## OTHER DOCS
 

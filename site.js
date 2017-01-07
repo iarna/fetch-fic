@@ -1,6 +1,6 @@
 'use strict'
 const url = require('url')
-const wordcount = require('wordcount')
+const wordcount = require('@iarna/word-count')
 
 const qw = require('qw')
 

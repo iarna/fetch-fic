@@ -20,6 +20,7 @@
   "dependencies": {
     "@iarna/lib": "^1.0.0",
     "@iarna/toml": "^1.2.0",
+    "@iarna/word-count": "^1.0.2",
     "are-we-there-yet": "^1.1.2",
     "bluebird": "^3.4.2",
     "buffer-signature": "^1.0.0",
