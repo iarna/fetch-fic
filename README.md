@@ -642,7 +642,7 @@ Currently it will warn if you use it with another site.
   is another command line tool that supports a whole slew of sites that the
   others don't. In addition to the big one's that everyone supports (AO3, FFNET) it
   supports some unusual sources like LiveJournal, Project Gutenberg and many
-   many more. [(Perl)](https://github.com/rubykat/WWW-FetchStory)
+  many more. Second in site count only to FanFicFare. [(Perl)](https://github.com/rubykat/WWW-FetchStory)
 
 ## OTHER DOCS
 
