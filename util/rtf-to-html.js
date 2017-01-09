@@ -276,7 +276,7 @@ class ToHTML extends Transform {
         this.lastStyle = this.styleStr()
         startP = `<p${this.lastStyle}>`
       }
-      if (/S/.test(result) && this.lastStyle !== this.styleStr()) {
+      if (/\S/.test(result) && this.lastStyle !== this.styleStr()) {
         this.lastStyle = this.styleStr()
         this.push(`<span${this.lastStyle}>${startP}${result}</span>`)
       } else {
