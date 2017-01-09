@@ -222,6 +222,15 @@ const htmlExpression = {
     state.style.align = 'justify'
     return ''
   },
+  super: (exp, state) => {
+    state.style.supersub = 'super'
+  },
+  sub: (exp, state) => {
+    state.style.supersub = 'sub'
+  },
+  nosupersub: (exp, state) => {
+    state.style.supersub = 'none'
+  },
 /*
   cf: exp => {
 // foreground color
@@ -249,14 +258,22 @@ class ToHTML extends Transform {
     this.inPara = null
     this.defaultStyle = {
       size: 10,
-      align: 'left'
+      align: 'left',
+      supersub: 'none'
     }
     this.style = Object.assign({}, this.defaultStyle)
     this.lastStyle = this.styleStr()
   }
   styleStr () {
     let style = []
-    if (this.style.size !== this.defaultStyle.size) {
+    if (this.style.supersub !== this.defaultStyle.supersub) {
+      if (this.style.supersub === 'sub') {
+        style.push(`vertical-align: sub;`)
+      }
+      if (this.style.supersub === 'super') {
+        style.push(`vertical-align: super;`)
+      }
+    } else if (this.style.size !== this.defaultStyle.size) {
       const em = this.style.size / this.defaultStyle.size
       style.push(`font-size: ${em}em;`)
     }
