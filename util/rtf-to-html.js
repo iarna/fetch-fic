@@ -101,7 +101,7 @@ class ParseRTF extends Transform {
         this.ctx.push({command: this.cmd, args: [this.arg]})
       }
       this.parserState = this.parserGeneral
-      this.parserState(char)
+      if (char !== ' ') return this.parserState(char)
     }
   }
   skipChars (num) {
