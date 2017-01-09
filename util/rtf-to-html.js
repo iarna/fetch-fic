@@ -136,7 +136,7 @@ const htmlExpression = {
   group: (exp, state, content) => {
     let group = exp.args.shift()
     if (group.command === '*') group = exp.args.shift()
-//    console.log('STARTING', group, exp.args)
+    //process.emit('debug', 'STARTING', group, exp.args)
     return evaluate(group, state, exp.args.map(arg => evaluate(arg, state)))
   },
   fakeParagraph: (exp, state) => {
@@ -247,7 +247,7 @@ const htmlExpression = {
 }
 
 function evaluate (exp, state, content) {
-//  console.log('EVALUATE', exp.command, !!htmlExpression[exp.command])
+  //process.emit('debug', 'EVALUATE', exp.command, !!htmlExpression[exp.command])
   const result =  htmlExpression[exp.command] && htmlExpression[exp.command](exp, state, content)
   return result
 }
