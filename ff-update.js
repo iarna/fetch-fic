@@ -79,18 +79,36 @@ var fetchLatestVersion = promisify.args((fetch, existingFic, fromThreadmarks, fr
   return ficInflate(newFic, fetch.withOpts({cacheBreak: false}))
 })
 
+function chapterCreated (chapter) {
+  return chapter.created || chapter.modified
+}
+
 var mergeFic = promisify.args(function mergeFic (existingFic, newFic, addAll) {
   const changes = []
   const toAdd = []
-  // Walk from the newest to the oldest marking chapters to add.
-  // Stop when we find one that already exists.
-  // This saves us from readding middle chapters that were previously pruned.
-  for (let ii = newFic.chapters.length - 1; ii >= 0; --ii) {
-    const newChapter = newFic.chapters[ii]
-    if (existingFic.chapterExists(newChapter.link) || existingFic.chapterExists(newChapter.fetchFrom)) {
-      if (addAll) { continue } else { break }
+  const latestExisting = existingFic.chapters.reduce((aa, bb) => {
+    return chapterCreated(aa) > chapterCreated(bb) ? aa : bb
+  }, {created: new Date(0)})
+
+  const newestIndex = newFic.chapters.length - 1
+  if (newFic.chapters[newestIndex].created || newFic.chapters[newestIndex].modified) {
+    for (let newChapter of newFic.chapters) {
+      if (existingFic.chapterExists(newChapter.link) || existingFic.chapterExists(newChapter.fetchFrom)) {
+        continue
+      }
+      const created = newChapter.created || newChapter.modified
+      if (addAll || chapterCreated(newChapter) > chapterCreated(latestExisting)) {
+        toAdd.push(newChapter)
+      }
     }
-    toAdd.unshift(newChapter)
+  } else {
+    for (let ii = newestIndex; ii >= 0; --ii) {
+      const newChapter = newFic.chapters[ii]
+      if (existingFic.chapterExists(newChapter.link) || existingFic.chapterExists(newChapter.fetchFrom)) {
+        if (addAll) { continue } else { break }
+      }
+      toAdd.unshift(newChapter)
+    }
   }
 
   if (existingFic.description == null && newFic.description != null) {
