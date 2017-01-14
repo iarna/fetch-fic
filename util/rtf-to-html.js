@@ -161,15 +161,15 @@ const htmlExpression = {
       return '<em>'
     }
   },
-  ul: (exp) => {
+  ul: (exp, state) => {
     if (exp.args[0] === '0') {
-      return '</span>'
+      state.style.ul = false
     } else {
-      return '<span style="text-decoration: underline">'
+      state.style.ul = true
     }
   },
-  ulnone: (exp) => {
-    return '</span>'
+  ulnone: (exp, state) => {
+    state.style.ul = false
   },
   field: (exp, state, content) => {
     const args = []
@@ -259,7 +259,8 @@ class ToHTML extends Transform {
     this.defaultStyle = {
       size: 10,
       align: 'left',
-      supersub: 'none'
+      supersub: 'none',
+      ul: false
     }
     this.style = Object.assign({}, this.defaultStyle)
     this.lastStyle = this.styleStr()
@@ -279,6 +280,9 @@ class ToHTML extends Transform {
     }
     if (this.style.align !== this.defaultStyle.align) {
       style.push(`text-align: ${this.style.align};`)
+    }
+    if (this.style.ul && !this.defaultStyle.ul) {
+      style.push('text-decoration: underline;')
     }
     if (!style.length) return ''
     return ` style="${style.join(' ')}"`
