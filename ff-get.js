@@ -14,7 +14,11 @@ const fs = use('fs-promises')
 const progress = use('progress')
 
 function read (args) {
-  return fs.stat(args.fic).then(file => file.isDirectory() ? _reallyRead(args) : _generateInstead, () => _reallyRead(args))
+  return fs.stat(args.fic).then(file => {
+    return file.isDirectory() ? _reallyRead(args) : _generateInstead()
+  }, /*else*/ () => {
+    return _reallyRead(args)
+  })
 }
 
 function _generateInstead () {
