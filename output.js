@@ -32,7 +32,7 @@ class Output {
   }
 
   prepareHtml (html) {
-    return sanitizeHtml(normalizeHtml(this.replaceLinks(html)), this.fic.site.sanitizeHtmlConfig())
+    return sanitizeHtml(normalizeHtml(this.replaceLinks(html)), this.fic.site.sanitizeHtmlConfig()).replace(/\n\n+\n/g, '\n\n')
   }
 
   transform () {

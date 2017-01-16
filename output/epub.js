@@ -68,6 +68,11 @@ class OutputEpub extends Output {
     return Streampub.newChapter(name, this.prepareHtml(toSanitize), 100 + index, filename)
   }
 
+  prepareHtml (html) {
+    // remove any doc-wide stylesheet so we can do our styling.
+    return super.prepareHtml(html.replace(/<style>[^>]+<[/]style>/, ''))
+  }
+
   html (content) {
     return `<html xmlns:epub="http://www.idpf.org/2007/ops">\n${content}</html>\n`
   }

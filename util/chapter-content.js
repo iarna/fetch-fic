@@ -37,9 +37,9 @@ class ChapterContent extends Chapter {
   }
   get html () {
     if (this._$html) {
-      return this._$html.html().replace(/^\s+|\s+$/mg, '')
+      return this._$html.html()
     } else {
-      return (this._html || '').replace(/^\s+|\s+$/mg, '')
+      return (this._html || '')
     }
   }
   set html (html) {
@@ -62,9 +62,9 @@ class ChapterContent extends Chapter {
   }
   get content () {
     if (this._$content) {
-      return this._$content.html().replace(/^\s+|\s+$/mg, '')
+      return this._$content.html()
     } else {
-      return (this._content || '').replace(/^\s+|\s+$/mg, '')
+      return (this._content || '')
     }
   }
   set content (html) {
