@@ -94,7 +94,7 @@ class ArchiveOfOurOwn extends Site {
       const chapter = new ChapterContent(chapterInfo, {html, site: this})
       if (chapter.$('p.caution').length) {
         chapterInfo.fetchFrom = chapterInfo.fetchWith() + '?view_adult=true'
-        return this.getChapter(chapterInfo)
+        return this.getChapter(fetch, chapterInfo)
       }
       chapter.base = chapter.$('base').attr('href') || meta.finalUrl
       if (meta.finalUrl !== chapter.link) {
