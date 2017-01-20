@@ -51,14 +51,6 @@ class Fic {
     }
   }
 
-  getChapter (fetch, chapter) {
-    if (typeof chapter === 'string') {
-      chapter = new Chapter({link: chapter})
-    }
-    const site = Site.fromUrl(chapter.fetchWith())
-    return site.getChapter(fetch, chapter)
-  }
-
   addChapter (opts) {
     if (this.chapterExists(opts.link) || this.chapterExists(opts.fetchFrom)) return
     this.chapters.addChapter(opts)
@@ -274,6 +266,13 @@ class Chapter {
   }
   fetchWith () {
     return this.fetchFrom || this.link
+  }
+  getContent (fetch) {
+    const site = Site.fromUrl(this.fetchWith())
+    return site.getChapter(fetch, this)
+  }
+  static getContent (fetch, href) {
+    return (new this({link: href})).getContent(fetch)
   }
 }
 

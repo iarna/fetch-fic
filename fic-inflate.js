@@ -21,7 +21,7 @@ function ficInflate (fic, fetch, tracker) {
       const tracker = completion.get(fic)
       let words = 0
       return Bluebird.map(fic.chapters, chapterInfo => {
-        const chapterContent = fic.getChapter(fetch, chapterInfo)
+        const chapterContent = chapterInfo.getContent(fetch)
         return progress.completeWorkWhenResolved(chapterContent, tracker).then(chapter => {
           progress.show(fic.title, `${chapterInfo.name}`)
           chapterInfo.words = chapter.words

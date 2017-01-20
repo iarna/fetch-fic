@@ -132,7 +132,7 @@ class Xenforo extends Site {
       }
       if (fic.modified || fic.chapters.length === 0) return
       const lastChapter = fic.chapters.slice(-1)[0]
-      return fic.getChapter(fetch.withOpts({cacheBreak: false}), lastChapter).then((chapter) => {
+      return lastChapter.getContent(fetch.withOpts({cacheBreak: false})).then((chapter) => {
         fic.modified = chapter.created
       })
     })

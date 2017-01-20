@@ -131,7 +131,7 @@ function getFic (fetch, fic) {
   process.emit('debug', `Outputting ${chapters.length} chapters of ${fic.title}`)
   progress.show(`Fetching chapters (${chapters.length})…`)
   concurrently(chapters, maxConcurrency, (chapterInfo) => {
-    return fic.getChapter(fetch, chapterInfo).then(chapter => {
+    return chapterInfo.getContent(fetch).then(chapter => {
       chapter.order = chapterInfo.order
       chapter.linkName = chapterInfo.name
       chapter.name = chapterInfo.name = chapter.linkName + (chapterInfo.author ? ` (${chapter.author})` : '')
@@ -174,7 +174,7 @@ function getFic (fetch, fic) {
     const pages = externalCount === 1 ? 'page' : 'pages'
     return concurrently(Object.keys(externals), maxConcurrency, (href, exterNum) => {
       const externalInfo = externals[href]
-      return fic.getChapter(fetch, href).then(external => {
+      return Chapter.getContent(fetch, href).then(external => {
         external.order = 9000 + exterNum
         const name = external.name || external.ficTitle
         let header = ''
