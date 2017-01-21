@@ -32,14 +32,16 @@ function readFic (fic) {
 }
 
 function updateFic (fetch, args) {
+  const addNone = args['add-none']
   const addAll = args['add-all']
+  const add = addNone ? 'none' : addAll ? 'all' : 'new'
   let fromThreadmarks = !args.scrape
   let fromScrape = args.scrape || args['and-scrape']
 
   return ficFile => {
     const existingFic = readFic(ficFile)
     const newFic = fetchLatestVersion(fetch, existingFic, fromThreadmarks, fromScrape)
-    return mergeFic(existingFic, newFic, addAll).then(changes => {
+    return mergeFic(existingFic, newFic, add).then(changes => {
       const inflatedFic = ficInflate(existingFic, fetch.withOpts({cacheBreak: false}))
       return writeUpdatedFic(ficFile, inflatedFic, refreshMetadata(inflatedFic, changes))
     })
@@ -83,31 +85,33 @@ function chapterCreated (chapter) {
   return chapter.created || chapter.modified
 }
 
-var mergeFic = promisify.args(function mergeFic (existingFic, newFic, addAll) {
+var mergeFic = promisify.args(function mergeFic (existingFic, newFic, add) {
   const changes = []
   const toAdd = []
   const latestExisting = existingFic.chapters.reduce((aa, bb) => {
     return chapterCreated(aa) > chapterCreated(bb) ? aa : bb
   }, {created: new Date(0)})
 
-  const newestIndex = newFic.chapters.length - 1
-  if (newFic.chapters[newestIndex].created || newFic.chapters[newestIndex].modified) {
-    for (let newChapter of newFic.chapters) {
-      if (existingFic.chapterExists(newChapter.link) || existingFic.chapterExists(newChapter.fetchFrom)) {
-        continue
+  if (add !== 'none') {
+    const newestIndex = newFic.chapters.length - 1
+    if (newFic.chapters[newestIndex].created || newFic.chapters[newestIndex].modified) {
+      for (let newChapter of newFic.chapters) {
+        if (existingFic.chapterExists(newChapter.link) || existingFic.chapterExists(newChapter.fetchFrom)) {
+          continue
+        }
+        const created = newChapter.created || newChapter.modified
+        if (add === 'all' || chapterCreated(newChapter) > chapterCreated(latestExisting)) {
+          toAdd.push(newChapter)
+        }
       }
-      const created = newChapter.created || newChapter.modified
-      if (addAll || chapterCreated(newChapter) > chapterCreated(latestExisting)) {
-        toAdd.push(newChapter)
+    } else {
+      for (let ii = newestIndex; ii >= 0; --ii) {
+        const newChapter = newFic.chapters[ii]
+        if (existingFic.chapterExists(newChapter.link) || existingFic.chapterExists(newChapter.fetchFrom)) {
+          if (add === 'all') { continue } else { break }
+        }
+        toAdd.unshift(newChapter)
       }
-    }
-  } else {
-    for (let ii = newestIndex; ii >= 0; --ii) {
-      const newChapter = newFic.chapters[ii]
-      if (existingFic.chapterExists(newChapter.link) || existingFic.chapterExists(newChapter.fetchFrom)) {
-        if (addAll) { continue } else { break }
-      }
-      toAdd.unshift(newChapter)
     }
   }
 

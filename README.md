@@ -170,6 +170,8 @@ Usage: ff update <fic…>
 Options:
   --add-all                     if true, merge ALL missing chapters in instead
                                 of just NEW ones      [boolean] [default: false]
+  --add-none                    if true, add no new chapters, just update other
+                                metadata              [boolean] [default: false]
 
 <fic…> - One or more fic metadata files to update the chapter info for.
 Filenames end on `.fic.toml`.
@@ -279,10 +281,15 @@ Own (`ao3`) and FanFiction.net (`ffnet`).
 
 ### --add-all
 
-Modifies `ff read`'s behavior when updating an existing `.fic.toml` file.
+Modifies `ff update`'s behavior when updating an existing `.fic.toml` file.
 Ordinarily it will only add chapters NEWER then the oldest chapter already
 in your metadata file. If you pass in `--add-all` then it will add ANY chapter
 missing from your `.fic.toml` file, no matter how old.
+
+### --add-none
+
+Makes `ff update` not add ANY new chapters, only update word counts and
+other metadata.
 
 ### --cache
 ### --no-cache

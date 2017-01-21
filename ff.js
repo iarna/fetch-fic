@@ -75,6 +75,11 @@ const argv = yargs
         default: false,
         describe: 'if true, merge ALL missing chapters in instead of just NEW ones'
       })
+      yargs.option('add-none', {
+        type: 'boolean',
+        default: false,
+        describe: 'if true, add no new chapters, just update other metadata'
+      })
       .option('scrape', {
         type: 'boolean',
         describe: 'scrape the index instead of using threadmarks'
