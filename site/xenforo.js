@@ -175,10 +175,10 @@ class Xenforo extends Site {
       if ($content.length === 0) {
         const $error = chapter.$('div.errorPanel')
         if ($error.length === 0) {
-          if (noCache || !meta.fromCache) {
+          if (!meta.fromCache) {
             throw new Error('No chapter found at ' + chapter)
           } else {
-            return this.getChapter(fetch, chapter, true)
+            return this.getChapter(fetch.withOpts({cacheBreak: true}), chapter)
           }
         } else {
           throw new Error('Error fetching ' + chapter + ': ' + $error.text().trim())
