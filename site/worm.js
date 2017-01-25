@@ -4,6 +4,7 @@ const url = require('url')
 const Bluebird = require('bluebird')
 const cheerio = require('cheerio')
 
+const Chapter = use('fic').Chapter
 const ChapterContent = use('chapter-content')
 const Site = use('site')
 
@@ -40,7 +41,7 @@ class Worm extends Site {
     fic.author = 'John McCrae'
     fic.authorUrl = 'https://wildbow.wordpress.com'
 
-    return this.getChapter(fetch, this.link).then(info => {
+    return Chapter.getContent(fetch, this.link).then(info => {
       fic.created = info.created
       fic.modified = info.modified
       fic.title = info.name

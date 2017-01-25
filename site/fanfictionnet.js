@@ -3,6 +3,7 @@ const url = require('url')
 
 const Bluebird = require('bluebird')
 
+const Chapter = use('fic').Chapter
 const ChapterContent = use('chapter-content')
 const Site = use('site')
 
@@ -39,7 +40,7 @@ class FanFictionNet extends Site {
     fic.link = this.link
     fic.publisher = this.publisherName
     fic.includeTOC = true
-    return this.getChapter(fetch, new ChapterContent({link: this.chapterListUrl()})).then(chapter => {
+    return Chapter.getContent(fetch, this.chapterListUrl()).then(chapter => {
       const $meta = chapter.$('#profile_top')
       const $dates = $meta.find('span[data-xutime]')
       fic.title = $meta.find('b.xcontrast_txt').text()

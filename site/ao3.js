@@ -58,7 +58,7 @@ class ArchiveOfOurOwn extends Site {
         const created = new Date($vv.find('span.datetime').text().replace(/\((.*)\)/, '$1'))
         fic.addChapter({name, link, created})
       })
-      return this.getChapter(fetch, new ChapterContent({link: fic.chapters[0].link}))
+      return fic.chapters[0].getContent(fetch)
     }).then(chapter => {
       const $meta = chapter.$('dl.meta')
       const ratings = this.tagGroup(chapter.$, 'rating', $meta.find('dd.rating'))

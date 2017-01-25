@@ -6,6 +6,7 @@ const cheerio = require('cheerio')
 const color = require('color-ops')
 const wordcount = require('@iarna/word-count')
 
+const Chapter = use('fic').Chapter
 const ChapterContent = use('chapter-content')
 const Site = use('site')
 
@@ -65,7 +66,7 @@ class Xenforo extends Site {
       })
       fic.created = leastRecent
       fic.modified = mostRecent
-      return this.getChapter(fetch.withOpts({cacheBreak: false}), fic.chapters[0]).then(chapter => {
+      return fic.chapters[0].getContent(fetch.withOpts({cacheBreak: false})).then(chapter => {
         fic.author = chapter.author
         fic.authorUrl = chapter.authorUrl
         fic.description = chapter.$content.text().trim().replace(/^([^\n]+)[\s\S]*?$/, '$1')
@@ -76,7 +77,7 @@ class Xenforo extends Site {
   scrapeFicMetadata (fetch, fic) {
     if (!fic.publisher) fic.publisher = this.publisherName
     if (fic.includeTOC == null) fic.includeTOC = true
-    return this.getChapter(fetch, new ChapterContent({link: this.link})).then(chapter => {
+    return Chapter.getContent(fetch, this.link).then(chapter => {
       // we guard all the fic metadata updates because we might be
       // acting in addition to the result from getFicMetadata
       if (!fic.link) fic.link = this.normalizeLink(chapter.link)
