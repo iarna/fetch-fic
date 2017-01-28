@@ -8,11 +8,10 @@ const ChapterContent = use('chapter-content')
 const fs = use('fs-promises')
 const Site = use('site')
 const promisify = use('promisify')
-
 const rtfToHTML = use('rtf-to-html')
+const bbcodeToHTML = use('bbcode-to-html')
 
 const parseString = promisify(require('xml2js').parseString)
-
 
 class Scrivener extends Site {
   static matches (siteUrlStr) {
@@ -100,7 +99,7 @@ class Scrivener extends Site {
   }
 
   getChapter (fetch, chapter) {
-    return rtfToHTML(fs.readFile(chapter.fetchWith(), 'ascii'))
+    return bbcodeToHTML(rtfToHTML(fs.readFile(chapter.fetchWith(), 'ascii')))
       .then(content => new ChapterContent(chapter, {site: this, content}))
       .catch(() => new ChapterContent(chapter, {site: this, content: ''}))
   }
