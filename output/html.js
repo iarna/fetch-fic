@@ -30,7 +30,8 @@ class OutputHTML extends Output {
   }
 
   transformChapter (chapter) {
-    const filename = path.join(this.outname, this.chapterFilename(chapter))
+    const chaptername = this.chapterFilename(chapter)
+    const filename = chaptername && path.join(this.outname, this.chapterFilename(chapter))
     if (chapter.type === 'image') {
       return fs.writeFile(filename, chapter.content)
     } else if (chapter.type === 'cover') {
