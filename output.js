@@ -228,7 +228,7 @@ class Output {
   }
   replaceLinks (content) {
     return content.replace(/_LINK_(\w+)#LINK#(\d+)#LINK#(.*?)_LINK_/g,
-      (_, type, order, name) => this.chapterFilename({type, order, name}))
+      (_, type, order, name) => this.chapterFilename({type, order: Number(order), name: name.replace(/&lt;/g, '<').replace(/&amp;/g, '&')}))
   }
 }
 Output.registered = {}
