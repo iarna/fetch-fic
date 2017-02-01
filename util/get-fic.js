@@ -133,7 +133,7 @@ function getFic (fetch, fic) {
   concurrently(chapters, maxConcurrency, (chapterInfo) => {
     return chapterInfo.getContent(fetch).then(chapter => {
       chapter.order = chapterInfo.order
-      chapter.linkName = chapterInfo.name
+      chapterInfo.linkName = chapter.linkName = chapterInfo.name
       chapter.name = chapterInfo.name = chapter.linkName + (chapterInfo.author ? ` (${chapter.author})` : '')
       if (fic.chapterHeadings || chapterInfo.headings) {
         const headerName = html`${chapterInfo.name}`
