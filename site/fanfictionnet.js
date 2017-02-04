@@ -55,11 +55,11 @@ class FanFictionNet extends Site {
       }
 
       const infoline = $meta.find('span.xgray').text()
-      const infomatches = infoline.match(/Rated:\s+(.*)\s+-\s+(\S+)\s+-\s+(.*)\s+-\s+Chapters:\s+\d+\s+-\s+Words:\s+([\d,]+)\s+-\s+Reviews:\s+([,\d]+)\s+-\s+Favs:\s+([,\d]+)\s+-\s+Follows:\s+([,\d]+)/)
+      const infomatches = infoline.match(/Rated:\s+(.*)\s+-\s+(\S+)\s+-\s+(.*)\s+-(?:\s+Chapters:\s+\d+\s+-)?\s+Words:\s+([\d,]+)\s+(?:-\s+Reviews:\s+([,\d]+)\s+)?(?:-\s+Favs:\s+([,\d]+)\s+)?(?:-\s+Follows:\s+([,\d]+))?.*Published/)
       if (infomatches) {
         const rated = infomatches[1]
         fic.language = infomatches[2]
-        fic.tags = infomatches[3].split(/, /).concat(['rated:' + rated])
+        fic.tags = (infomatches[3] ? infomatches[3].split(/, /) : []).concat(['rated:' + rated])
         fic.words = Number(infomatches[4].replace(/,/g, ''))
       } else {
         process.emit('error', 'NOMATCH:', infoline)
@@ -67,11 +67,15 @@ class FanFictionNet extends Site {
 
       const $index = chapter.$(chapter.$('#chap_select')[0])
       const $chapters = $index.find('option')
-      $chapters.each((ii, vv) => {
-        const chapterName = chapter.$(vv).text().match(/^\d+[.](?: (.*))?$/)
-        const chapterNum = chapter.$(vv).attr('value') || ii
-        fic.addChapter({name: chapterName[1] || (String(chapterNum) + '.'), link: this.chapterUrl(chapterNum)})
-      })
+      if ($chapters.length) {
+        $chapters.each((ii, vv) => {
+          const chapterName = chapter.$(vv).text().match(/^\d+[.](?: (.*))?$/)
+          const chapterNum = chapter.$(vv).attr('value') || ii
+          fic.addChapter({name: chapterName[1] || (String(chapterNum) + '.'), link: this.chapterUrl(chapterNum)})
+        })
+      } else {
+        fic.addChapter({name: 'Chapter 1', link: this.chapterUrl(1)})
+      }
     })
   }
 
