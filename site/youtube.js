@@ -1,11 +1,5 @@
 'use strict'
-const url = require('url')
-
 const Bluebird = require('bluebird')
-const cheerio = require('cheerio')
-
-const Chapter = use('fic').Chapter
-const ChapterContent = use('chapter-content')
 const Site = use('site')
 
 class Youtube extends Site {
@@ -25,6 +19,7 @@ class Youtube extends Site {
     fic.link = this.link
     fic.publisher = this.publisherName
     // currently we only support /art/ urls, which can only have one thing on them
+    const Chapter = use('fic').Chapter
     return Chapter.getContent(fetch, this.link).then(chapter => {
       fic.title = chapter.name
       fic.link = this.normalizeLink(chapter.link)
@@ -43,6 +38,7 @@ class Youtube extends Site {
 
   getChapter (fetch, chapterInfo) {
     return fetch(chapterInfo.fetchWith()).spread((meta, html) => {
+      const ChapterContent = use('chapter-content')
       const chapter = new ChapterContent(chapterInfo, {site: this, html})
       chapter.base = chapter.$('base').attr('href') || meta.finalUrl
       const title = (chapter.$('meta[property="og:title"]').attr('content') || '').replace(/- YouTube$/, '')
@@ -55,6 +51,7 @@ class Youtube extends Site {
       let image = chapter.$('link[itemprop="thumbnailUrl"]').attr('href')
       let $author = chapter.$('div.yt-user-info')
       chapter.author = $author.find('a').text()
+      const url = require('url')
       chapter.authorUrl = url.resolve(chapter.base, $author.find('a').attr('href'))
       chapter.headings = true
       chapter.content = `<p><a external="false" href="${chapter.fetchWith()}">` +

@@ -1,16 +1,9 @@
 'use strict'
-const fs = require('fs')
-
-const Streampub = require('streampub')
-const TOML = require('@iarna/toml')
-
-const filenameize = use('filenameize')
-const html = use('html-template-tag')
 const Output = use('output')
-const pump = use('pump')
 
 class OutputEpub extends Output {
   from (fic) {
+    const filenameize = use('filenameize')
     return super.from(fic).to(filenameize(fic.title) + '.epub')
   }
 
@@ -19,6 +12,7 @@ class OutputEpub extends Output {
   }
 
   write () {
+    const Streampub = require('streampub')
     const epub = new Streampub({
       id: this.fic.id,
       title: this.fic.title,
@@ -33,6 +27,7 @@ class OutputEpub extends Output {
       numberTOC: this.fic.numberTOC
     })
 
+    const TOML = require('@iarna/toml')
     epub.write({
       id: 'fic',
       content: Buffer.from(TOML.stringify(this.fic)),
@@ -43,7 +38,9 @@ class OutputEpub extends Output {
     if (this.fic.includeTOC) {
       epub.write(Streampub.newChapter('Table of Contents', this.tableOfContentsHTML(), 1, 'toc.xhtml'))
     }
+    const fs = require('fs')
     const output = fs.createWriteStream(this.outname)
+    const pump = use('pump')
     return pump(
       this.fic,
       this.transform(),
@@ -52,6 +49,7 @@ class OutputEpub extends Output {
   }
 
   transformChapter (chapter) {
+    const Streampub = require('streampub')
     if (chapter.type === 'image') {
       return Streampub.newFile(chapter.filename, chapter.content)
     }
@@ -61,6 +59,7 @@ class OutputEpub extends Output {
     const index = chapter.order != null && (1 + chapter.order)
     const name = chapter.name
     const filename = this.chapterFilename(chapter)
+    const html = use('html-template-tag')
     const toSanitize = '<html xmlns:epub="http://www.idpf.org/2007/ops">\n' +
       (name ? html`<head><title>${name}</title></head>` : '') +
       '<section epub:type="chapter">' + chapter.content + '</section>\n' +
@@ -82,6 +81,7 @@ class OutputEpub extends Output {
   }
 
   htmlTitle () {
+    const html = use('html-template-tag')
     return html`<section epub:type="title"><h1 style="text-align: center;">${this.fic.title}</h1></section>` + '\n'
   }
 

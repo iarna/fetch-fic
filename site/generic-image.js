@@ -3,7 +3,6 @@ const url = require('url')
 
 const Bluebird = require('bluebird')
 
-const ChapterContent = use('chapter-content')
 const Site = use('site')
 
 class GenericImage extends Site {
@@ -36,6 +35,7 @@ class GenericImage extends Site {
   }
 
   getChapter (fetch, chapterInfo) {
+    const ChapterContent = use('chapter-content')
     return Bluebird.resolve(new ChapterContent(chapterInfo, {
       site: this,
       base: chapterInfo.link,

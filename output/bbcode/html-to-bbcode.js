@@ -1,12 +1,6 @@
 'use strict'
 module.exports = HTMLToBBCode
 
-const util = require('util')
-
-const Bluebird = require('bluebird')
-const parseCSS = require('css-parse')
-const parse5 = require('parse5')
-
 function HTMLToBBCode (html) {
   return new Parser().parse(html)
 }
@@ -310,6 +304,7 @@ class Parser {
     for (let attr of attrs) {
       if (attr.name === 'style') {
         try {
+          const parseCSS = require('css-parse')
           let css = parseCSS(`this { ${attr.value} }`)
           for (let decl of css.stylesheet.rules[0].declarations) {
             let style = this.styles[decl.property]
@@ -317,7 +312,8 @@ class Parser {
               closeWith = style(tag, decl.property, decl.value) + closeWith
               if (/^xenforo-/.test(decl.property)) break
             } else {
-              process.emit('debug', `UNKNOWN CSS: ${require('util').inspect(decl)} ${tag} ${require('util').inspect(attrs)}`)
+              const util = require('util')
+              process.emit('debug', `UNKNOWN CSS: ${util.inspect(decl)} ${tag} ${util.inspect(attrs)}`)
             }
           }
         } catch (ex) {
@@ -392,11 +388,13 @@ class Parser {
   }
 
   parse (html) {
+    const parse5 = require('parse5')
     const parser = new parse5.SAXParser()
     parser.on('startTag', (tag, attrs, selfClosing, location) => {
       if (this.tags[tag]) {
         this.tags[tag].start(tag, attrs, selfClosing, location)
       } else {
+        const util = require('util')
         process.emit('debug', 'UNKNOWN', 'tag:', tag + ', attrs:', util.inspect(attrs) + ', selfClosing:', !!selfClosing + ', location:', location, '\n')
       }
     })
@@ -404,11 +402,13 @@ class Parser {
       if (this.tags[tag]) {
         this.tags[tag].end(tag, attrs, selfClosing, location)
       } else {
+        const util = require('util')
         process.emit('debug', 'UNKNOWN', 'endtag:', tag + ', attrs:', util.inspect(attrs) + ', selfClosing:', !!selfClosing + ', location:', location, '\n')
       }
     })
     parser.on('text', text => this.addText(text))
 
+    const Bluebird = require('bluebird')
     return Bluebird.resolve(html).then(html => {
       return new Bluebird((resolve, reject) => {
         parser.on('error', reject)

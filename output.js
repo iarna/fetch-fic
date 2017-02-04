@@ -1,14 +1,4 @@
 'use strict'
-const Bluebird = require('bluebird')
-const commaNumber = require('comma-number')
-const Transform = require('readable-stream').Transform
-const sanitizeHtml = require('sanitize-html')
-
-const html = use('html-template-tag')
-const normalizeHtml = use('normalize-html')
-const outputFormats = use('output-formats')
-const filenameize = use('filenameize')
-
 class Output {
   static register (shortname, output) {
     this.registered[shortname] = output
@@ -32,14 +22,18 @@ class Output {
   }
 
   prepareHtml (html) {
+    const sanitizeHtml = require('sanitize-html')
+    const normalizeHtml = use('normalize-html')
     return sanitizeHtml(normalizeHtml(this.replaceLinks(html)), this.fic.site.sanitizeHtmlConfig()).replace(/\n\n+\n/g, '\n\n')
   }
 
   transform () {
     const out = this
+    const Transform = require('readable-stream').Transform
     return new Transform({
       objectMode: true,
       transform: function (chapter, _, done) {
+        const Bluebird = require('bluebird')
         return new Bluebird(resolve => resolve(out.transformChapter(chapter))).then(result => {
           if (result != null) this.push(result)
           done()
@@ -50,6 +44,7 @@ class Output {
   }
 
   titlePageHTML () {
+    const normalizeHtml = use('normalize-html')
     return normalizeHtml(this.html(this.htmlHead(this.titlePageHeader()) + this.htmlBody(this.titlePageContent())))
   }
 
@@ -66,6 +61,7 @@ class Output {
   }
 
   tableOfContentsHTML () {
+    const normalizeHtml = use('normalize-html')
     return normalizeHtml(this.html(this.htmlHead(this.tableOfContentsHeader()) + this.htmlBody(this.tableOfContentsContent())))
   }
 
@@ -123,6 +119,7 @@ class Output {
   }
 
   htmlTitle () {
+    const html = use('html-template-tag')
     return html`<h1 style="text-align: center;">${this.fic.title}</h1>` + '\n'
   }
 
@@ -133,6 +130,7 @@ class Output {
 
   htmlAuthor (author, authorUrl) {
     if (!author) return ''
+    const html = use('html-template-tag')
     return authorUrl
       ? html`<a href="${authorUrl}">${author}</a>`
       : html(author)
@@ -149,15 +147,20 @@ class Output {
   htmlSummaryContent () {
     let content = ''
     if (this.fic.link) {
+      const html = use('html-template-tag')
       content += this.htmlSummaryRow('Source',
         html`<a href="${this.fic.link}">${[this.wrappableLink(this.fic.link)]}</a>`)
     }
     if (this.fic.created) content += this.htmlSummaryRow('Published', this.fic.created)
     if (this.fic.modified) content += this.htmlSummaryRow('Updated', this.fic.modified)
     if (this.fic.tags && this.fic.tags.length) {
+      const html = use('html-template-tag')
       content += this.htmlSummaryRow('Tags', html`<em>${this.fic.tags.join(', ')}</em>`)
     }
-    if (this.fic.words) content += this.htmlSummaryRow('Words', commaNumber(this.fic.words))
+    if (this.fic.words) {
+      const commaNumber = require('comma-number')
+      content += this.htmlSummaryRow('Words', commaNumber(this.fic.words))
+    }
     return content
   }
 
@@ -175,6 +178,7 @@ class Output {
   }
 
   htmlChapterLink (chapter) {
+    const html = use('html-template-tag')
     return html`<a href="${this.chapterLink(chapter)}">${chapter.name}</a>`
   }
 
@@ -201,6 +205,7 @@ class Output {
       content += ' – ' + chapter.description
     }
     if (chapter.words) {
+      const commaNumber = require('comma-number')
       content += ` [${commaNumber(chapter.words)} words]`
     }
     return content
@@ -213,10 +218,12 @@ class Output {
     if (chapter.type === 'chapter') {
       const index = 1 + chapter.order
       const filename = `chapter-${index}${name ? ' ' + name : ''}`
+      const filenameize = use('filenameize')
       return filenameize(filename) + this.chapterExt()
     } else if (chapter.type === 'external') {
       const index = chapter.num
       const filename = `external-${index}${name ? ' ' + name : ''}`
+      const filenameize = use('filenameize')
       return filenameize(filename) + this.chapterExt()
     } else if (chapter.type === 'image') {
       return chapter.filename
@@ -235,6 +242,7 @@ Output.registered = {}
 
 module.exports = Output
 
+const outputFormats = use('output-formats')
 for (let output of outputFormats) {
   Output.register(output, require(`./output/${output}`))
 }

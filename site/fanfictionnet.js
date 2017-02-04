@@ -2,9 +2,6 @@
 const url = require('url')
 
 const Bluebird = require('bluebird')
-
-const Chapter = use('fic').Chapter
-const ChapterContent = use('chapter-content')
 const Site = use('site')
 
 class FanFictionNet extends Site {
@@ -40,6 +37,7 @@ class FanFictionNet extends Site {
     fic.link = this.link
     fic.publisher = this.publisherName
     fic.includeTOC = true
+    const Chapter = use('fic').Chapter
     return Chapter.getContent(fetch, this.chapterListUrl()).then(chapter => {
       const $meta = chapter.$('#profile_top')
       const $dates = $meta.find('span[data-xutime]')
@@ -84,6 +82,7 @@ class FanFictionNet extends Site {
 
   getChapter (fetch, chapterInfo) {
     return fetch(chapterInfo.fetchWith()).spread((meta, html) => {
+      const ChapterContent = use('chapter-content')
       const chapter = new ChapterContent(chapterInfo, {html, site: this})
       chapter.$content = chapter.$('#storytextp')
       chapter.base = chapter.$('base').attr('href') || meta.finalUrl

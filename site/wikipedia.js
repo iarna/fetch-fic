@@ -1,8 +1,5 @@
 'use strict'
 const Bluebird = require('bluebird')
-
-const Chapter = use('fic').Chapter
-const ChapterContent = use('chapter-content')
 const Site = use('site')
 
 class Wikipedia extends Site {
@@ -22,6 +19,7 @@ class Wikipedia extends Site {
     fic.link = this.link
     fic.publisher = this.publisherName
     // currently we only support /art/ urls, which can only have one thing on them
+    const Chapter = use('fic').Chapter
     return Chapter.getContent(fetch, this.link).then(chapter => {
       fic.title = chapter.name
       fic.link = this.normalizeLink(chapter.link)
@@ -41,6 +39,7 @@ class Wikipedia extends Site {
 
   getChapter (fetch, chapterInfo) {
     return fetch(chapterInfo.fetchWith()).spread((meta, html) => {
+      const ChapterContent = use('chapter-content')
       const chapter = new ChapterContent(chapterInfo, {site: this, html})
       chapter.base = chapter.$('base').attr('href') || meta.finalUrl
       chapter.name = chapter.$('#firstHeading').text()

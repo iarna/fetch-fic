@@ -1,8 +1,5 @@
 'use strict'
 const Bluebird = require('bluebird')
-
-const Chapter = use('fic').Chapter
-const ChapterContent = use('chapter-content')
 const Site = use('site')
 
 class DeviantArt extends Site {
@@ -21,6 +18,7 @@ class DeviantArt extends Site {
   getFicMetadata (fetch, fic) {
     fic.link = this.link
     fic.publisher = this.publisherName
+    const Chapter = use('fic').Chapter
     // currently we only support /art/ urls, which can only have one thing on them
     return Chapter.getContent(fetch, this.link).then(chapter => {
       fic.title = chapter.name
@@ -40,6 +38,7 @@ class DeviantArt extends Site {
 
   getChapter (fetch, chapterInfo) {
     return fetch(chapterInfo.fetchWith()).spread((meta, html) => {
+      const ChapterContent = use('chapter-content')
       const chapter = new ChapterContent(chapterInfo, {html, site: this})
       chapter.description = chapter.$('div.dev-description').find('div.text').html() || chapter.$('meta[property="og:description"]').attr('content')
       const image = chapter.$('meta[property="og:image"]').attr('content')

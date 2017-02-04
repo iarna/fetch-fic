@@ -1,7 +1,4 @@
 'use strict'
-const url = require('url')
-const wordcount = require('@iarna/word-count')
-
 const qw = require('qw')
 
 class Site {
@@ -14,6 +11,13 @@ class Site {
     this.registered.push(site)
   }
   static fromUrl (rawUrl) {
+    if (this.registered.length === 0) {
+      const sitesAvailable = qw`xenforo fanfictionnet deviantart ao3 gravatar
+        wp-facebook wikipedia youtube worm generic-image scrivener local`
+      for (const site of sitesAvailable) {
+        Site.register(require(`./site/${site}`))
+      }
+    }
     for (const SpecificSite of this.registered) {
       if (SpecificSite.matches(rawUrl)) return new SpecificSite(rawUrl)
     }
@@ -24,7 +28,10 @@ class Site {
     // force ssl
     href = href.replace(/^http:/, 'https:')
     // resolve base url
-    if (base) href = url.resolve(base, href)
+    if (base) {
+      const url = require('url')
+      href = url.resolve(base, href)
+    }
     return href
   }
 
@@ -64,6 +71,7 @@ class Site {
     return {tagName: tagName, attribs: attribs}
   }
   countStoryWords (chapter) {
+    const wordcount = require('@iarna/word-count')
     return wordcount(chapter.$content.text().trim())
   }
 }
@@ -71,9 +79,3 @@ class Site {
 Site.registered = []
 
 module.exports = Site
-
-const sitesAvailable = qw`xenforo fanfictionnet deviantart ao3 gravatar
-  wp-facebook wikipedia youtube worm generic-image scrivener local`
-for (const site of sitesAvailable) {
-  Site.register(require(`./site/${site}`))
-}

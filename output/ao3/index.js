@@ -1,21 +1,9 @@
 'use strict'
-const path = require('path')
-
-const Bluebird = require('bluebird')
-const identifyBuffer = require('buffer-signature').identify
-const identifyStream = require('buffer-signature').identifyStream
-const stream = require('readable-stream')
-
-const filenameize = use('filenameize')
-const fs = use('fs-promises')
-const mkdirp = use('mkdirp')
 const Output = use('output')
-const pump = use('pump')
-
-const HTMLToAO3 = require('./html-to-ao3.js')
 
 class OutputAO3 extends Output {
   from (fic) {
+    const filenameize = use('filenameize')
     return super.from(fic).to(filenameize(this.fic.title) + '.ao3')
   }
 
@@ -24,6 +12,8 @@ class OutputAO3 extends Output {
   }
 
   write () {
+    const mkdirp = use('mkdirp')
+    const pump = use('pump')
     return mkdirp(this.outname)
       .then(() => pump(this.fic, this.transform()))
       .then(() => this.writeIndex())
@@ -33,13 +23,18 @@ class OutputAO3 extends Output {
 
   transformChapter (chapter) {
     const chaptername = this.chapterFilename(chapter)
+    const path = require('path')
     const filename = chaptername && path.join(this.outname, this.chapterFilename(chapter))
+    const fs = use('fs-promises')
     if (chapter.type === 'image') {
       return fs.writeFile(filename, chapter.content)
     } else if (chapter.type === 'cover') {
+      const stream = require('readable-stream')
       if (chapter.content instanceof stream.Stream) {
         const tmpname = path.join(this.outname, 'cover-tmp')
+        const Bluebird = require('bluebird')
         return new Bluebird((resolve, reject) => {
+          const identifyStream = require('buffer-signature').identifyStream
           chapter.content.pipe(identifyStream(info => {
             const ext = info.extensions.length ? '.' + info.extensions[0] : ''
             this.coverName = 'cover' + ext
@@ -48,18 +43,23 @@ class OutputAO3 extends Output {
           })
         })
       } else {
+        const identifyBuffer = require('buffer-signature').identify
         const info = identifyBuffer(chapter.content)
         const ext = info.extensions.length ? '.' + info.extensions[0] : ''
         this.coverName = 'cover' + ext
         return fs.writeFile(path.join(this.outname, this.coverName), chapter.content)
       }
     } else {
+      const HTMLToAO3 = require('./html-to-ao3.js')
       const content = HTMLToAO3(this.prepareHtml(chapter.content))
       return fs.writeFile(filename, content)
     }
   }
 
   writeIndex () {
+    const HTMLToAO3 = require('./html-to-ao3.js')
+    const fs = use('fs-promises')
+    const path = require('path')
     return fs.writeFile(path.join(this.outname, 'index.html'), HTMLToAO3(this.tableOfContentsHTML()))
   }
 

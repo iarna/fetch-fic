@@ -1,10 +1,6 @@
 'use strict'
-const url = require('url')
-
 const Bluebird = require('bluebird')
-const cheerio = require('cheerio')
-
-const ChapterContent = use('chapter-content')
+const url = require('url')
 const Site = use('site')
 
 class ArchiveOfOurOwn extends Site {
@@ -43,6 +39,7 @@ class ArchiveOfOurOwn extends Site {
     fic.includeTOC = true
     fic.chapterHeadings = true
     return fetch(this.chapterIndex()).spread((meta, html) => {
+      const cheerio = require('cheerio')
       const $ = cheerio.load(html)
       const base = $('base').attr('href') || this.chapterIndex()
       const heading = $('h2.heading')
@@ -85,12 +82,12 @@ class ArchiveOfOurOwn extends Site {
   }
 
   scrapeFicMetadata (fetch, fic) {
-    // There's never any reason to scrape AO3 content, AFAIK.
     return Bluebird.resolve()
   }
 
   getChapter (fetch, chapterInfo) {
     return fetch(chapterInfo.fetchWith()).spread((meta, html) => {
+      const ChapterContent = use('chapter-content')
       const chapter = new ChapterContent(chapterInfo, {html, site: this})
       if (chapter.$('p.caution').length) {
         chapterInfo.fetchFrom = chapterInfo.fetchWith() + '?view_adult=true'

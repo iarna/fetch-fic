@@ -1,19 +1,9 @@
 'use strict'
 module.exports = read
-
-const child_process = require('child_process')
-
-const Bluebird = require('bluebird')
-const TOML = require('@iarna/toml')
-
-const fetch = use('fetch')
-const Fic = use('fic')
-const ficInflate = use('fic-inflate')
-const filenameize = use('filenameize')
-const fs = use('fs-promises')
 const progress = use('progress')
 
 function read (args) {
+  const fs = use('fs-promises')
   return fs.stat(args.fic).then(file => {
     return file.isDirectory() ? _reallyRead(args) : _generateInstead()
   }, /*else*/ () => {
@@ -30,7 +20,9 @@ function _generateInstead () {
     }
   }
   const nodejs = args.shift()
+  const Bluebird = require('bluebird')
   return new Bluebird((resolve, reject) => {
+    const child_process = require('child_process')
     const child = child_process.spawn(nodejs, args, {
       argv0: 'ff',
       stdio: 'inherit',
@@ -51,10 +43,12 @@ function _reallyRead (args) {
     maxConcurrency: args.concurrency,
     requestsPerSecond: args['requests-per-second']
   }
+  const fetch = use('fetch')
   const fetchAndSpin = fetch.withOpts(fetchOpts).wrapWith(progress.spinWhileAnd)
   if (args.xf_user) fetchAndSpin.setGlobalCookie(`xf_user=${args.xf_user}`)
 
   function fetchFic () {
+    const Fic = use('fic')
     if (fromThreadmarks && fromScrape) {
       return Fic.fromUrlAndScrape(fetchAndSpin, args.url)
     } else if (fromThreadmarks) {
@@ -71,8 +65,12 @@ function _reallyRead (args) {
   const fetchTracker = progress.newWork('Table of Contents', 0)
   progress.show('Table of Contents', `Downloading ${args.url}`)
   const deflatedFic = progress.addWork(fetchFic(), fetchTracker).finally(enableCache)
+  const ficInflate = use('fic-inflate')
   return ficInflate(deflatedFic, fetchAndSpin.withOpts({cacheBreak: false})).then(fic => {
+    const filenameize = use('filenameize')
     const filename = filenameize(fic.title) + '.fic.toml'
+    const TOML = require('@iarna/toml')
+    const fs = use('fs-promises')
     return fs.writeFile(filename, TOML.stringify(fic)).then(() => {
       progress.output(filename + '\n')
       return null

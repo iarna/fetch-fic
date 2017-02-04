@@ -1,21 +1,9 @@
 'use strict'
-const path = require('path')
-
-const Bluebird = require('bluebird')
-const identifyBuffer = require('buffer-signature').identify
-const identifyStream = require('buffer-signature').identifyStream
-const stream = require('readable-stream')
-
-const filenameize = use('filenameize')
-const fs = use('fs-promises')
 const Output = use('output')
-const pump = use('pump')
-const mkdirp = use('mkdirp')
-
-const HTMLToBBCode = require('./html-to-bbcode.js')
 
 class OutputBBCode extends Output {
   from (fic) {
+    const filenameize = use('filenameize')
     return super.from(fic).to(filenameize(this.fic.title) + '.bbcode')
   }
 
@@ -28,6 +16,8 @@ class OutputBBCode extends Output {
   }
 
   write () {
+    const mkdirp = use('mkdirp')
+    const pump = use('pump')
     return mkdirp(this.outname)
       .then(() => pump(this.fic, this.transform()))
       .then(() => this.writeIndex())
@@ -36,13 +26,18 @@ class OutputBBCode extends Output {
 
   transformChapter (chapter) {
     const chaptername = this.chapterFilename(chapter)
+    const path = require('path')
     const filename = chaptername && path.join(this.outname, this.chapterFilename(chapter))
+    const fs = use('fs-promises')
     if (chapter.type === 'image') {
       return fs.writeFile(filename, chapter.content)
     } else if (chapter.type === 'cover') {
+      const stream = require('readable-stream')
       if (chapter.content instanceof stream.Stream) {
         const tmpname = path.join(this.outname, 'cover-tmp')
+        const Bluebird = require('bluebird')
         return new Bluebird((resolve, reject) => {
+          const identifyStream = require('buffer-signature').identifyStream
           chapter.content.pipe(identifyStream(info => {
             const ext = info.extensions.length ? '.' + info.extensions[0] : ''
             this.coverName = 'cover' + ext
@@ -51,18 +46,23 @@ class OutputBBCode extends Output {
           })
         })
       } else {
+        const identifyBuffer = require('buffer-signature').identify
         const info = identifyBuffer(chapter.content)
         const ext = info.extensions.length ? '.' + info.extensions[0] : ''
         this.coverName = 'cover' + ext
         return fs.writeFile(path.join(this.outname, this.coverName), chapter.content)
       }
     } else {
+      const HTMLToBBCode = require('./html-to-bbcode.js')
       const content = HTMLToBBCode(this.prepareHtml(chapter.content))
       return fs.writeFile(filename, content)
     }
   }
 
   writeIndex () {
+    const HTMLToBBCode = require('./html-to-bbcode.js')
+    const path = require('path')
+    const fs = use('fs-promises')
     return fs.writeFile(path.join(this.outname, 'index.bbcode'), HTMLToBBCode(this.tableOfContentsHTML()))
   }
 

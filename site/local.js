@@ -1,12 +1,6 @@
 'use strict'
-const path = require('path')
-
 const Bluebird = require('bluebird')
-const uuid = require('uuid')
 
-const ChapterContent = use('chapter-content')
-const fs = use('fs-promises')
-const rtfToHTML = use('rtf-to-html')
 const Site = use('site')
 
 class Local extends Site {
@@ -25,6 +19,8 @@ class Local extends Site {
   }
 
   getFicMetadata (fetch, fic) {
+    const uuid = require('uuid')
+    const path = require('path')
     fic.id = 'urn:uuid:' + uuid.v4()
     fic.publisher = this.publisherName
     fic.updateFrom = fic.link
@@ -34,7 +30,9 @@ class Local extends Site {
   }
 
   recursedir (fic, dir) {
+    const fs = use('fs-promises')
     return fs.readdir(dir).then(files => {
+      const path = require('path')
       const list = files.map(file => path.join(dir, file)).sort()
       const todo = []
       return Bluebird.map(list, filename => fs.stat(filename).then(info => {
@@ -55,6 +53,9 @@ class Local extends Site {
   }
 
   getChapter (fetch, chapter) {
+    const fs = use('fs-promises')
+    const ChapterContent = use('chapter-content')
+    const rtfToHTML = use('rtf-to-html')
     return rtfToHTML(fs.readFile(chapter.fetchWith(), 'ascii'))
       .then(content => new ChapterContent(chapter, {site: this, content}))
   }

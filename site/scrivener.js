@@ -1,17 +1,6 @@
 'use strict'
-const path = require('path')
-
 const Bluebird = require('bluebird')
-const uuid = require('uuid')
-
-const ChapterContent = use('chapter-content')
-const fs = use('fs-promises')
 const Site = use('site')
-const promisify = use('promisify')
-const rtfToHTML = use('rtf-to-html')
-const bbcodeToHTML = use('bbcode-to-html')
-
-const parseString = promisify(require('xml2js').parseString)
 
 class Scrivener extends Site {
   static matches (siteUrlStr) {
@@ -29,6 +18,8 @@ class Scrivener extends Site {
   }
 
   getFicMetadata (fetch, fic) {
+    const uuid = require('uuid')
+    const path = require('path')
     fic.id = 'urn:uuid:' + uuid.v4()
     fic.publisher = this.publisherName
     fic.updateFrom = fic.link.replace(/[/]$/, '')
@@ -40,6 +31,9 @@ class Scrivener extends Site {
   }
 
   fromScrivener (fic, scrivx) {
+    const fs = use('fs-promises')
+    const promisify = use('promisify')
+    const parseString = promisify(require('xml2js').parseString)
     return parseString(fs.readFile(scrivx)).then(data => {
       const props = this.scrivMap(data.ScrivenerProject, 'ProjectProperties')
       if (props.ProjectTitle) fic.title = props.ProjectTitle
@@ -53,6 +47,7 @@ class Scrivener extends Site {
     return Bluebird.each(items, item => {
       if (item.Type === 'TrashFolder' || item.Type === 'ResearchFolder') return
       if (item.Children) return this.recurseItems(fic, item.Children)
+      const path = require('path')
       fic.addChapter({
         name: item.Title,
         fetchFrom: path.join(fic.updateFrom, 'Files', 'Docs', item.ID + '.rtf'),
@@ -99,6 +94,10 @@ class Scrivener extends Site {
   }
 
   getChapter (fetch, chapter) {
+    const fs = use('fs-promises')
+    const ChapterContent = use('chapter-content')
+    const rtfToHTML = use('rtf-to-html')
+    const bbcodeToHTML = use('bbcode-to-html')
     return bbcodeToHTML(rtfToHTML(fs.readFile(chapter.fetchWith(), 'ascii')))
       .then(content => new ChapterContent(chapter, {site: this, content}))
       .catch(() => new ChapterContent(chapter, {site: this, content: ''}))

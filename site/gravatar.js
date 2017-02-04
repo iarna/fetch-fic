@@ -3,7 +3,6 @@ const url = require('url')
 
 const Bluebird = require('bluebird')
 
-const ChapterContent = use('chapter-content')
 const Site = use('site')
 
 class Gravatar extends Site {
@@ -19,6 +18,7 @@ class Gravatar extends Site {
     return url.format(linkBits)
   }
   getChapter (fetch, chapter) {
+    const ChapterContent = use('chapter-content')
     return Bluebird.resolve(new ChapterContent(chapter, {
       site: this,
       name: chapter.link,

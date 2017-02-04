@@ -1,11 +1,6 @@
 'use strict'
 const url = require('url')
-
 const Bluebird = require('bluebird')
-const cheerio = require('cheerio')
-
-const Chapter = use('fic').Chapter
-const ChapterContent = use('chapter-content')
 const Site = use('site')
 
 // This exists to support pulling in singular posts relating to Worm as
@@ -60,6 +55,7 @@ class Worm extends Site {
     const annotate = chapterUrl.hash === '#annotate'
     const useComments = chapterUrl.hash === '#comments'
     return fetch(chapterInfo.fetchWith()).spread((meta, html) => {
+      const ChapterContent = use('chapter-content')
       const chapter = new ChapterContent(chapterInfo, {site: this, html})
       chapter.base = chapter.$('base').attr('href') || meta.finalUrl
       if (meta.finalUrl !== chapter.link) {
@@ -73,6 +69,7 @@ class Worm extends Site {
       if (useComments) {
         const $comments = chapter.$('#comments')
         $comments.find('article.comment').replaceWith((ii, vv) => {
+          const cheerio = require('cheerio')
           const $comment = cheerio.load(vv)
           const $vcard = $comment('.vcard')
           const $links = $vcard.find('a')

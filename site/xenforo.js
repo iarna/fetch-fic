@@ -1,13 +1,6 @@
 'use strict'
 /* eslint-disable no-useless-escape */
 const url = require('url')
-
-const cheerio = require('cheerio')
-const color = require('color-ops')
-const wordcount = require('@iarna/word-count')
-
-const Chapter = use('fic').Chapter
-const ChapterContent = use('chapter-content')
 const Site = use('site')
 
 const knownSites = {
@@ -43,6 +36,7 @@ class Xenforo extends Site {
     fic.publisher = this.publisherName
     fic.includeTOC = true
     return fetch(this.threadmarkUrl()).spread((meta, html) => {
+      const cheerio = require('cheerio')
       const $ = cheerio.load(html)
       const base = $('base').attr('href') || this.threadmarkUrl()
       const tat = this.detagTitle(this.scrapeTitle($))
@@ -77,6 +71,7 @@ class Xenforo extends Site {
   scrapeFicMetadata (fetch, fic) {
     if (!fic.publisher) fic.publisher = this.publisherName
     if (fic.includeTOC == null) fic.includeTOC = true
+    const Chapter = use('fic').Chapter
     return Chapter.getContent(fetch, this.link).then(chapter => {
       // we guard all the fic metadata updates because we might be
       // acting in addition to the result from getFicMetadata
@@ -147,6 +142,7 @@ class Xenforo extends Site {
         throw err
       }
     }).spread((meta, html) => {
+      const ChapterContent = use('chapter-content')
       const chapter = new ChapterContent(chapterInfo, {site: this, html})
       const chapterHash = url.parse(chapter.link).hash
       const parsed = url.parse(meta.finalUrl)
@@ -226,6 +222,7 @@ class Xenforo extends Site {
       chapter.author = $author.text().trim()
       chapter.created = this.dateTime($message.find('a.datePermalink .DateTime'))
       let baseLightness = 0
+      const color = require('color-ops')
       if (/spacebattles/.test(chapter)) {
         baseLightness = color.lightness(color.rgb(204, 204, 204))
       } else if (/questionablequesting/.test(chapter)) {
@@ -391,8 +388,10 @@ class Xenforo extends Site {
   }
 
   countStoryWords (chapter) {
+    const wordcount = require('@iarna/word-count')
     let $content
     if (/[.]bbCodeQuote/.test(chapter.content)) {
+      const cheerio = require('cheerio')
       const $content = cheerio.load(chapter.content)
       $content('.bbCodeQuote').remove()
       return wordcount($content.text().trim())
