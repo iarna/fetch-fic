@@ -86,13 +86,13 @@ class Fic {
     return fic.site.getFicMetadata(fetch, fic).then(thenMaybeFallback, elseMaybeFallback).thenReturn(fic)
     function elseMaybeFallback (err) {
       if (err && (!err.meta || err.meta.status !== 404)) throw err
-      return thenMaybeFallback()
+      return thenMaybeFallback(err)
     }
-    function thenMaybeFallback () {
+    function thenMaybeFallback (err) {
       // no chapters in the threadmarks, fallback to fetching
       if (fic.chapters.length === 0) {
         fic.scrapeMeta = true
-        return fic.site.scrapeFicMetadata(fetch, fic)
+        return fic.site.scrapeFicMetadata(fetch, fic).catch(scrapeErr => Promise.reject(err || scrapeErr))
       } else {
         fic.fetchMeta = true
       }
