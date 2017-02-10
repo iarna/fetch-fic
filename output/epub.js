@@ -1,6 +1,14 @@
 'use strict'
 const Output = use('output')
 
+function letterCount (nn) {
+  let base = Math.floor((nn-1) / 26)
+  let num = (nn-1) % 26
+  return (base > 0 ? String.fromCharCode(96 + base) : '') +
+    String.fromCharCode(97 + num)
+}
+
+
 class OutputEpub extends Output {
   from (fic) {
     const filenameize = use('filenameize')
@@ -24,7 +32,6 @@ class OutputEpub extends Output {
       publisher: this.fic.publisher,
       published: this.fic.started || this.fic.created,
       modified: this.fic.modified,
-      numberTOC: this.fic.numberTOC
     })
 
     const TOML = require('@iarna/toml')
@@ -34,9 +41,13 @@ class OutputEpub extends Output {
       fileName: 'meta.fic.toml',
       mime: 'text/x-toml'
     })
-    epub.write(Streampub.newChapter('Title Page', this.titlePageHTML(), 0, 'top.xhtml'))
+    let title = 'Title Page'
+    if (this.fic.numberTOC) title = 'ⅰ. ' + title
+    epub.write(Streampub.newChapter(title, this.titlePageHTML(), 0, 'top.xhtml'))
     if (this.fic.includeTOC) {
-      epub.write(Streampub.newChapter('Table of Contents', this.tableOfContentsHTML(), 1, 'toc.xhtml'))
+      let toctitle = 'Table of Contents'
+      if (this.fic.numberTOC) toctitle = 'ⅱ. ' + toctitle
+      epub.write(Streampub.newChapter(toctitle, this.tableOfContentsHTML(), 1, 'toc.xhtml'))
     }
     const fs = require('fs')
     const output = fs.createWriteStream(this.outname)
@@ -57,7 +68,14 @@ class OutputEpub extends Output {
       return Streampub.newCoverImage(chapter.content)
     }
     const index = chapter.order != null && (1 + chapter.order)
-    const name = chapter.name
+    let name = chapter.name
+    if (name != null && this.fic.numberTOC) {
+      if (chapter.type === 'external') {
+        name = letterCount(index - 9000) + '. ' + name
+      } else {
+        name = String(index) + '. ' + name
+      }
+    }
     const filename = this.chapterFilename(chapter)
     const html = use('html-template-tag')
     const toSanitize = '<html xmlns:epub="http://www.idpf.org/2007/ops">\n' +
