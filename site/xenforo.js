@@ -223,7 +223,7 @@ class Xenforo extends Site {
       chapter.authorUrl = url.resolve(chapter.base, $author.attr('href'))
       chapter.author = $author.text().trim()
       chapter.created = this.dateTime($message.find('a.datePermalink .DateTime'))
-      let baseLightness = 0
+      let baseLightness = 100
       const color = require('color-ops')
       if (/spacebattles/.test(chapter.link)) {
         baseLightness = color.lightness(color.rgb(204, 204, 204))
