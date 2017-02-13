@@ -66,6 +66,7 @@ function setCookieP (jar, cookie, link) {
 
 function fetchWithCache (fetch, toFetch, opts) {
   return Bluebird.resolve(opts).then(opts => {
+    process.emit('debug', 'Fetching', toFetch, opts)
     if (opts.cacheBreak) return cache.invalidateUrl(toFetch)
   }).then(() => {
     return cache.readUrl(toFetch, (toFetch, meta) => {
@@ -77,7 +78,7 @@ function fetchWithCache (fetch, toFetch, opts) {
         if (meta.headers && meta.headers['last-modified']) {
           opts.headers['If-Modified-Since'] = meta.headers['last-modified']
         }
-        process.emit('debug', 'Downloading', toFetch)
+        process.emit('debug', 'Downloading', toFetch, opts)
         return fetch(domain, toFetch, opts)
       })
     })

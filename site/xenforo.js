@@ -142,6 +142,7 @@ class Xenforo extends Site {
         throw err
       }
     }).spread((meta, html) => {
+      process.emit('debug', `Fetched ${chapterInfo.name}: ${chapterInfo.fetchWith()}`)
       const ChapterContent = use('chapter-content')
       const chapter = new ChapterContent(chapterInfo, {site: this, html})
       const chapterHash = url.parse(chapter.link).hash
@@ -174,7 +175,8 @@ class Xenforo extends Site {
           if (!meta.fromCache) {
             throw new Error('No chapter found at ' + chapter)
           } else {
-            return this.getChapter(fetch.withOpts({cacheBreak: true}), chapter)
+            process.emit('debug', `No content found, retrying ${chapterInfo.name}: ${chapterInfo.fetchWith()}`)
+            return this.getChapter(fetch.withOpts({cacheBreak: true}), chapter, true)
           }
         } else {
           throw new Error('Error fetching ' + chapter + ': ' + $error.text().trim())

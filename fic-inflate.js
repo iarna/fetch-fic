@@ -19,10 +19,12 @@ function ficInflate (fic, fetch, tracker) {
     }
     return Bluebird.map(fics, fic => {
       const tracker = completion.get(fic)
+      process.emit('debug', 'Inflating', fic.title, 'chapters:', fic.chapters.length)
       let words = 0
       return Bluebird.map(fic.chapters, chapterInfo => {
         const chapterContent = chapterInfo.getContent(fetch)
         return progress.completeWorkWhenResolved(chapterContent, tracker).then(chapter => {
+          process.emit('debug', `Got content for #${chapterInfo.order}: ${chapterInfo.name}`)
           progress.show(fic.title, `${chapterInfo.name}`)
           chapterInfo.words = chapter.words
           words += chapter.words
@@ -34,6 +36,9 @@ function ficInflate (fic, fetch, tracker) {
             chapterInfo.author = null
             chapterInfo.authorUrl = null
           }
+        }).catch(err => {
+          chapterInfo.error = err
+          process.emit('error', err.message)
         })
       }).finally(() => {
         if (!fic.words) fic.words = words
