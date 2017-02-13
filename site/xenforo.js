@@ -225,11 +225,11 @@ class Xenforo extends Site {
       chapter.created = this.dateTime($message.find('a.datePermalink .DateTime'))
       let baseLightness = 0
       const color = require('color-ops')
-      if (/spacebattles/.test(chapter)) {
+      if (/spacebattles/.test(chapter.link)) {
         baseLightness = color.lightness(color.rgb(204, 204, 204))
-      } else if (/questionablequesting/.test(chapter)) {
+      } else if (/questionablequesting/.test(chapter.link)) {
         baseLightness = color.lightness(color.rgb(86, 86, 86))
-      } else if (/sufficientvelocity/.test(chapter)) {
+      } else if (/sufficientvelocity/.test(chapter.link)) {
         baseLightness = color.lightness(color.rgb(230, 230, 230))
       }
       $content.find('[style *= color]').each((ii, vv) => {
