@@ -134,7 +134,7 @@ class Xenforo extends Site {
     })
   }
 
-  getChapter (fetch, chapterInfo) {
+  getChapter (fetch, chapterInfo, retried) {
     return fetch(chapterInfo.fetchWith()).catch(err => {
       if (err.meta && err.meta.status === 404) {
         throw new Error('No chapter found at ' + chapter)
@@ -172,8 +172,8 @@ class Xenforo extends Site {
       if ($content.length === 0) {
         const $error = chapter.$('div.errorPanel')
         if ($error.length === 0) {
-          if (!meta.fromCache) {
-            throw new Error('No chapter found at ' + chapter)
+          if (!meta.fromCache || retried) {
+            throw new Error('No chapter found at ' + chapter.link)
           } else {
             process.emit('debug', `No content found, retrying ${chapterInfo.name}: ${chapterInfo.fetchWith()}`)
             return this.getChapter(fetch.withOpts({cacheBreak: true}), chapter, true)
