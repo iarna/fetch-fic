@@ -254,19 +254,6 @@ class Xenforo extends Site {
           opacity = 0.25
           ns += 'text-decoration: line-through; font-style: oblique; opacity: 0.25;'
         }
-        if (style === 'color: #ffcc99') {
-          ns += 'font-style: italic;'
-        } else if (style === 'color: #99ffff') {
-          ns += 'font-style: italic;'
-        } else if (style === 'color: #9999ff') {
-          ns += 'font-family: fantasy; font-style: italic;'
-        } else if (style === 'color: #4d4dff') {
-          ns += 'border-style: hidden dashed;'
-        } else if (style === 'color: #b3b300') {
-          ns += 'border-style: hidden double;'
-        } else if (style === 'color: #b30000') {
-          ns += 'border-style: hidden solid;'
-        }
         chapter.$(vv).attr('style', ns)
       })
       $content.find('div.messageTextEndMarker').remove()
