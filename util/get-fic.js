@@ -46,7 +46,12 @@ function rewriteLinks (fic, chapter, handleLink) {
       return
     }
     if (startAs[0] === '#') return
-    const src = chapter.base ? url.resolve(chapter.base, startAs) : startAs
+    let src
+    if (startAs.substr(0,4) !== 'http' && /^www[.]|[.]com$/.test(startAs)) {
+      src = 'http://' + startAs
+    } else {
+      src = chapter.base ? url.resolve(chapter.base, startAs) : startAs
+    }
     const newHref = handleLink(fic.normalizeLink(src, chapter.base), $a)
     $a.attr('href', newHref || src)
   })
