@@ -101,8 +101,8 @@ class ArchiveOfOurOwn extends Site {
       const $content = chapter.$('div[role="article"]')
       $content.find('h3.landmark').remove()
 
-      const notes = chapter.$('#notes').find('p').html()
-      const endNotes = chapter.$('div.end').find('p').html()
+      const notes = chapter.$('#notes').find('.userstuff').html()
+      const endNotes = chapter.$('div.end').find('.userstuff').html()
       let content = ''
       if (notes && !/\(See the end of the chapter for.*notes.*.\)/.test(notes)) {
         content += `<aside style="border: solid black 1px; padding: 1em">${notes}</aside>`
