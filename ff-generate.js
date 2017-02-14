@@ -22,6 +22,7 @@ function write (args) {
   const fetchOpts = {
     cacheBreak: !args.cache,
     noNetwork: !args.network,
+    timeout: 10000,
     maxConcurrency,
     requestsPerSecond
   }

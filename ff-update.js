@@ -19,7 +19,8 @@ function update (args) {
     cacheBreak: !args.cache,
     noNetwork: !args.network,
     maxConcurrency: args.concurrency,
-    requestsPerSecond: args['requests-per-second']
+    requestsPerSecond: args['requests-per-second'],
+    timeout: 10000
   }
   const fetchAndSpin = fetch.withOpts(fetchOpts).wrapWith(progress.spinWhileAnd)
   if (args.xf_user) fetchAndSpin.setGlobalCookie(`xf_user=${args.xf_user}`)

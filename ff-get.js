@@ -41,7 +41,8 @@ function _reallyRead (args) {
     cacheBreak: !args.cache,
     noNetwork: !args.network,
     maxConcurrency: args.concurrency,
-    requestsPerSecond: args['requests-per-second']
+    requestsPerSecond: args['requests-per-second'],
+    timeout: 10000
   }
   const fetch = use('fetch')
   const fetchAndSpin = fetch.withOpts(fetchOpts).wrapWith(progress.spinWhileAnd)
