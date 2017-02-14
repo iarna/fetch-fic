@@ -245,13 +245,14 @@ class Xenforo extends Site {
           opacity = lightness / baseLightness
           if (baseLightness < 0.5) opacity = 1 - opacity
           if (opacity < 0.25) opacity = 0.25
-          ns += 'opacity: ' + opacity
+          if (opacity > 1) {
+            ns += 'opacity: 1; font-weight: bolder'
+          } else {
+            ns += `opacity: ${opacity}`
+          }
         } else if (style === 'color: transparent') {
           opacity = 0.25
           ns += 'text-decoration: line-through; font-style: oblique; opacity: 0.25;'
-        }
-        if (opacity > 1) {
-          ns += 'font-weight: bolder;'
         }
         if (style === 'color: #ffcc99') {
           ns += 'font-style: italic;'
