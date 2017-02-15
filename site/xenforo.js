@@ -246,10 +246,27 @@ class Xenforo extends Site {
           if (baseLightness < 0.5) opacity = 1 - opacity
           if (opacity < 0.25) opacity = 0.25
           if (opacity > 1) {
-            ns += 'opacity: 1; font-weight: bolder'
+            ns += 'opacity: 1; font-weight: bolder;'
           } else {
-            ns += `opacity: ${opacity}`
+            ns += `opacity: ${opacity};`
           }
+          const red = Math.round(r/25)
+          const green = Math.round(g/25)
+          const blue = Math.round(b/25)
+          if (red > green && red > blue) { // red
+            ns += 'border-style: hidden dashed;'
+          } else if (green > red && green > blue) { // green
+            ns += 'border-style: hidden double;'
+          } else if (blue > red && blue > green) { // blue
+            ns += 'border-style: hidden solid;'
+          } else if (red === green && red > blue) { // yellow?
+            ns += 'border-style: dashed double;'
+          } else if (red === blue && red > green) { // magenta
+            ns += 'border-style: dashed solid;'
+          } else if (green === blue && green > red) { // cyan
+            ns += 'border-style: double solid;'
+          }
+
         } else if (style === 'color: transparent') {
           opacity = 0.25
           ns += 'text-decoration: line-through; font-style: oblique; opacity: 0.25;'
