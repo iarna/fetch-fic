@@ -257,11 +257,6 @@ try {
 }
 ```
 
-## fic.getChapter (fetch, link) → obj
-
-Downloads the chapter at the specified location, returning an unfortunately
-illdefined object.
-
 ## fic.addChapter (obj)
 
 Adds a chapter to the current fic if it doesn't already exist.  `obj` can
@@ -389,6 +384,29 @@ A shortcut for `this.fetchFrom || this.link`.
 ### chapter.toJSON() → Object
 
 Makes a serializable object out of a chapter.
+
+### chapter.getContent (fetch) → ChapterContent
+
+Returns a ChapterContent object for the current chapter, fetching it via `fetch` if necessary.
+
+### Chapter.getContent (fetch, url) → ChapterContent
+
+Returns a ChapterContent object for the specified url, fetching it via `fetch` if necessary.
+
+# util/chapter-content.js
+
+## ChapterContent extends Chapter
+
+New ChapterContent objects are constructed using the Chapter classes object
+and class `getContent` methods.  ChapterContent objects properties differ from Chapter objects in the following ways:
+
+* html – The HTML from which the content of this chapter was extracted.
+* $ – A Cheerio object with the parsed content of `.html`
+* content – The HTML for JUST the chapter content. A strict subset of `.html`.
+* $content – A cheerio object with the parsed version of `.content`.
+* words – As with Chapter objects, this is the number of words in the
+  Chapter.  Unlike Chapter objects, this is lazyily computed from the
+  `.content` property.
 
 # filenameize.js
 
