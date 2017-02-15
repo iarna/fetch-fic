@@ -221,7 +221,7 @@ class Output {
       const filenameize = use('filenameize')
       return filenameize(filename) + this.chapterExt()
     } else if (chapter.type === 'external') {
-      const index = chapter.num
+      const index = chapter.num || chapter.order
       const filename = `external-${index}${name ? ' ' + name : ''}`
       const filenameize = use('filenameize')
       return filenameize(filename) + this.chapterExt()

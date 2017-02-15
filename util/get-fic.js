@@ -159,7 +159,6 @@ function getFic (fetch, fic) {
             return
           }
           externals[href] = {
-            name: $a.text(),
             order: Object.keys(externals).length,
             requestedBy: chapterInfo
           }
@@ -199,7 +198,7 @@ function getFic (fetch, fic) {
         external.num = exterNum
         external.content = `${header}<hr>${external.content}`
         external.name = !exterNum && `External References (${externalCount} ${pages})`
-        external.filename = externalName(externals[href])
+        external.filename = externalName(external)
         external.type = 'external'
         rewriteImages(fic, external, inlineImages(images))
         rewriteLinks(fic, external, linklocalChapters(fic, externals))
