@@ -29,7 +29,7 @@ node_modules folders.  Because it's based on the Node.js module loader it
 WILL load global modules if you ask it to. But don't.
 
 
-# cache.js
+# util/cache.js
 
 ```js
 const cache = use('cache')
@@ -103,7 +103,7 @@ Removes the `.json` and `.gz` components of a URL from the cache using `cache.cl
 Marks the url as dirty, so that future fetches will skip the cache, in THIS
 SESSION ONLY.
 
-# call-limit.js
+# util/call-limit.js
 
 ```js
 const callLimit = use('call-limit')
@@ -124,7 +124,7 @@ The function returned by `callLimit` takes an additional first `grouping`
 argument.  This should be a String.  The limits will be applied per unique
 grouping. For our purposes this `grouping` is always a domain.
 
-# curry-options.js
+# util/curry-options.js
 
 ```js
 const curryOptions = use('curry-options')
@@ -408,7 +408,7 @@ and class `getContent` methods.  ChapterContent objects properties differ from C
   Chapter.  Unlike Chapter objects, this is lazyily computed from the
   `.content` property.
 
-# filenameize.js
+# util/filenameize.js
 
 ```js
 const filenameize = use('filenameize')
@@ -420,7 +420,7 @@ Makes `str` safe to use in a filename, converting any non-word characters
 into hyphens, removing any doubled hyphens and removing any leading or
 trailing hyphens.
 
-# get-fic.js
+# util/get-fic.js
 
 ```js
 const getFic = use('get-fic')
@@ -431,7 +431,7 @@ const getFic = use('get-fic')
 Using `fetch`, downloads all of the chapters from `fic` and writes them to
 the returned FicStream.
 
-# html-template-tag.js
+# util/html-template-tag.js
 
 ```js
 const html = use('html-template-tag')
@@ -441,7 +441,7 @@ const html = use('html-template-tag')
 
 Uses `html-escape` to escape any values embedded in a template string.
 
-# html-to-ao3.js
+# output/ao3/html-to-ao3.js
 
 ```js
 const htmlToAo3 = use('html-to-ao3')
@@ -453,7 +453,7 @@ Takes any generic HTML and converts it into the limited subset of HTML that
 AO3 allows.  This doesn't merely strip unsupported tags but does its best to
 preserve formatting even in the face of stylesheets.
 
-# html-to-bbcode.js
+# output/bbcode/html-to-bbcode.js
 
 ```js
 const htmlToBbcode = use('html-to-bbcode')
@@ -464,7 +464,7 @@ const htmlToBbcode = use('html-to-bbcode')
 Takes any generic HTML and converts it into bbcode suitable for posting to
 forum sites.
 
-# html-to-ffnet.js
+# output/ffnet/html-to-ffnet.js
 
 ```js
 const htmlToFfnet = use('html-to-ffnet')
@@ -476,7 +476,7 @@ Takes any generic HTML and converts it into the limited subset of HTML that
 FanFiction.net allows.  This doesn't merely strip unsupported tags but does its best to
 preserve formatting even in the face of stylesheets.
 
-# in-flight.js
+# util/in-flight.js
 
 ```js
 const inFlight = use('in-flight')
@@ -499,7 +499,7 @@ single call to `todo`, returning the same promise to all callers.  Once
 `todo` resolves, a future call with the same `unique` will result in a new
 call to `todo`.
 
-# normalize-html.js
+# util/normalize-html.js
 
 ```js
 const normalizeHtml = use('normalize-html')
@@ -521,7 +521,7 @@ formats. These are registered with `output.js` by default.
 
 # output.js
 
-# progress.js
+# util/progress.js
 
 ```js
 const progress = use('progress')
@@ -559,7 +559,7 @@ resolves.
 
 Complete one unit of work on `tracker` when `promise` resolves.
 
-# promisify.js
+# util/promisify.js
 
 ```js
 const promisify = use('promisify')
@@ -577,7 +577,7 @@ Optionally, `bind` will call `fn` with `bind` as `this`.
 Takes either a synchronous function or a promise returning function and returns one
 that accepts promisesa as arguments.
 
-# rtf-to-html.js
+# util/rtf-to-html.js
 
 ```js
 const rtfToHtml = use('rtf-to-html')
@@ -596,7 +596,7 @@ TODO: Rewrite this to be three phase:
 * AST → RTFDocument (object)
 * RTFDocument → HTML
 
-# fetch.js
+# util/fetch.js
 
 ```js
 const fetch = use('fetch')
