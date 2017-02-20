@@ -158,11 +158,11 @@ var mergeFic = promisify.args(function mergeFic (existingFic, newFic, add) {
     }
   }
   if (existingFic.chapters.length !== 0) {
-    if (existingFic.created == null && newFic.created != null) {
+    if (existingFic.created == null || newFic.created < existingFic.created) {
       changes.push(`${existingFic.title}: Updated fic publish time from ${existingFic.created} to ${newFic.created} (from newFic)`)
       existingFic.created = newFic.created
     }
-    if (existingFic.modified == null && newFic.modified != null) {
+    if (existingFic.modified == null || newFic.modified > existingFic.modified) {
       changes.push(`${existingFic.title}: Updated fic last update time from ${existingFic.modified} to ${newFic.modified} (from newFic)`)
       existingFic.modified = newFic.modified
     }
@@ -177,13 +177,13 @@ var refreshMetadata = promisify.args(function mergeFic (existingFic, changes) {
     let now = new Date()
     let then = new Date(0)
     let created = fic.chapters.filter(c => c.created).reduce((ficCreated, chapter) => ficCreated < chapter.created ? ficCreated : chapter.created, now)
-    if (created !== now && !dateEqual(fic.created, created)) {
+    if (created !== now && (fic.created == null || created < fic.created)) {
       changes.push(`${fic.title}: Updated fic publish time from ${fic.created} to ${created} (from earliest chapter)`)
       fic.created = created
     }
 
     let modified = fic.chapters.filter(c => c.modified || c.created).reduce((ficModified, chapter) => ficModified > (chapter.modified||chapter.created) ? ficModified : (chapter.modified||chapter.created), then)
-    if (modified !== then && !dateEqual(fic.modified, modified)) {
+    if (modified !== then && (fic.modified == null || modified > fic.modified)) {
       changes.push(`${fic.title}: Updated fic last update time from ${fic.modified} to ${modified} (from latest chapter)`)
       fic.modified = modified
     }
