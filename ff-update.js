@@ -140,11 +140,11 @@ var mergeFic = promisify.args(function mergeFic (existingFic, newFic, add) {
     for (let chapter of fic.chapters) {
       const match = newFic.chapters.filter(andChapterEquals(chapter))
       for (let newChapter of match) {
-        if (newChapter.created && !dateEqual(newChapter.created, chapter.created)) {
+        if (isDate(newChapter.created) && !dateEqual(newChapter.created, chapter.created)) {
           changes.push(`${fic.title}: Updated creation date for chapter "${newChapter.name}" from ${chapter.created} to ${newChapter.created}`)
           chapter.created = newChapter.created
         }
-        if (newChapter.modified && !dateEqual(newChapter.modified, chapter.modified)) {
+        if (isDate(newChapter.modified) && !dateEqual(newChapter.modified, chapter.modified)) {
           changes.push(`${fic.title}: Updated modification date for chapter "${newChapter.name}" from ${chapter.modified} to ${newChapter.modified}`)
           chapter.modified = newChapter.modified
         }
@@ -158,11 +158,11 @@ var mergeFic = promisify.args(function mergeFic (existingFic, newFic, add) {
     }
   }
   if (existingFic.chapters.length !== 0) {
-    if (existingFic.created == null || newFic.created < existingFic.created) {
+    if (isDate(existingFic.created) && (!isDate(existingFic.created) || newFic.created < existingFic.created)) {
       changes.push(`${existingFic.title}: Updated fic publish time from ${existingFic.created} to ${newFic.created} (from newFic)`)
       existingFic.created = newFic.created
     }
-    if (existingFic.modified == null || newFic.modified > existingFic.modified) {
+    if (isDate(existingFic.modified) && (!isDate(existingFic.modified) || newFic.modified > existingFic.modified)) {
       changes.push(`${existingFic.title}: Updated fic last update time from ${existingFic.modified} to ${newFic.modified} (from newFic)`)
       existingFic.modified = newFic.modified
     }
@@ -177,13 +177,13 @@ var refreshMetadata = promisify.args(function mergeFic (existingFic, changes) {
     let now = new Date()
     let then = new Date(0)
     let created = fic.chapters.filter(c => c.created).reduce((ficCreated, chapter) => ficCreated < chapter.created ? ficCreated : chapter.created, now)
-    if (created !== now && (fic.created == null || created < fic.created)) {
+    if (isDate(created) && (created !== now && (!isDate(fic.created) || created < fic.created))) {
       changes.push(`${fic.title}: Updated fic publish time from ${fic.created} to ${created} (from earliest chapter)`)
       fic.created = created
     }
 
     let modified = fic.chapters.filter(c => c.modified || c.created).reduce((ficModified, chapter) => ficModified > (chapter.modified||chapter.created) ? ficModified : (chapter.modified||chapter.created), then)
-    if (modified !== then && (fic.modified == null || modified > fic.modified)) {
+    if (isDate(modified) && (modified !== then && (!isDate(fic.modified) || modified > fic.modified))) {
       changes.push(`${fic.title}: Updated fic last update time from ${fic.modified} to ${modified} (from latest chapter)`)
       fic.modified = modified
     }
@@ -196,12 +196,12 @@ var refreshMetadata = promisify.args(function mergeFic (existingFic, changes) {
   }
   if (existingFic.chapters.length === 0) {
     let created = existingFic.fics.filter(f => f.created).reduce((ficCreated, subfic) => ficCreated < subfic.created ? ficCreated : subfic.created, existingFic.created)
-    if (!dateEqual(existingFic.created, created)) {
+    if (isDate(created) && (!dateEqual(existingFic.created, created))) {
       changes.push(`${existingFic.title}: Updated fic publish time from ${existingFic.created} to ${created} (from earliest subfic)`)
       existingFic.created = created
     }
     let modified = existingFic.fics.filter(f => f.modified || f.created).reduce((ficModified, subfic) => ficModified > (subfic.modified||subfic.created) ? ficModified : (subfic.modified||subfic.created), existingFic.modified)
-    if (!dateEqual(existingFic.modified, modified)) {
+    if (isDate(modified) && (!dateEqual(existingFic.modified, modified))) {
       changes.push(`${existingFic.title}: Updated fic last update time from ${existingFic.modified} to ${modified} (from latest subfic)`)
       existingFic.modified = modified
     }
@@ -219,7 +219,13 @@ function chapterEqual (chapterA, chapterB) {
 }
 
 function dateEqual (dateA, dateB) {
-  const dateAStr = dateA && dateA.toISOString && dateA.toISOString()
-  const dateBStr = dateB && dateB.toISOString && dateB.toISOString()
+  const dateAStr = isDate(dateA) && dateA.toISOString && dateA.toISOString()
+  const dateBStr = isDate(dateB) && dateB.toISOString && dateB.toISOString()
   return dateAStr === dateBStr
+}
+
+function isDate (date) {
+  if (date == null) return false
+  if (isNaN(date)) return false
+  return date instanceof Date
 }
