@@ -118,16 +118,16 @@ var mergeFic = promisify.args(function mergeFic (existingFic, newFic, add) {
 
   if (existingFic.description == null && newFic.description != null) {
     existingFic.description = newFic.description
-    changes.push(`${existingFic.title}: Set fic ${description} to ${existingFic.description}`)
+    changes.push(`${existingFic.title}: Set fic description to ${newFic.description}`)
   }
   if (existingFic.tags == null && newFic.tags != null && newFic.tags.length) {
     existingFic.tags = newFic.tags
-    changes.push(`${existingFic.title}: Set existingFic tags to ${newFic.tags.join(', ')}`)
+    changes.push(`${existingFic.title}: Set fic tags to ${newFic.tags.join(', ')}`)
   }
   for (let prop of qw`publisher author authorUrl updateFrom link title`) {
     if (existingFic[prop] == null && newFic[prop] != null) {
       existingFic[prop] = newFic[prop]
-      changes.push(`${existingFic.title}: Set existingFic ${prop} to ${existingFic[prop]}`)
+      changes.push(`${existingFic.title}: Set fic ${prop} to ${existingFic[prop]}`)
     }
   }
 
