@@ -476,29 +476,6 @@ Takes any generic HTML and converts it into the limited subset of HTML that
 FanFiction.net allows.  This doesn't merely strip unsupported tags but does its best to
 preserve formatting even in the face of stylesheets.
 
-# util/in-flight.js
-
-```js
-const inFlight = use('in-flight')
-```
-
-## inFlight (unique, todo) → Promise
-
-Arguments can be plain values or promises.
-
-`unique` is either a string or an array of promises and values that will be resolved and joined together.
-
-`todo` is a function that returns a promise.
-
-`inFlight` will, until such time as `todo()` resolves or rejects, return the a
-single promise per `unique` value.  That promise will resolve with the
-result of `todo`.
-
-As such, it will fold multiple calls with the same `unique` value into a
-single call to `todo`, returning the same promise to all callers.  Once
-`todo` resolves, a future call with the same `unique` will result in a new
-call to `todo`.
-
 # util/normalize-html.js
 
 ```js

@@ -5,8 +5,8 @@ const mkdirpCB = require('mkdirp')
 const os = require('os')
 const path = require('path')
 const url = require('url')
+const inflight = require('promise-inflight')
 
-const inFlight = use('in-flight')
 const fs = use('fs-promises')
 const mkdirp = use('mkdirp')
 const promisify = use('promisify')
@@ -37,7 +37,7 @@ function cacheFilename (filename) {
 
 function readFile (filename, onMiss) {
   const cacheFile = cacheFilename(filename)
-  return inFlight(['read:', filename], thenReadFile)
+  return inflight(['read:', filename], thenReadFile)
 
   function thenReadFile () {
     return fs.readFile(cacheFile).catch(elseHandleMiss)
@@ -49,7 +49,7 @@ function readFile (filename, onMiss) {
 
 function writeFile (filename, content) {
   const cacheFile = cacheFilename(filename)
-  return inFlight(['write:', filename], thenWriteFile).thenReturn(content)
+  return inflight(['write:', filename], thenWriteFile).thenReturn(content)
 
   function thenWriteFile () {
     return mkdirp(pathDirname(cacheFile)).then(() => fs.writeFile(cacheFile, content))
@@ -124,7 +124,7 @@ function readUrl (fetchUrl, onMiss) {
     finalUrl: null
   }
   let existingMeta = {}
-  return inFlight(['readUrl:', fetchUrl], thenReadExistingMetadata)
+  return inflight(['readUrl:', fetchUrl], thenReadExistingMetadata)
 
   function thenReadExistingMetadata () {
     return readJSON(metafile, () => Bluebird.reject(noMetadata)).then(meta => {

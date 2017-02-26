@@ -36,6 +36,7 @@
     "mkdirp": "^0.5.1",
     "node-fetch": "^1.6.0",
     "parse5": "^2.2.3",
+    "promise-inflight": "^1.0.1",
     "pump": "^1.0.1",
     "qw": "^1.0.0",
     "readable-stream": "^2.1.5",
