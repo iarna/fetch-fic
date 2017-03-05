@@ -225,7 +225,7 @@ function getFic (fetch, fic) {
           filename: images[src].filename,
           content: imageData
         })
-      }).catch(err => process.emit('error', `Error while fetching image ${src}: ${require('util').inspect(err)}`))
+      }).catch(err => process.emit('error', `Error while fetching image ${src}: ${err.stack}`))
     })
   }).then(() => {
     process.emit('debug', `Considering cover`)
@@ -239,7 +239,7 @@ function getFic (fetch, fic) {
             type: 'cover',
             content: imageData
           })
-        }).catch(err => process.emit('error', `Error while fetching cover ${fic.cover}: ${require('util').inspect(err)}`))
+        }).catch(err => process.emit('error', `Error while fetching cover ${fic.cover}: ${err.stack}`))
       } else {
         return stream.queueChapter({
           type: 'cover',
