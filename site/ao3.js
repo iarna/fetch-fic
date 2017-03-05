@@ -77,7 +77,7 @@ class ArchiveOfOurOwn extends Site {
       fic.bookmarks = Number($stats.find('dd.bookmarks').text().trim())
       fic.hits = Number($stats.find('dd.hits').text().trim())
       fic.title = chapter.$('h2.title').text().trim()
-      fic.description = chapter.$('.summary').find('p').html()
+      fic.description = chapter.$('.summary').find('.userstuff').html().replace(/<p>/g, '\n<p>').replace(/^\s+|\s+$/g, '')
     })
   }
 
