@@ -38,10 +38,11 @@ class OutputBBCode extends Output {
         const Bluebird = require('bluebird')
         return new Bluebird((resolve, reject) => {
           const identifyStream = require('buffer-signature').identifyStream
+          const WriteStreamAtomic = require('fs-write-stream-atomic')
           chapter.content.pipe(identifyStream(info => {
             const ext = info.extensions.length ? '.' + info.extensions[0] : ''
             this.coverName = 'cover' + ext
-          })).pipe(fs.createWriteStream(tmpname)).on('error', reject).on('finish', () => {
+          })).pipe(new WriteStreamAtomic(tmpname)).on('error', reject).on('finish', () => {
             resolve(fs.rename(tmpname, path.join(this.outname, this.coverName)))
           })
         })

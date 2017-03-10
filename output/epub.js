@@ -49,8 +49,8 @@ class OutputEpub extends Output {
       if (this.fic.numberTOC) toctitle = 'ⅱ. ' + toctitle
       epub.write(Streampub.newChapter(toctitle, this.tableOfContentsHTML(), 1, 'toc.xhtml'))
     }
-    const fs = require('fs')
-    const output = fs.createWriteStream(this.outname)
+    const WriteStreamAtomic = require('fs-write-stream-atomic')
+    const output = new WriteStreamAtomic(this.outname)
     const pump = use('pump')
     return pump(
       this.fic,
