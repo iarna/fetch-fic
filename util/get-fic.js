@@ -83,7 +83,7 @@ function findChapter (href, fic) {
 }
 
 function externalName (external) {
-  return `_LINK_external#LINK#${external.num||external.order}#LINK#${external.linkName || external.name||''}_LINK_`
+  return `_LINK_external#LINK#${external.num||external.order}#LINK#_LINK_`
 }
 function chapterLinkname (chapter) {
   return `_LINK_chapter#LINK#${chapter.num||chapter.order}#LINK#${chapter.linkName || chapter.name||''}_LINK_`
@@ -159,7 +159,8 @@ function getFic (fetch, fic) {
             return
           }
           externals[href] = {
-            order: Object.keys(externals).length,
+            order: 9000 + Object.keys(externals).length,
+            num: Object.keys(externals).length + 1,
             requestedBy: chapterInfo
           }
           return externalName(externals[href])
@@ -180,7 +181,8 @@ function getFic (fetch, fic) {
     return concurrently(Object.keys(externals), maxConcurrency, (href, exterNum) => {
       const externalInfo = externals[href]
       return Chapter.getContent(fetch, href).then(external => {
-        external.order = 9000 + exterNum
+        external.order = externalInfo.order
+        external.num = externalInfo.num
         const name = external.name || external.ficTitle
         let header = ''
         const linkSource = externalInfo.requestedBy.link || externalInfo.requestedBy.fetchFrom
@@ -195,7 +197,6 @@ function getFic (fetch, fic) {
           header += `<header><h2><div style="font-size: 11px"><a external="false" href="${href}">${wrappableLink}</a></div>`
           header += `by ${byline}</h2></header>`
         }
-        external.num = exterNum
         external.content = `${header}<hr>${external.content}`
         external.name = !exterNum && `External References (${externalCount} ${pages})`
         external.filename = externalName(external)
