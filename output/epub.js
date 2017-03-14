@@ -34,13 +34,6 @@ class OutputEpub extends Output {
       modified: this.fic.modified,
     })
 
-    const TOML = require('@iarna/toml')
-    epub.write({
-      id: 'fic',
-      content: Buffer.from(TOML.stringify(this.fic)),
-      fileName: 'meta.fic.toml',
-      mime: 'text/x-toml'
-    })
     let title = 'Title Page'
     if (this.fic.numberTOC) title = 'ⅰ. ' + title
     epub.write(Streampub.newChapter(title, this.titlePageHTML(), 0, 'top.xhtml'))
