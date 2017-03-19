@@ -42,13 +42,15 @@ function ficInflate (fic, fetch, tracker) {
         })
       }).finally(() => {
         if (!fic.words) fic.words = words
-        const firstChapter = fic.chapters[0]
-        const lastChapter = fic.chapters[fic.chapters.length - 1]
-        if (firstChapter.created == null && firstChapter.modified == null && fic.created != null) {
-          firstChapter.created = fic.created
-        }
-        if (lastChapter.created == null && lastChapter.modified == null && fic.modified != null) {
-          lastChapter.modified = fic.modified
+        if (fic.chapters.length) {
+          const firstChapter = fic.chapters[0]
+          const lastChapter = fic.chapters[fic.chapters.length - 1]
+          if (firstChapter.created == null && firstChapter.modified == null && fic.created != null) {
+            firstChapter.created = fic.created
+          }
+          if (lastChapter.created == null && lastChapter.modified == null && fic.modified != null) {
+            lastChapter.modified = fic.modified
+          }
         }
         tracker.finish()
       })
