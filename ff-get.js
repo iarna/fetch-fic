@@ -69,6 +69,14 @@ function _reallyRead (args) {
   const ficInflate = use('fic-inflate')
   return ficInflate(deflatedFic, fetchAndSpin.withOpts({cacheBreak: false})).then(fic => {
     const filenameize = use('filenameize')
+    // we shouldn't get here, but this acts as a final guard against an
+    // empty fic getting written out to disk.
+    if (fic.words === 0) {
+      const err = Error(`${args.url} could not be retrieved.`)
+      err.code = 404
+      err.url = args.url
+      throw err
+    }
     const filename = filenameize(fic.title) + '.fic.toml'
     const TOML = require('@iarna/toml')
     const fs = use('fs-promises')
