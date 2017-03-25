@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 'use strict'
 require('@iarna/lib')('util', '.')
-
+const readline = require('readline');
 const onExit = require('signal-exit')
 const yargs = require('yargs')
 
@@ -133,6 +133,7 @@ let exited = false
 
 function errorHandler (err) {
   exited = true
+  readline.clearLine(process.stdout);
   if (argv.debug) {
     console.log(err.stack)
   } else if (err.code === 'ENOENT') {
