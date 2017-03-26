@@ -9,7 +9,8 @@ prepare it for sharing easy peasy.
 * Any [Xenforo](https://xenforo.com/) based forum, like: [spacebattles.com](https://forums.spacebattles.com/), [sufficientvelicity.com](https://forums.sufficientvelocity.com/), [questionablequesting.com](https://questionablequesting.com)
 * [Archive of Our Own](https://archiveofourown.org/)
 * [Fanfiction.Net](https://www.fanfiction.net/)
-* Local Scrivener save files/folders (tested on Mac)
+* Local Scrivener save files/folders (tested on Mac).  Scriviner sources may
+  contain bbcode, which will be rendered appropriately across outputs.
 * Local folders full of rtf files
 
 ## IMPORT OTHER STUFF FROM:
@@ -33,6 +34,8 @@ prepare it for sharing easy peasy.
 ## NOTABLE FEATURES
 
 * Support for cover images, both as ebook cover and in title pages.
+* Can generate a numbered table of contents.  (Non-chapter content is
+  numbered with roman numerals.)
 * Images contained in the fic are brought into the final ebook.  (This
   includes smilies on Xenforo sites.)
 * Xenforo threads that lack threadmarks can still be imported.
@@ -51,6 +54,8 @@ prepare it for sharing easy peasy.
   * White-text is de-whited.
   * Invisitext is shown
   * mailto: links are delinked.
+  * Colors are converted to a not-to-light grayscale with text decoration to
+    indicate hue.
 * Content is cached so that iterating to get the perfect config takes no
   time. And when a new chapter is posted only that has to be fetched.
 
