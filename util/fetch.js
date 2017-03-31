@@ -44,7 +44,7 @@ function addCookieFuncs (fetch) {
 
 function NoNetwork (toFetch, opts) {
   const err = new Error(`Not found in cache: ${toFetch} ${util.inspect(opts)}`)
-  err.code = 'NETWORKDISABLED'
+  err.code = 'ENETWORKDISABLED'
   return err
 }
 
