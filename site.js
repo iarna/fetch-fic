@@ -22,7 +22,9 @@ class Site {
     for (const SpecificSite of this.registered) {
       if (SpecificSite.matches(rawUrl)) return new SpecificSite(rawUrl)
     }
-    throw new Error('Could not find site handler for ' + rawUrl)
+    const err = new Error('Could not find supported site for: ' + rawUrl)
+    err.code = 'ENOSITE'
+    throw err
   }
 
   normalizeLink (href, base) {
