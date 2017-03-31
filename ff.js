@@ -133,6 +133,7 @@ let exited = false
 
 function errorHandler (err) {
   exited = true
+  process.progress.hide()
   if (argv.debug) {
     console.log(err.stack)
   } else if (err.code === 'ENOENT') {
