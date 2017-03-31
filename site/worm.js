@@ -44,11 +44,6 @@ class Worm extends Site {
     })
   }
 
-  scrapeFicMetadata (fetch, fic) {
-    // There's never any reason to scrape AO3 content, AFAIK.
-    return Bluebird.resolve()
-  }
-
   getChapter (fetch, chapterInfo) {
     const chapterUrl = url.parse(chapterInfo.fetchWith())
     const firstChapter = chapterUrl.path === '/2011/06/11/1-1/'

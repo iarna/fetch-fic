@@ -31,11 +31,6 @@ class Youtube extends Site {
     })
   }
 
-  scrapeFicMetadata (fetch, fic) {
-    // There's never any reason to scrape Youtube content.
-    return Bluebird.resolve()
-  }
-
   getChapter (fetch, chapterInfo) {
     return fetch(chapterInfo.fetchWith()).spread((meta, html) => {
       const ChapterContent = use('chapter-content')

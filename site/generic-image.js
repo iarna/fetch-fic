@@ -30,10 +30,6 @@ class GenericImage extends Site {
     return Bluebird.resolve()
   }
 
-  scrapeFicMetadata (fetch, fic) {
-    return Bluebird.resolve()
-  }
-
   getChapter (fetch, chapterInfo) {
     const ChapterContent = use('chapter-content')
     return Bluebird.resolve(new ChapterContent(chapterInfo, {

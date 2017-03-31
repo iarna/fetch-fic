@@ -32,11 +32,6 @@ class Wikipedia extends Site {
     })
   }
 
-  scrapeFicMetadata (fetch, fic) {
-    // There's never any reason to scrape Wikipedia content.
-    return Bluebird.resolve()
-  }
-
   getChapter (fetch, chapterInfo) {
     return fetch(chapterInfo.fetchWith()).spread((meta, html) => {
       const ChapterContent = use('chapter-content')

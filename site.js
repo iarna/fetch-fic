@@ -6,6 +6,7 @@ class Site {
     this.raw = rawUrl
     this.link = this.normalizeLink(rawUrl)
     this.warnings = []
+    this.canScrape = false
   }
   static register (site) {
     this.registered.push(site)

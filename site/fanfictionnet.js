@@ -79,11 +79,6 @@ class FanFictionNet extends Site {
     })
   }
 
-  scrapeFicMetadata (fetch, fic) {
-    // There's never any reason to scrape FFN content, AFAIK.
-    return Bluebird.resolve()
-  }
-
   getChapter (fetch, chapterInfo) {
     return fetch(chapterInfo.fetchWith()).spread((meta, html) => {
       const ChapterContent = use('chapter-content')

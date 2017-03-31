@@ -26,6 +26,7 @@ class Xenforo extends Site {
     }
     this.publisher = hostname
     this.publisherName = knownSites[hostname] || hostname
+    this.canScrape = true
     const path = siteUrl.pathname || siteUrl.path || ''
     const nameMatch = path.match(/^[/]threads[/]([^.]+)/)
     this.name = nameMatch && nameMatch[1]

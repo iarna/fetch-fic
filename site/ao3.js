@@ -81,10 +81,6 @@ class ArchiveOfOurOwn extends Site {
     })
   }
 
-  scrapeFicMetadata (fetch, fic) {
-    return Bluebird.resolve()
-  }
-
   getChapter (fetch, chapterInfo) {
     return fetch(chapterInfo.fetchWith()).spread((meta, html) => {
       const ChapterContent = use('chapter-content')

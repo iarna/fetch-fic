@@ -1,6 +1,7 @@
 'use strict'
 /* eslint-disable no-return-assign */
 const qw = require('qw')
+const Bluebird = require('bluebird')
 
 let Site
 
@@ -89,10 +90,18 @@ class Fic {
       return thenMaybeFallback(err)
     }
     function thenMaybeFallback (err) {
-      // no chapters in the threadmarks, fallback to fetching
-      if (fic.chapters.length === 0) {
+      if (fic.chapters.length === 0 ) {
         fic.scrapeMeta = true
-        return fic.site.scrapeFicMetadata(fetch, fic).catch(scrapeErr => Promise.reject(err || scrapeErr))
+        if (fic.site.canScrape) {
+          return fic.site.scrapeFicMetadata(fetch, fic).catch(scrapeErr => Bluebird.reject(err || scrapeErr))
+        } else {
+          if (!err) {
+            err = new Error(`Could not fetch: ${link}`)
+            err.code = 404
+            err.url = link
+          }
+          return Bluebird.reject(err)
+        }
       } else {
         fic.fetchMeta = true
       }
@@ -106,7 +115,11 @@ class Fic {
     fic.fetchMeta = true
     fic.scrapeMeta = true
     return fic.site.getFicMetadata(fetch, fic).then(() => {
-      return fic.site.scrapeFicMetadata(fetch, fic).thenReturn(fic)
+      if (fic.site.canScrape) {
+        return fic.site.scrapeFicMetadata(fetch, fic).thenReturn(fic)
+      } else {
+        return fic
+      }
     })
   }
 
@@ -115,6 +128,11 @@ class Fic {
     fic.site = Site.fromUrl(link)
     fic.link = fic.site.link
     fic.scrapeMeta = true
+    if (!fic.site.canScrape) {
+      const err = new Error(`Site ${fic.site.publisherName || fic.site.publisher} does not support fetching via scraping`)
+      err.code = 'ENOSCRAPE'
+      return Bluebird.reject(err)
+    }
     return fic.site.scrapeFicMetadata(fetch, fic).thenReturn(fic)
   }
 

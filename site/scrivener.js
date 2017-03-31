@@ -88,11 +88,6 @@ class Scrivener extends Site {
     return result
   }
 
-  scrapeFicMetadata (fetch, fic) {
-    // There's never any reason to scrape scrivener content.
-    return Bluebird.resolve()
-  }
-
   getChapter (fetch, chapter) {
     const fs = use('fs-promises')
     const ChapterContent = use('chapter-content')

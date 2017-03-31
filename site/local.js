@@ -47,11 +47,6 @@ class Local extends Site {
     })
   }
 
-  scrapeFicMetadata (fetch, fic) {
-    // There's never any reason to scrape local content.
-    return Bluebird.resolve()
-  }
-
   getChapter (fetch, chapter) {
     const fs = use('fs-promises')
     const ChapterContent = use('chapter-content')
