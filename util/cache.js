@@ -170,12 +170,14 @@ function readUrl (fetchUrl, onMiss) {
       if (meta.status && meta.status === 304) {
         const err304 = new Error('Got status: ' + meta.status + ' ' + meta.statusText + ' for ' + fetchUrl)
         err304.code = meta.status
+        err304.url = fetchUrl
         err304.meta = meta
         return Bluebird.reject(err304)
         return thenReadContent().spread((_, data) => data)
       } else if (meta.status && meta.status !== 200) {
         const non200 = new Error('Got status: ' + meta.status + ' ' + meta.statusText + ' for ' + fetchUrl)
         non200.code = meta.status
+        non200.url = fetchUrl
         non200.meta = meta
         return Bluebird.reject(non200)
       }
