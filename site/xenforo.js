@@ -34,7 +34,6 @@ class Xenforo extends Site {
   getFicMetadata (fetch, fic) {
     fic.link = this.link
     fic.publisher = this.publisherName
-    fic.includeTOC = true
     return fetch(this.threadmarkUrl()).spread((meta, html) => {
       const cheerio = require('cheerio')
       const $ = cheerio.load(html)
@@ -70,7 +69,6 @@ class Xenforo extends Site {
 
   scrapeFicMetadata (fetch, fic) {
     if (!fic.publisher) fic.publisher = this.publisherName
-    if (fic.includeTOC == null) fic.includeTOC = true
     const Chapter = use('fic').Chapter
     return Chapter.getContent(fetch, this.link).then(chapter => {
       // we guard all the fic metadata updates because we might be
