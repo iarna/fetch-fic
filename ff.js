@@ -139,6 +139,10 @@ function errorHandler (err) {
   } else if (err.code === 'ENOENT') {
     console.log(err.message.replace(/^ENOENT: no such file or directory, open '(.*?)'$/,
       'Could not find fic: $1'))
+  } else if (err.code === 404) {
+    console.log(`Fic not found at: ${err.url}`)
+  } else if (err.meta) {
+    console.log(`Error downloading fic: ${err.meta.status} ${err.meta.statusText} from ${err.url}`)
   } else {
     console.log('An error occured: ' + err.message)
   }
