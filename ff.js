@@ -143,6 +143,8 @@ function errorHandler (err) {
     console.log(`Fic not found at: ${err.url}`)
   } else if (err.meta) {
     console.log(`Error downloading fic: ${err.meta.status} ${err.meta.statusText} from ${err.url}`)
+  } else if (err.code === 'ENOSCRAPE' || err.code === 'ENOSITE') {
+    console.log(err.message)
   } else {
     console.log('An error occured: ' + err.message)
   }
