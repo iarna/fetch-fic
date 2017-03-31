@@ -241,7 +241,9 @@ class ChapterList extends Array {
   importFromJSON (raw) {
     if (raw.fics && !raw.chapters) return
     if (!raw.chapters) {
-      throw new Error('Fic "' + raw.title + '" is missing any chapters.')
+      const err = new Error('Fic "' + raw.title + '" is missing any chapters.')
+      err.code = 'ENOCHAPTERS'
+      throw err
     }
     raw.chapters.forEach(chapter => this.push(Chapter.fromJSON(this.length, chapter)))
   }
