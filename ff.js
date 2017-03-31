@@ -137,8 +137,8 @@ function errorHandler (err) {
   if (argv.debug) {
     console.log(err.stack)
   } else if (err.code === 'ENOENT') {
-    console.log(err.message.replace(/^ENOENT: no such file or directory, open '(.*?)'$/,
-      'Could not find fic: $1'))
+    console.log(err.message
+      .replace(/^ENOENT: no such file or directory, (?:scandir|open) '(.*?)'$/, 'Could not find fic: $1'))
   } else if (err.code === 404) {
     console.log(`Fic not found at: ${err.url}`)
   } else if (err.meta) {
