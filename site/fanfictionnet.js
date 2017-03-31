@@ -39,6 +39,12 @@ class FanFictionNet extends Site {
     fic.includeTOC = true
     const Chapter = use('fic').Chapter
     return Chapter.getContent(fetch, this.chapterListUrl()).then(chapter => {
+      if (/Story Not Found/.test(chapter.$('.gui_warning').text())) {
+        var err = new Error(`Story Not Found: ${fic.link}`)
+        err.code = 404
+        err.url = fic.link
+        return Bluebird.reject(err)
+      }
       const $meta = chapter.$('#profile_top')
       const $dates = $meta.find('span[data-xutime]')
       fic.title = $meta.find('b.xcontrast_txt').text()
