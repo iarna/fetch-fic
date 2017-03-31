@@ -1,6 +1,7 @@
 'use strict'
 const Bluebird = require('bluebird')
 const Readable = require('readable-stream').Readable
+const qw = require('qw')
 
 function proxy (from, prop, to) {
   if (to[prop] != null) return
@@ -27,10 +28,13 @@ class FicStream extends Readable {
       readyR: null
     }
     // ficstreams also proxy everything from their source fic
-    for (let pp in fic) {
+    for (let pp of qw`id fetch title link updateFrom author authorUrl
+                      created modified publisher description cover
+                      chapterHeadings externals words tags fics chapters
+                      site includeTOC numberTOC fetchMeta scrapeMeta`) {
       proxy(fic, pp, this)
     }
-    for (let pp of Object.getOwnPropertyNames(Object.getPrototypeOf(fic))) {
+    for (let pp of qw`updateWith chapterExists normalizeLink addChapter importFromJSON toJSON`) {
       proxy(fic, pp, this)
     }
   }

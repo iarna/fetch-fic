@@ -36,7 +36,6 @@ class FanFictionNet extends Site {
   getFicMetadata (fetch, fic) {
     fic.link = this.link
     fic.publisher = this.publisherName
-    fic.includeTOC = true
     const Chapter = use('fic').Chapter
     return Chapter.getContent(fetch, this.chapterListUrl()).then(chapter => {
       if (/Story Not Found/.test(chapter.$('.gui_warning').text())) {

@@ -26,10 +26,26 @@ class Fic {
     this.fics = []
     this.chapters = new ChapterList()
     this.site = null
-    this.includeTOC = null
-    this.numberTOC = null
+    this._includeTOC = null
+    this._numberTOC = null
     this.fetchMeta = null
     this.scrapeMeta = null
+  }
+
+  get includeTOC () {
+    return this._includeTOC === null ? true : this._includeTOC
+  }
+
+  set includeTOC (value) {
+    this._includeTOC = value
+  }
+
+  get numberTOC () {
+    return this._numberTOC === null ? true : this._numberTOC
+  }
+
+  set numberTOC (value) {
+    this._numberTOC = value
   }
 
   updateWith () {
@@ -63,7 +79,7 @@ class Fic {
      includeTOC numberTOC fetchMeta scrapeMeta`
 
     for (let prop of props) {
-      this[prop] = raw[prop]
+      if (prop in raw) this[prop] = raw[prop]
     }
     this.chapters.importFromJSON(raw)
     if (raw.fics) {
