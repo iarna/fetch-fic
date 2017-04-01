@@ -21,6 +21,24 @@ class OutputEpub extends Output {
 
   write () {
     const Streampub = require('streampub')
+    const statusRe = /^(stalled|abandoned|complete|one-shot)$/
+    const fandomRe = /^fandom:/
+    let tags = this.fic.tags && this.fic.tags.filter(tag => !fandomRe.test(tag) && !statusRe.test(tag))
+    let modified = this.fic.modified || this.fic.started || this.fic.created
+    let status = this.fic.tags && this.fic.tags.filter(tag => statusRe.test(tag))[0]
+    if (!status && modified) {
+      const now = new Date()
+      const oneMonth = 86400*30*1000
+      const sixMonths = 86400*182*1000
+      if (now - modified > sixMonths) {
+        status = 'abandoned'
+      } else if (now - modified > oneMonth) {
+        status = 'stalled'
+      } else {
+        status = 'in-progress'
+      }
+    }
+    let fandom = this.fic.tags && this.fic.tags.filter(tag => fandomRe.test(tag)).map(tag => tag.replace(fandomRe, ''))[0]
     const epub = new Streampub({
       id: this.fic.id,
       title: this.fic.title,
@@ -28,10 +46,17 @@ class OutputEpub extends Output {
       authorUrl: this.fic.authorUrl,
       description: this.fic.description,
       source: this.fic.link,
-      subject: this.fic.tags && this.fic.tags.length && this.fic.tags.join(','),
+      subject: tags && tags.length && tags.join(','),
       publisher: this.fic.publisher,
-      published: this.fic.started || this.fic.created,
-      modified: this.fic.modified,
+      published: this.fic.started || this.fic.created || this.fic.modified,
+      modified: modified,
+      user: {
+        'updated': modified && {'#value#': modified.toISOString().slice(0,10), 'datatype': 'text'},
+        'words': {'#value#': this.fic.words, 'datatype': 'int'},
+        'authorurl': {'#value#': this.fic.authorUrl, 'datatype': 'text'},
+        'status': status && {'#value#': status, 'datatype': 'enumeration'},
+        'fandom': fandom && {'#value#': fandom, 'datatype': 'text'}
+      }
     })
 
     let title = 'Title Page'
