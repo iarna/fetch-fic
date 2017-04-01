@@ -5,6 +5,17 @@
 * Scriviner support: Don't crash on empty chapters, just skip over them.
 * Much better progress indicator, especially when generating output for
   multiple fics.
+* Export our epubs with calibre custom field metadata for: `updated`,
+  `words`, `authorurl`, `status` and `fandom`.  If you have these `words`
+  needs to be an int.  `status` needs to be an enumeration of `stalled`,
+  `abandoned, `complete`, `one-shot` and `in-process`.  And the rest need to
+  be a `text` type.  If you don't have these columns then calibre will
+  ignore them when importing.
+* Better error messages for login failures. Hint at the right options.
+* Sanity check in `ff get`: If we get to the point of saving a fic to disk,
+  don't write it if we didn't find any words. Thanks to [@cwgreene](https://github.com/cwgreene).
+* Numbered TOCs are now the default (now that we use roman numerals on the
+  non-chapter parts, number is much better).
 
 ## v3.4.1
 
