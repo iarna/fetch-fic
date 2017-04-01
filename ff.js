@@ -141,6 +141,8 @@ function errorHandler (err) {
       .replace(/^ENOENT: no such file or directory, (?:scandir|open) '(.*?)'$/, 'Could not find fic: $1'))
   } else if (err.code === 404) {
     console.log(`Fic not found at: ${err.url}`)
+  } else if (err.code === 403) {
+    console.log(`Authorization required to download fic. You may consider trying the "--xf_user" option.`)
   } else if (err.meta) {
     console.log(`Error downloading fic: ${err.meta.status} ${err.meta.statusText} from ${err.url}`)
   } else if (err.code === 'ENOSCRAPE' || err.code === 'ENOSITE') {
