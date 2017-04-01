@@ -1,5 +1,13 @@
 # CHANGES TO `fetch-fic`
 
+## v3.4.1
+
+* Improve error messages for missing fics.
+* Report requests for fics that don't exist on fanfiction.net the same way
+  we do for other sites.  Previously it would write a `.fic.toml` file.
+* Make sure we clear the progress bar before exiting with an error.
+* Fix a crash when inflating fics that only have subfics (and no chapters)
+
 ## v3.4.0
 
 * Improve modified and created times in both `fic get` and `fic update`
