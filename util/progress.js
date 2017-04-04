@@ -26,9 +26,7 @@ progress.newWork = newWork
 progress.completeWorkWhenResolved = completeWorkWhenResolved
 
 
-const gauge = new Gauge()
-const sectionLabel = {}
-const trackerGroup = new TrackerGroup({
+const gauge = new Gauge({
   template: [
     {type: 'progressbar', length: 20},
     {type: 'activityIndicator', kerning: 1, length: 1},
@@ -36,7 +34,9 @@ const trackerGroup = new TrackerGroup({
     ':',
     {type: 'message', kerning: 1, default: ''}
   ]
-}).on('change', (section, completed) => {
+})
+const sectionLabel = {}
+const trackerGroup = new TrackerGroup().on('change', (section, completed) => {
   if (sectionLabel[section]) {
     gauge.show({section: sectionLabel[section], completed})
   } else {

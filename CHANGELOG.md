@@ -1,5 +1,8 @@
 # CHANGES TO `fetch-fic`
 
+* Much better progress indicator, especially when generating output for
+  multiple fics.
+
 ## v3.4.1
 
 * Improve error messages for missing fics.

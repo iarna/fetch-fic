@@ -45,17 +45,16 @@ function write (args) {
     }
     const fetchAndFinish = fetchAndSpin.wrapWith(completeWhenDone)
     fetchAndFinish.tracker = tracker
-    fics = fics.filter((fic, ficNum) => {
+    fics = fics.filter((fic, subficNum) => {
       if (topFic === fic && topFic.fics && !topFic.chapters) return false
       if (!fic.title) {
-        process.emit('warn', `Skipping #${ficNum} in ${ficFile}, missing title`)
+        process.emit('warn', `Skipping #${subficNum} in ${ficFile}, missing title`)
         return false
       }
       for (let key of Object.keys(topFic)) {
         if (key === 'fics' || key === 'chapters') continue
         if (!fic[key]) fic[key] = topFic[key]
       }
-      progress.show(fic.title, 'Fetching fic')
       tracker.addWork(fic.chapters.length)
       process.emit('debug', `Fetching #${ficNum} for ${ficFile}: ${fic.title}`)
       return true
@@ -67,14 +66,22 @@ function write (args) {
         tracker.finish()
         progress.hide()
       })
-  }
-  function fetchFic (fetch) {
-    return (fic) => {
-      process.emit('debug', `Outputting ${fic.title}`)
-      const ficStream = getFic(fetch, fic)
-      return Output.as(output).from(ficStream).write().then(filename => {
-        progress.output(`${filename}\n`)
-      })
+
+    function fetchFic (fetch, subficNum, subficCount) {
+      return (fic) => {
+        let ficStatus = ''
+        if (args.fic.length > 1) {
+          ficStatus = subficCount > 1 ? ` [${ficNum + 1}.${subficNum + 1}/${args.fic.length}]` : ` [${ficNum + 1}/${args.fic.length}]`
+        } else if (subficCount > 1) {
+          ficStatus = ` [${subficNum + 1}/${subficCount}]`
+        }
+        progress.show(`${fic.title}${ficStatus}`, 'Fetching fic')
+        process.emit('debug', `Outputting ${fic.title}`)
+        const ficStream = getFic(fetch, fic)
+        return Output.as(output).from(ficStream).write().then(filename => {
+          progress.output(`${filename}\n`)
+        })
+      }
     }
   }
 }

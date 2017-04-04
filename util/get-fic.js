@@ -135,7 +135,11 @@ function getFic (fetch, fic) {
   const maxConcurrency = 40 // limit saves memory, not network, network is protected elsewhere
 
   process.emit('debug', `Outputting ${chapters.length} chapters of ${fic.title}`)
-  progress.show(`Fetching chapters (${chapters.length})…`)
+  let completed = 0
+  function showChapterStatus () {
+    progress.show(`Fetching chapters [${completed}/${chapters.length}]`)
+  }
+  showChapterStatus()
   concurrently(chapters, maxConcurrency, (chapterInfo) => {
     return chapterInfo.getContent(fetch).then(chapter => {
       chapter.order = chapterInfo.order
@@ -171,12 +175,19 @@ function getFic (fetch, fic) {
       return stream.queueChapter(chapter)
     }).catch((err) => {
       process.emit('error', 'Error while fetching chapter', chapterInfo, err.stack)
+    }).finally(() => {
+      ++completed
+      showChapterStatus()
     })
   }).then(() => {
     const externalCount = Object.keys(externals).length
     process.emit('debug', `Outputting ${externalCount} externals of ${fic.title}`)
     fetch.tracker.addWork(externalCount)
-    progress.show(`Fetching externals (${externalCount})…`)
+    let completed = 0
+    function showExternalStatus () {
+      progress.show(`Fetching externals [${completed}/${externalCount}]`)
+    }
+    showExternalStatus()
     const pages = externalCount === 1 ? 'page' : 'pages'
     return concurrently(Object.keys(externals), maxConcurrency, (href, exterNum) => {
       const externalInfo = externals[href]
@@ -214,11 +225,19 @@ function getFic (fetch, fic) {
           type: 'external',
           content: html`<p>External link to <a href="${href}">${href}</a></p><pre>${err.stack}</pre>`
         })
+      }).finally(() => {
+        ++completed
+        showExternalStatus()
       })
     })
   }).then(() => {
-    fetch.tracker.addWork(Object.keys(images).length)
-    progress.show(`Fetching images (${Object.keys(images).length})…`)
+    const imageCount = Object.keys(images).length
+    fetch.tracker.addWork(imageCount)
+    let completed = 0
+    function showImageStatus () {
+      progress.show(`Fetching images [${completed}/${imageCount}]`)
+    }
+    showImageStatus()
     return concurrently(Object.keys(images), maxConcurrency, (src, imageNum) => {
       return fetch(src).spread((meta, imageData) => {
         return stream.queueChapter({
@@ -226,7 +245,10 @@ function getFic (fetch, fic) {
           filename: images[src].filename,
           content: imageData
         })
-      }).catch(err => process.emit('error', `Error while fetching image ${src}: ${err.stack}`))
+      }).catch(err => process.emit('error', `Error while fetching image ${src}: ${err.stack}`)).finally(() => {
+        ++completed
+        showImageStatus()
+      })
     })
   }).then(() => {
     process.emit('debug', `Considering cover`)
