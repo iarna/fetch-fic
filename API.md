@@ -9,7 +9,7 @@ step: Write some tests to this doc.
 One weird thing, I'm using a bit of an experimental module loader to make
 using intra-package modules easier, particularly when moving modules around.
 
-It works like so:
+It's configured like this:
 
 ```
 require('@iarna/lib')('util', 'other', path')
