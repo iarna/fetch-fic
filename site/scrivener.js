@@ -1,6 +1,7 @@
 'use strict'
 const Bluebird = require('bluebird')
 const Site = use('site')
+const fs = use('fs-promises')
 
 class Scrivener extends Site {
   static matches (siteUrlStr) {
@@ -48,12 +49,15 @@ class Scrivener extends Site {
       if (item.Type === 'TrashFolder' || item.Type === 'ResearchFolder') return
       if (item.Children) return this.recurseItems(fic, item.Children)
       const path = require('path')
-      fic.addChapter({
-        name: item.Title,
-        fetchFrom: path.join(fic.updateFrom, 'Files', 'Docs', item.ID + '.rtf'),
-        created: new Date(item.Created),
-        modified: new Date(item.Modified),
-      })
+      const filename = path.join(fic.updateFrom, 'Files', 'Docs', item.ID + '.rtf')
+      return fs.stat(filename).then(_ => {
+        fic.addChapter({
+          name: item.Title,
+          fetchFrom: filename,
+          created: new Date(item.Created),
+          modified: new Date(item.Modified),
+        })
+      }).catch(_ => process.emit('warn', `Skipping ${item.Title}`))
     })
   }
 
