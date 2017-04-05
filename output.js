@@ -206,7 +206,7 @@ class Output {
     }
     if (chapter.words) {
       const commaNumber = require('comma-number')
-      content += ` [${commaNumber(chapter.words)} words]`
+      content += ` <small>[${commaNumber(chapter.words)}&nbsp;words]</small>`
     }
     return content
   }
