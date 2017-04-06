@@ -1,5 +1,7 @@
 # CHANGES TO `fetch-fic`
 
+## v3.5.0
+
 * Improve output of the word count in the index, making it smaller and the
   "[Words: ###]" part a single unwrappable unit.
 * Scriviner support: Don't crash on empty chapters, just skip over them.

@@ -522,11 +522,11 @@ title page and the metadata.
 
 ### includeTOC
 
-Optional.  If true then a Table of Contents page will be generated and injected at the start of the fic.
+Default: `true`.  If true then a Table of Contents page will be generated and injected at the start of the fic.
 
 ### numberTOC
 
-Optional.  If true then the navigation version of the table of contents will have numbers before each item.
+Default: `true`.  If true then the navigation version of the table of contents will have numbers before each item.
 
 ### fetchMeta
 
