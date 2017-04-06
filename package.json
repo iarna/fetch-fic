@@ -43,7 +43,7 @@
     "readable-stream": "^2.1.5",
     "sanitize-html": "^1.13.0",
     "signal-exit": "^3.0.2",
-    "streampub": "^1.7.0",
+    "streampub": "^1.8.0",
     "tough-cookie": "^2.3.2",
     "uuid": "^3.0.0",
     "wordcount": "^1.1.1",

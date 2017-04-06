@@ -50,7 +50,7 @@ class OutputEpub extends Output {
       publisher: this.fic.publisher,
       published: this.fic.started || this.fic.created || this.fic.modified,
       modified: modified,
-      user: {
+      calibre: {
         'updated': modified && {'#value#': modified.toISOString().slice(0,10), 'datatype': 'text'},
         'words': {'#value#': this.fic.words, 'datatype': 'int'},
         'authorurl': {'#value#': this.fic.authorUrl, 'datatype': 'text'},
