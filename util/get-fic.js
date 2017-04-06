@@ -209,7 +209,7 @@ function getFic (fetch, fic) {
           header += `by ${byline}</h2></header>`
         }
         external.content = `${header}<hr>${external.content}`
-        external.name = !exterNum && `External References (${externalCount} ${pages})`
+        external.name = exterNum ? null : `External References (${externalCount} ${pages})`
         external.filename = externalName(external)
         external.type = 'external'
         rewriteImages(fic, external, inlineImages(images))
