@@ -60,6 +60,7 @@ class Xenforo extends Site {
       })
       fic.created = leastRecent
       fic.modified = mostRecent
+      if (!fic.chapters.length) return
       return fic.chapters[0].getContent(fetch.withOpts({cacheBreak: false})).then(chapter => {
         fic.author = chapter.author
         fic.authorUrl = chapter.authorUrl
