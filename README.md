@@ -658,7 +658,7 @@ Currently it will warn if you use it with another site.
 
 ## OTHER DOCS
 
-If you realllly, want to, docs on the internal API [are available](API.md).
+If you realllly want to, docs on the internal API [are available](API.md).
 
 ## FOR FUN
 
