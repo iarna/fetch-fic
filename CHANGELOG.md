@@ -18,6 +18,9 @@
   don't write it if we didn't find any words. Thanks to [@cwgreene](https://github.com/cwgreene).
 * Numbered TOCs are now the default (now that we use roman numerals on the
   non-chapter parts, number is much better).
+* Fix crash in Xenforo sources when a threadmark index was present but it
+  contains no chapters.  (This happens if threadmarks were added and then
+  removed.)
 
 ## v3.4.1
 
