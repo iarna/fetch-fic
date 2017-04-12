@@ -96,15 +96,37 @@ I typically edit the fic file before running `ff gen`, as I have Opinions
 about how things should be organized that don't always mesh with the
 author's.  =D
 
-For publishing, you can start with:
+For publishing, if you're using scriviner you can get a pretty good starting
+place with:
 
 ```console
-$ ff get /path/to/directory/full/of/rtf
+$ ff get /path/to/Story.scriv
+story.fic.toml
 $
 ```
 
-But be aware that since we have nearly nothing to work from, you'll have to
-edit that a lot. Once you have, you can prepare it for publishing with:
+Or with other RTF sources:
+
+```console
+$ ff get /path/to/directory/full/of/rtf/name
+name.fic.toml
+$
+```
+
+If you're using Scriviner it will use the title from your work, not the
+filename.  It'll also pick up your name from there too.  It'll add all of
+the docs that have content that aren't in the Research or Trash folders.
+
+TBH, the Scriviner source mostly exists because I didn't know about
+`Edit->Copy Special->…` when I was first using it.  The only major
+difference is that `fetch-fic`'s Scriviner support will process bbcode tags
+as well.  This let's you put `spoiler` or `quote` tags into your fics and
+get those in the bbcode output (and get something reasonable in other output
+formats).
+
+For RTF sources, be aware that since we have nearly nothing to work from,
+you'll have to edit that a lot.  Once you have, you can prepare it for
+publishing with:
 
 ```console
 $ ff gen my-fic.fic.toml -o ao3
@@ -119,7 +141,7 @@ to forum sites, and `html` for non-site specific HTML.
 ## HINTS
 
 * The fic files just text, open them up in an editor and they're pretty straightforward.
-  For the technically minded, they're strictly speaking [TOML](https://github.com/toml-lang/toml).
+  For the technically minded, they're [TOML](https://github.com/toml-lang/toml).
 * I often edit the fic files quite a bit.  The title determines the name of
   the output file.
 
