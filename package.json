@@ -27,7 +27,7 @@
     "buffer-signature": "^1.0.0",
     "cheerio": "^0.22.0",
     "color-ops": "^2.0.0",
-    "comma-number": "^1.1.0",
+    "comma-number": "^2.0.0",
     "concat-stream": "^1.5.2",
     "css-parse": "^2.0.0",
     "fs-write-stream-atomic": "^1.0.10",
