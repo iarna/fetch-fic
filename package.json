@@ -39,7 +39,7 @@
     "parse5": "^2.2.3",
     "promise-inflight": "^1.0.1",
     "pump": "^1.0.1",
-    "qw": "^1.0.0",
+    "qw": "^1.0.1",
     "readable-stream": "^2.1.5",
     "sanitize-html": "^1.13.0",
     "signal-exit": "^3.0.2",
