@@ -409,8 +409,8 @@
       "integrity": "sha1-9ID0BDTvgHQfhGkJn43qGPVaTck="
     },
     "parse5": {
-      "version": "2.2.3",
-      "integrity": "sha1-DE/EHBAAxea5PUiwP4CDg3g06fY="
+      "version": "3.0.2",
+      "integrity": "sha1-Be/1fw70V3+xRKefi5qWemzERRA="
     },
     "path-exists": {
       "version": "2.1.0",
