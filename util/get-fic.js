@@ -220,7 +220,7 @@ function getFic (fetch, fic) {
         process.emit('error', `Warning, skipping external ${href}: ${err.stack}`)
         return stream.queueChapter({
           order: 9000 + exterNum,
-          name: !exterNum && `External References (${externalCount} ${pages})`,
+          name: exterNum ? null : `External References (${externalCount} ${pages})`,
           filename: externalName(externals[href]),
           type: 'external',
           content: html`<p>External link to <a href="${href}">${href}</a></p><pre>${err.stack}</pre>`
