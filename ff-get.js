@@ -82,7 +82,7 @@ function _reallyRead (args) {
     const fs = use('fs-promises')
     return fs.writeFile(filename, TOML.stringify(fic)).then(() => {
       progress.output(filename + '\n')
-      return null
+      return filename
     })
   })
 }
