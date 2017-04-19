@@ -25,6 +25,12 @@ class FanFictionNet extends Site {
     this.name = ficMatch[2]
   }
 
+  normalizeLink (href, base) {
+    const link = url.parse(super.normalizeLink(href, base))
+    link.pathname = link.pathname.replace(/^([/]s[/]\d+[/]\d+)[/].*$/, '$1')
+    return url.format(link)
+  }
+
   chapterUrl (num) {
     return 'https://www.fanfiction.net/s/' + this.ficId + '/' + num + (this.name ? '/' + this.name : '')
   }
