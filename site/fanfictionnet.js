@@ -60,12 +60,21 @@ class FanFictionNet extends Site {
       }
 
       const infoline = $meta.find('span.xgray').text()
-      const infomatches = infoline.match(/Rated:\s+(.*)\s+-\s+(\S+)\s+-\s+(.*)\s+-(?:\s+Chapters:\s+\d+\s+-)?\s+Words:\s+([\d,]+)\s+(?:-\s+Reviews:\s+([,\d]+)\s+)?(?:-\s+Favs:\s+([,\d]+)\s+)?(?:-\s+Follows:\s+([,\d]+))?.*Published/)
+      const matchInfo =
+        /Rated:\s+([^-]+?)\s+-\s+(\S+)(?:\s+-\s+(.+?))?(?:\s+-\s+Chapters:\s+(\d+))?\s+-\s+Words:\s+([\d,]+)(?:\s+-\s+Reviews:\s+(\d+))?(?:\s+-\s+Favs:\s+(\d+))?(?:\s+-\s+Follows:\s+(\d+))?(?:\s+-\s+Updated:\s+([\d/]+))?(?:\s+-\s+Published:\s+([\d/]+))(?:\s+-\s+id:\s+(\d+))?/
+      const infomatches = infoline.match(matchInfo)
       if (infomatches) {
         const rated = infomatches[1]
         fic.language = infomatches[2]
         fic.tags = (infomatches[3] ? infomatches[3].split(/, /) : []).concat(['rated:' + rated])
-        fic.words = Number(infomatches[4].replace(/,/g, ''))
+        // 4 = chapters
+        fic.words = Number(infomatches[5].replace(/,/g, ''))
+        // 6 = reviews
+        // 7 = favs
+        // 8 = follows
+        // 9 = updated
+        // 10 = published
+        // 11 = id
       } else {
         process.emit('error', 'NOMATCH:', infoline)
       }
