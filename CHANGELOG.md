@@ -1,5 +1,13 @@
 # CHANGES TO `fetch-fic`
 
+## v3.5.1
+
+* Normalize FanFiction.net chapter links more thoroughly for better cache utilization.
+* Impoved parsing of tags and other metadata from FanFiction.net.
+* Fix a bug with Archive of Our Own, where fics without summaries would cause a crash
+* Fix a bug in importing fic status from tags.
+* Fix a bug in how externals that failed to download were reported.
+
 ## v3.5.0
 
 * Improve output of the word count in the index, making it smaller and the
