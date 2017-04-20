@@ -2,7 +2,7 @@
   "name": "fetch-fic",
   "version": "3.5.1",
   "description": "Package up delicious, delicious fanfic from various sources into epub ebooks ready for reading in your ereader of choice.",
-  "main": "fic-to-epub.js",
+  "main": "index.js",
   "bin": {
     "ff": "ff.js"
   },
@@ -71,6 +71,7 @@
     "output/ffnet/html-to-ffnet.js",
     "util/html-template-tag.js",
     "util/in-flight.js",
+    "index.js",
     "util/normalize-html.js",
     "output.js",
     "output-formats.js",

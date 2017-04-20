@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 'use strict'
-require('@iarna/lib')('util', '.')
+const ff = require('./index.js')
 
 const onExit = require('signal-exit')
 const yargs = require('yargs')
@@ -63,7 +63,7 @@ const argv = yargs
       .demand(1, '<url> - The URL to fetch chapters for')
       networkOptions(yargs, false)
     },
-    handler: setCommand('./ff-get.js')
+    handler: setCommand(ff.get)
   })
   .command({
     command: 'update <fic...>',
@@ -91,7 +91,7 @@ const argv = yargs
       .demand(1, '<fic> - A fic metadata file to update with the latest chapters. Typically ends in .fic.toml')
       networkOptions(yargs, false)
     },
-    handler: setCommand('./ff-update.js')
+    handler: setCommand(ff.update)
   })
   .command({
     command: 'generate <fic...>',
@@ -107,7 +107,7 @@ const argv = yargs
       networkOptions(yargs, true)
       yargs.demand(1, '<fic> - A fic metadata file to generate an epub or other file format for. Typically ends in .fic.toml')
     },
-    handler: setCommand('./ff-generate.js')
+    handler: setCommand(ff.generate)
   })
   .command({
     command: 'cache-clear <url>',
@@ -115,7 +115,7 @@ const argv = yargs
     builder: yargs => {
       yargs.demand(1, '<url> - A URL to remove from the cache.')
     },
-    handler: setCommand('./ff-cache-clear.js')
+    handler: setCommand(ff.cacheClear)
   })
   .option('debug', {
     type: 'boolean',
@@ -165,4 +165,4 @@ onExit(() => {
 
 if (argv.debug) process.env.BLUEBIRD_DEBUG = '1'
 if (argv.verbose) progress.setVerbose(argv.verbose)
-require(command)(argv).catch(errorHandler).then(exitCodeHandler)
+command(argv).catch(errorHandler).then(exitCodeHandler)
