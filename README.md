@@ -130,7 +130,7 @@ publishing with:
 
 ```console
 $ ff gen my-fic.fic.toml -o ao3
-my-fic
+my-fic.ao3
 $
 ```
 
