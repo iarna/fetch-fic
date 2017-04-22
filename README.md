@@ -533,6 +533,12 @@ of Our Own](https://archiveofourown.org/) as it does this too.
 Optional.  Default: true.  If true then any links to external sources that
 `fetch-fic` understands will be added as appendices.
 
+### spoilers
+
+Optional.  Default: true.  If true then blocks marked as spoilers will be
+included inline in boxes in the output.  If false then those blocks will be
+removed.
+
 ### words
 
 Optional. The number of words in this work. This is used on the title page.
@@ -605,6 +611,12 @@ Optional. Tags associated with this chapter. Currently not used for anything.
 Optional.  Default: true.  If true then any links to external sources that
 `fetch-fic` understands will be added as appendices.  Overrides any
 work-level setting.
+
+### spoilers
+
+Optional.  Default: true.  If true then blocks marked as spoilers will be
+included inline in boxes in the output.  If false then those blocks will be
+removed.  Overrides any work-level setting.
 
 ### headings
 

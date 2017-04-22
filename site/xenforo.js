@@ -211,12 +211,16 @@ class Xenforo extends Site {
       })
 
       const $spoiler = $content.find('.bbCodeSpoilerContainer')
-      const spoilerLabel = $spoiler.find('.bbCodeSpoilerButton').text().trim()
-      $spoiler.attr('style', `border: solid black 1px; xenforo-spoiler: '${spoilerLabel}';`)
-      if (spoilerLabel === 'Spoiler') {
-        $spoiler.find('.bbCodeSpoilerButton').remove()
+      if (chapterInfo.spoilers) {
+        const spoilerLabel = $spoiler.find('.bbCodeSpoilerButton').text().trim()
+        $spoiler.attr('style', `border: solid black 1px; xenforo-spoiler: '${spoilerLabel}';`)
+        if (spoilerLabel === 'Spoiler') {
+          $spoiler.find('.bbCodeSpoilerButton').remove()
+        } else {
+          $spoiler.find('.bbCodeSpoilerButton').replaceWith(`<b>${spoilerLabel}</b><br/>`)
+        }
       } else {
-        $spoiler.find('.bbCodeSpoilerButton').replaceWith(`<b>${spoilerLabel}</b><br/>`)
+        $spoiler.remove()
       }
       chapter.base = chapter.$('base').attr('href') || finalUrl
       const $author = chapter.$($message.find('a.username')[0])

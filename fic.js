@@ -21,6 +21,7 @@ class Fic {
     this.cover = null
     this.chapterHeadings = null
     this.externals = null
+    this.spoilers = null
     this.words = null
     this.tags = []
     this.fics = []
@@ -70,6 +71,7 @@ class Fic {
 
   addChapter (opts) {
     if (this.chapterExists(opts.link) || this.chapterExists(opts.fetchFrom)) return
+    if (opts.spoilers === null) opts.spoilers = this.spoilers
     this.chapters.addChapter(opts)
   }
 
@@ -81,16 +83,19 @@ class Fic {
     for (let prop of props) {
       if (prop in raw) this[prop] = raw[prop]
     }
-    this.chapters.importFromJSON(raw)
-    if (raw.fics) {
-      raw.fics.forEach(fic => this.fics.push(SubFic.fromJSON(this, fic)))
-    }
     this.site = Site.fromUrl(this.updateWith())
     this.externals = raw.externals != null ? raw.externals : true
+    this.spoilers = raw.spoilers != null ? raw.spoilers : true
     for (let prop of Object.keys(raw)) {
       if (props.indexOf(prop) !== -1) continue
-      if (prop !== 'chapters' && prop !== 'fics' && prop !== 'externals') {
+      if (prop !== 'chapters' && prop !== 'fics' && prop !== 'externals' && prop !== 'spoilers') {
         process.emit('warn', `Unknown property when importing fic: "${prop}"`)
+      }
+    }
+    this.chapters.importFromJSON(this, raw)
+    if (raw.fics) {
+      for (let fic of raw.fics) {
+        this.fics.push(SubFic.fromJSON(this, fic))
       }
     }
     return this
@@ -166,6 +171,7 @@ class Fic {
       if (this[prop] != null && (!Array.isArray(this[prop]) || this[prop].length)) result[prop] = this[prop]
     }
     if (!this.externals) result.externals = this.externals
+    if (!this.spoilers) result.spoilers = this.spoilers
     return result
   }
 }
@@ -220,6 +226,12 @@ class SubFic extends Fic {
   set externals (value) {
     return this._externals = value
   }
+  get spoilers () {
+    return this._spoilers || this.parent.spoilers
+  }
+  set spoilers (value) {
+    return this._spoilers = value
+  }
   toJSON () {
     const result = {}
     for (let prop of qw`
@@ -254,14 +266,17 @@ class ChapterList extends Array {
     if (opts.created && (!this.created || opts.created < this.created)) this.created = opts.created
     this.push(new Chapter(Object.assign({}, opts, {name, order: this.length})))
   }
-  importFromJSON (raw) {
+  importFromJSON (fic, raw) {
     if (raw.fics && !raw.chapters) return
     if (!raw.chapters) {
       const err = new Error('Fic "' + raw.title + '" is missing any chapters.')
       err.code = 'ENOCHAPTERS'
       throw err
     }
-    raw.chapters.forEach(chapter => this.push(Chapter.fromJSON(this.length, chapter)))
+    for (let chapter of raw.chapters) {
+      if (chapter.spoilers == null) chapter.spoilers = fic.spoilers
+      this.push(Chapter.fromJSON(this.length, chapter))
+    }
   }
 }
 
@@ -278,6 +293,7 @@ class Chapter {
     this.authorUrl = opts.authorUrl
     this.tags = opts.tags
     this.externals = opts.externals != null ? opts.externals : true
+    this.spoilers = opts.spoilers != null ? opts.spoilers : true
     this.headings = opts.headings
     this.words = opts.words
   }
@@ -293,6 +309,7 @@ class Chapter {
       modified: this.modified === 'Invalid Date' ? null : this.modified,
       tags: this.tags,
       externals: this.externals !== true ? this.externals : null,
+      spoilers: this.spoilers !== true ? this.spoilers: null,
       headings: this.headings,
       words: this.words
     }
