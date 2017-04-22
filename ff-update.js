@@ -36,7 +36,7 @@ function updateFic (fetch, args) {
   const addNone = args['add-none']
   const addAll = args['add-all']
   const add = addNone ? 'none' : addAll ? 'all' : 'new'
-  let fromThreadmarks = !args.scrape
+  let fromThreadmarks = !args.scrape || args['and-fetch']
   let fromScrape = args.scrape || args['and-scrape']
 
   return ficFile => {
