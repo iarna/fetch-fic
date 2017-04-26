@@ -272,10 +272,6 @@
       "version": "1.0.0",
       "integrity": "sha1-754xOG8DGn8NZDr4L95QxFfvAMs="
     },
-    "is-stream": {
-      "version": "1.1.0",
-      "integrity": "sha1-EtSj3U5o4Lec6428hBc66A2RykQ="
-    },
     "is-utf8": {
       "version": "0.2.1",
       "integrity": "sha1-Sw2hRCEE0bM2NA6AeX6GXPOffXI="
@@ -372,9 +368,9 @@
       "version": "0.5.1",
       "integrity": "sha1-MAV0OOrGz3+MR2fzhkjWaX11yQM="
     },
-    "node-fetch": {
-      "version": "1.6.3",
-      "integrity": "sha1-3CNO3WSJmC1Y6PDbT2lQKavNjAQ="
+    "node-fetch-npm": {
+      "version": "1.0.0",
+      "integrity": "sha1-X9O4sBvDd6wgQSwPruNQFoKi9fU="
     },
     "normalize-package-data": {
       "version": "2.3.6",
@@ -491,6 +487,10 @@
     "rtf-parser": {
       "version": "1.0.4",
       "integrity": "sha1-2E7pvGnOyA5P/5X9amsdf6WnNEk="
+    },
+    "safe-buffer": {
+      "version": "5.0.1",
+      "integrity": "sha1-0mPKVGls2KMGtcplUekt5XkY++c="
     },
     "sanitize-html": {
       "version": "1.14.1",

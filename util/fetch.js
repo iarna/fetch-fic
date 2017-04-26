@@ -3,7 +3,7 @@ const url = require('url')
 const util = require('util')
 
 const Bluebird = require('bluebird')
-const rawFetch = require('node-fetch')
+const rawFetch = require('node-fetch-npm')
 const tough = require('tough-cookie')
 
 const cache = use('cache')

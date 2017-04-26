@@ -35,7 +35,7 @@
     "html-escape": "^2.0.0",
     "iconv-lite": "^0.4.15",
     "mkdirp": "^0.5.1",
-    "node-fetch": "^1.6.0",
+    "node-fetch-npm": "^1.0.0",
     "parse5": "^3.0.2",
     "promise-inflight": "^1.0.1",
     "pump": "^1.0.1",
