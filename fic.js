@@ -209,7 +209,7 @@ class SubFic extends Fic {
     return this._publisher = value
   }
   get link () {
-    return this._link || this.parent.link
+    return this._link || this.chapters[0].link
   }
   set link (value) {
     return this._link = value
