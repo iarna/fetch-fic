@@ -217,7 +217,7 @@ function getFic (fetch, fic) {
         rewriteIframes(fic, external)
         return stream.queueChapter(external)
       }).catch((err) => {
-        process.emit('error', `Warning, skipping external ${href}: ${err.stack}`)
+        process.emit('error', `Warning, skipping external ${href}: ${err.message}`)
         return stream.queueChapter({
           order: 9000 + exterNum,
           name: exterNum ? null : `External References (${externalCount} ${pages})`,
@@ -245,7 +245,7 @@ function getFic (fetch, fic) {
           filename: images[src].filename,
           content: imageData
         })
-      }).catch(err => process.emit('error', `Error while fetching image ${src}: ${err.stack}`)).finally(() => {
+      }).catch(err => process.emit('error', `Error while fetching image ${src}: ${err.message}`)).finally(() => {
         ++completed
         showImageStatus()
       })
@@ -262,7 +262,7 @@ function getFic (fetch, fic) {
             type: 'cover',
             content: imageData
           })
-        }).catch(err => process.emit('error', `Error while fetching cover ${fic.cover}: ${err.stack}`))
+        }).catch(err => process.emit('error', `Error while fetching cover ${fic.cover}: ${err.message}`))
       } else {
         return stream.queueChapter({
           type: 'cover',
