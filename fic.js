@@ -83,7 +83,6 @@ class Fic {
     for (let prop of props) {
       if (prop in raw) this[prop] = raw[prop]
     }
-    this.site = Site.fromUrl(this.updateWith())
     this.externals = raw.externals != null ? raw.externals : true
     this.spoilers = raw.spoilers != null ? raw.spoilers : true
     for (let prop of Object.keys(raw)) {
@@ -98,6 +97,7 @@ class Fic {
         this.fics.push(SubFic.fromJSON(this, fic))
       }
     }
+    this.site = Site.fromUrl(this.updateWith())
     return this
   }
 
@@ -232,11 +232,19 @@ class SubFic extends Fic {
   set spoilers (value) {
     return this._spoilers = value
   }
+  get tags () {
+    if (!this._tags) return Object.assign([], this.parent.tags)
+    return this._tags
+  }
+  set tags (value) {
+    if (value.length === 0) value = null
+    return this._tags = value
+  }
   toJSON () {
     const result = {}
     for (let prop of qw`
          title _link _author _authorUrl created modified _publisher
-         description tags chapters _chapterHeadings words includeTOC numberTOC
+         description _tags chapters _chapterHeadings words includeTOC numberTOC
          `) {
       const assignTo = prop[0] === '_' ? prop.slice(1) : prop
       if (this[prop] && (this[prop].length == null || this[prop].length)) result[assignTo] = this[prop]
