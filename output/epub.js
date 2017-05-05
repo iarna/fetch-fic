@@ -93,6 +93,9 @@ class OutputEpub extends Output {
         name = letterCount(index - 9000) + '. ' + name
       } else {
         name = String(index) + '. ' + name
+        if (chapter.author && chapter.author != this.fic.author) {
+          name += ` (${chapter.author})`
+        }
       }
     }
     const filename = this.chapterFilename(chapter)

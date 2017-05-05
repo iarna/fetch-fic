@@ -214,7 +214,7 @@ class Output {
     return ''
   }
   chapterFilename (chapter) {
-    const name = chapter.linkName || chapter.name || ''
+    const name = chapter.name || ''
     if (chapter.type === 'chapter') {
       const index = 1 + chapter.order
       const filename = `chapter-${index}${name ? ' ' + name : ''}`

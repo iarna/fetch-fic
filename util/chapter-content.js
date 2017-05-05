@@ -24,7 +24,6 @@ class ChapterContent extends Chapter {
     }
 
     this.num = opts.num
-    this.linkName = opts.linkName
     this.filename = opts.filename
     this.base = opts.base
     this._content = opts.content

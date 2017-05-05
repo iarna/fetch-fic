@@ -86,7 +86,7 @@ function externalName (external) {
   return `_LINK_external#LINK#${external.num||external.order}#LINK#_LINK_`
 }
 function chapterLinkname (chapter) {
-  return `_LINK_chapter#LINK#${chapter.num||chapter.order}#LINK#${chapter.linkName || chapter.name||''}_LINK_`
+  return `_LINK_chapter#LINK#${chapter.num||chapter.order}#LINK#${chapter.name||''}_LINK_`
 }
 
 function inlineImages (images) {
@@ -143,8 +143,6 @@ function getFic (fetch, fic) {
   concurrently(chapters, maxConcurrency, (chapterInfo) => {
     return chapterInfo.getContent(fetch).then(chapter => {
       chapter.order = chapterInfo.order
-      chapterInfo.linkName = chapter.linkName = chapterInfo.name
-      chapter.name = chapterInfo.name = chapter.linkName + (chapterInfo.author ? ` (${chapter.author})` : '')
       if (fic.chapterHeadings || chapterInfo.headings) {
         const headerName = html`${chapterInfo.name}`
         const byline = !chapterInfo.author ? ''
