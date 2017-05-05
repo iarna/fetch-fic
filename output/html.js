@@ -58,11 +58,13 @@ class OutputHTML extends Output {
 
   writeTitle () {
     const path = require('path')
+    const fs = use('fs-promises')
     return fs.writeFile(path.join(this.outname, 'title.html'), this.titlePageHTML())
   }
 
   writeIndex () {
     const path = require('path')
+    const fs = use('fs-promises')
     return fs.writeFile(path.join(this.outname, 'index.html'), this.tableOfContentsHTML())
   }
 
