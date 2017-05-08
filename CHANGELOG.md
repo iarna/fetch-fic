@@ -1,5 +1,20 @@
 # CHANGES TO `fetch-fic`
 
+## v3.6.0
+
+* Fix a number of long standing layout issues involving indexes and chapters
+  with different authors than that of the mainf ic.
+* Fixed a crash in the `-o html` output mode.
+* Improvements to error messages.
+* Default subfic "tags" from the parent fic's tags.
+* Default subfic "link" attribute from their first chapter instead of the
+  parent fic.  This means subfics get a different epub identifier.
+* Fixup more tumblr image links.
+* Add new fic and chapter metadata "spoilers" that when false will suppress
+  spoiler blocks from imported xenforo fics.
+* Add `ff update --and-fetch` to force fetching of fics that were previously
+  scraped.
+
 ## v3.5.1
 
 * Normalize FanFiction.net chapter links more thoroughly for better cache utilization.
