@@ -1,5 +1,6 @@
 'use strict'
 const Bluebird = require('bluebird')
+const Buffer = require('safe-buffer').Buffer
 const crypto = require('crypto')
 const mkdirpCB = require('mkdirp')
 const os = require('os')
