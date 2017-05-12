@@ -10,7 +10,7 @@ class FanFictionNet extends Site {
     const hostname = siteUrl.hostname
     if (!/(^|www[.])fanfiction.net$/.test(hostname)) return false
     const path = siteUrl.pathname || siteUrl.path || ''
-    if (!/^[/]s[/]\d+[/]\d+/.test(path)) return false
+    if (!/^[/]s[/]\d+(?:[/]\d+)?/.test(path)) return false
     return true
   }
 
@@ -20,7 +20,7 @@ class FanFictionNet extends Site {
     this.publisherName = 'FanFiction.net'
     const siteUrl = url.parse(siteUrlStr)
     const path = siteUrl.pathname || siteUrl.path || ''
-    const ficMatch = path.match(/^[/]s[/](\d+)[/]\d+(?:[/](.*))?/)
+    const ficMatch = path.match(/^[/]s[/](\d+)(?:[/]\d+(?:[/](.*))?)?/)
     this.ficId = ficMatch[1]
     this.name = ficMatch[2]
   }
@@ -66,27 +66,34 @@ class FanFictionNet extends Site {
       }
 
       const infoline = $meta.find('span.xgray').text()
-      const matchInfo =
-        /Rated:\s+([^-]+?)\s+-\s+(\S+)(?:\s+-\s+(.+?))?(?:\s+-\s+Chapters:\s+(\d+))?\s+-\s+Words:\s+([\d,]+)(?:\s+-\s+Reviews:\s+(\d+))?(?:\s+-\s+Favs:\s+(\d+))?(?:\s+-\s+Follows:\s+(\d+))?(?:\s+-\s+Updated:\s+([\d/]+))?(?:\s+-\s+Published:\s+([\d/]+))(?:\s+-\s+id:\s+(\d+))?/
-      const infomatches = infoline.match(matchInfo)
-      if (infomatches) {
-        const rated = infomatches[1]
-        fic.language = infomatches[2]
-        fic.tags = (infomatches[3] ? infomatches[3].split(/, /) : []).concat(['rated:' + rated])
-        // 4 = chapters
-        fic.words = Number(infomatches[5].replace(/,/g, ''))
-        // 6 = reviews
-        // 7 = favs
-        // 8 = follows
-        // 9 = updated
-        // 10 = published
-        // 11 = id
+      const info = ffp(infoline)
+      if (info) {
+        fic.language = info.language
+        fic.tags = info.genre.map(g => 'genre:' + g)
+          .concat(['rated:' + info.rating])
+          .concat(info.characters.map(c => 'character:' + c))
+          .concat(info.pairing.map(p => 'ship:' + p.join('/')))
+        for (let p of info.pairing) {
+          for (let c of p) fic.tags.push('character:' + c)
+        }
+        if (info.status === 'Complete') fic.tags.push('status:complete')
+        fic.tags.sort()
+        fic.words = info.words
+        fic.comments = fic.reviews = info.reviews
+        fic.kudos = fic.favs = info.favs
+        fic.bookmarks = fic.follows = info.follows
+        // updated
+        // published
+        // id
       } else {
         process.emit('error', 'NOMATCH:', infoline)
       }
 
       const $index = chapter.$(chapter.$('#chap_select')[0])
       const $chapters = $index.find('option')
+      if (info && info.chapters !== $chapters.length) {
+        throw new Error(`Failed to find all the chapters, expected ${info.chapters}, got ${$chapters.length}`)
+      }
       if ($chapters.length) {
         $chapters.each((ii, vv) => {
           const chapterName = chapter.$(vv).text().match(/^\d+[.](?: (.*))?$/)
@@ -119,3 +126,48 @@ class FanFictionNet extends Site {
 }
 
 module.exports = FanFictionNet
+
+function ffp (status) {
+  let matched = status.match(/^Rated:\s+Fiction\s+(\S+)\s+-\s+([^-]+)(?:\s+-\s+((?:General|Romance|Humor|Drama|Poetry|Adventure|Mystery|Horror|Parody|Angst|Supernatural|Suspense|Sci-Fi|Fantasy|Spiritual|Tragedy|Western|Crime|Family|Hurt[/]Comfort|Friendship|[/])+))?(?:\s+-\s+(.+?))?\s+-\s+Chapters:\s+(\d+)\s+-\s+Words:\s+([\d,]+)(?:\s+-\s+Reviews:\s+([\d,]+))?(?:\s+-\s+Favs: ([\d,]+))?(?:\s+-\s+Follows:\s+([\d,]+))?(?:\s+-\s+Updated:\s+([^-]+))?\s+-\s+Published:\s+([^-]+)(?:\s+-\s+Status:\s+([^-]+))?\s+-\s+id:\s+(\d+)\s*$/)
+  if (!matched) matched = status.match(/^Rated:\s+Fiction\s+(\S+)\s+-\s+([^-]+)(?:\s+-\s+((?:General|Romance|Humor|Drama|Poetry|Adventure|Mystery|Horror|Parody|Angst|Supernatural|Suspense|Sci-Fi|Fantasy|Spiritual|Tragedy|Western|Crime|Family|Hurt[/]Comfort|Friendship|[/])+))?(?:\s+-\s+(.+?))?(?:\s+-\s+Chapters:\s+(\d+))?\s+-\s+Words:\s+([\d,]+)(?:\s+-\s+Reviews:\s+([\d,]+))?(?:\s+-\s+Favs: ([\d,]+))?(?:\s+-\s+Follows:\s+([\d,]+))?(?:\s+-\s+Updated:\s+([^-]+))?\s+-\s+Published:\s+([^-]+)(?:\s+-\s+Status:\s+([^-]+))?\s+-\s+id:\s+(\d+)\s*$/)
+  if (!matched) throw new Error('Unparseable: ' + status)
+  let cp = matched[4] || ''
+  let characters = []
+  let pairing = []
+  if (/\[.+\]/.test(cp)) {
+    pairing = cp.match(/\[(.+?)\]/g).map(p => p.slice(1,-1).split(/, /))
+    cp = cp.replace(/\[(.*?)\]/g, '')
+  }
+  if (cp.length) {
+    characters = cp.split(/, /).filter(c => c !== '').map(c => c.trim())
+  }
+  return {
+    rating: matched[1],
+    language: matched[2],
+    genre: matched[3] ? matched[3].replace(/Hurt[/]Comfort/, 'HC').split(/[/]/).map(g => g === 'HC' ? 'Hurt/Comfort' : g) : [],
+    characters: characters || [],
+    pairing: pairing || [],
+    chapters: num(matched[5] || 0),
+    words: num(matched[6]),
+    reviews: num(matched[7]),
+    favs: num(matched[8]),
+    follows: num(matched[9]),
+    updated: date(matched[10]),
+    published: date(matched[11]),
+    status: matched[12],
+    id: matched[13]
+  }
+}
+
+function num (n) {
+  return Number(String(n).replace(/,/g, ''))
+}
+function date (d) {
+  if (d==null) return d
+  if (/[/]/.test(d)) {
+    var sp = d.split(/[/]/)
+    return new Date(sp[2] + '-' + sp[0] + '-' + sp[1])
+  } else {
+    return new Date(String((new Date().getYear())+1900) + '-' + d)
+  }
+}
