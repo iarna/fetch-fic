@@ -55,7 +55,7 @@ function writeUpdatedFic (ficFile, existingFic, changes) {
     return fs.writeFile(ficFile, TOML.stringify(existingFic)).then(() => {
       progress.output(`${ficFile}\n`)
       if (changes.length) progress.output(`    ${changes.join('\n    ')} \n`)
-      return 1
+      return changes.refresh ? 1 : null
     })
   })
 }
@@ -132,7 +132,10 @@ var mergeFic = promisify.args(function mergeFic (existingFic, newFic, add) {
   }
 
   existingFic.chapters.push.apply(existingFic.chapters, toAdd)
-  if (toAdd.length) changes.push(`${existingFic.title}: Added ${toAdd.length} new chapters`)
+  if (toAdd.length) {
+    changes.push(`${existingFic.title}: Added ${toAdd.length} new chapters`)
+    changes.refresh = true
+  }
 
   const fics = [existingFic].concat(existingFic.fics)
   for (let fic of fics) {
@@ -173,6 +176,7 @@ var mergeFic = promisify.args(function mergeFic (existingFic, newFic, add) {
 
 var refreshMetadata = promisify.args(function mergeFic (existingFic, changes) {
   const fics = [existingFic].concat(existingFic.fics)
+
   for (let fic of fics) {
     let now = new Date()
     let then = new Date(0)
