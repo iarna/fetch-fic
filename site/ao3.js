@@ -2,6 +2,7 @@
 const Bluebird = require('bluebird')
 const url = require('url')
 const Site = use('site')
+const cache = use('cache')
 
 class ArchiveOfOurOwn extends Site {
   static matches (siteUrlStr) {
@@ -40,6 +41,15 @@ class ArchiveOfOurOwn extends Site {
     return fetch(this.chapterIndex()).spread((meta, html) => {
       const cheerio = require('cheerio')
       const $ = cheerio.load(html)
+      if ($('.error-503-maintenance').length) {
+        const err = new Error($('#main').text().trim().split(/\n/).map(l => l.trim()).join('\n'))
+        err.link = this.chapterIndex()
+        err.code = 503
+        err.site = this.publisherName
+        return cache.clearUrl(err.link).then(() => {
+          throw err
+        })
+      }
       const base = $('base').attr('href') || this.chapterIndex()
       const heading = $('h2.heading')
       fic.title = heading.find('a[rel!="author"]').text()
@@ -56,6 +66,15 @@ class ArchiveOfOurOwn extends Site {
       })
       return fic.chapters[0].getContent(fetch)
     }).then(chapter => {
+      if (chapter.$('.error-503-maintenance').length) {
+        const err = new Error(chapter.$('#main').text().trim().split(/\n/).map(l => l.trim()).join('\n'))
+        err.link = chapter.fetchWith()
+        err.code = 503
+        err.site = this.publisherName
+        return cache.clearUrl(err.link).then(() => {
+          throw err
+        })
+      }
       const $meta = chapter.$('dl.meta')
       const ratings = this.tagGroup(chapter.$, 'rating', $meta.find('dd.rating'))
       const warnings = this.tagGroup(chapter.$, 'warning', $meta.find('dd.warnings'))
@@ -84,6 +103,15 @@ class ArchiveOfOurOwn extends Site {
     return fetch(chapterInfo.fetchWith()).spread((meta, html) => {
       const ChapterContent = use('chapter-content')
       const chapter = new ChapterContent(chapterInfo, {html, site: this})
+      if (chapter.$('.error-503-maintenance').length) {
+        const err = new Error(chapter.$('#main').text().trim().split(/\n/).map(l => l.trim()).join('\n'))
+        err.link = chapter.fetchWith()
+        err.code = 503
+        err.site = this.publisherName
+        return cache.clearUrl(err.link).then(() => {
+          throw err
+        })
+      }
       if (chapter.$('p.caution').length) {
         chapterInfo.fetchFrom = chapterInfo.fetchWith() + '?view_adult=true'
         return this.getChapter(fetch, chapterInfo)
