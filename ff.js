@@ -143,6 +143,9 @@ function errorHandler (err) {
     console.log(`Fic not found at: ${err.url}`)
   } else if (err.code === 403) {
     console.log(`Authorization required to download fic. You may consider trying the "--xf_user" option.`)
+  } else if (err.code === 503) {
+    console.log(`${err.site || "Service"} Unavailable: ${err.message}`)
+    if (err.link) console.log(`URL: ${err.link}`)
   } else if (err.meta) {
     console.log(`Error downloading fic: ${err.meta.status} ${err.meta.statusText} from ${err.url}`)
   } else if (err.code === 'ENOSCRAPE' || err.code === 'ENOSITE') {
