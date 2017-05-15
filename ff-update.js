@@ -25,7 +25,7 @@ function update (args) {
   const fetchAndSpin = fetch.withOpts(fetchOpts).wrapWith(progress.spinWhileAnd)
   if (args.xf_user) fetchAndSpin.setGlobalCookie(`xf_user=${args.xf_user}`)
 
-  return Bluebird.map(args.fic, updateFic(fetchAndSpin, args)).reduce((exit, result) => result != null ? result : exit)
+  return Bluebird.map(args.fic, updateFic(fetchAndSpin, args), {concurrency: 10}).reduce((exit, result) => result != null ? result : exit)
 }
 
 function readFic (fic) {
