@@ -207,8 +207,9 @@ class Parser {
         }
       },
       'font-family': (tag, name, value) => {
-        this.addText(`[font=${value}]`)
-        return '[/font]'
+        return ''
+//        this.addText(`[font=${value}]`)
+//        return '[/font]'
       },
       'vertical-align': (tag, name, value) => {
         switch (value) {
