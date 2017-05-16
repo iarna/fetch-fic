@@ -48,7 +48,7 @@ const tags = {
         + `#quote${++quoteId} { position: relative; border: solid black 1px; padding: 1em; text-indent: 0; } `
         + `#quote${quoteId}::before { text-indent: 0; padding: 0 .25em 0 .25em; top: -.5em; position: absolute; background: white; content: attr(title)"${node.attr}";}</style>`
         + `<div id="quote${quoteId}" style="xenforo-quote: ${node.attr || 'true'};">`
-        : `<div style="text-indent: 0; border: solid black 1px; padding: 1em; xenforo-quote: ${node.attr || 'true'};">`
+        : `<div style="xenforo-quote: ${node.attr || 'true'}; text-indent: 0; border: solid black 1px; padding: 1em;">`
     },
     node => `</div>` ],
   spoiler: [ node => `<div style="border: solid black 1px; padding: 1em; xenforo-spoiler: ${node.attr};">`, node => `</div>` ],

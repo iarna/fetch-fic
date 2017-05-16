@@ -19,7 +19,7 @@
   "license": "ISC",
   "dependencies": {
     "@iarna/lib": "^1.0.2",
-    "@iarna/rtf-to-html": "^1.0.1",
+    "@iarna/rtf-to-html": "^1.0.3",
     "@iarna/toml": "^1.2.0",
     "@iarna/word-count": "^1.0.2",
     "are-we-there-yet": "^1.1.2",
