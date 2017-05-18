@@ -112,6 +112,7 @@ const argv = yargs
   .command({
     command: 'cache-clear <url>',
     desc: 'Remove a URL from the cache',
+    aliases: ['clear-cache', 'clear'],
     builder: yargs => {
       yargs.demand(1, '<url> - A URL to remove from the cache.')
     },
