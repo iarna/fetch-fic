@@ -75,7 +75,7 @@ const argv = yargs
         default: false,
         describe: 'if true, merge ALL missing chapters in instead of just NEW ones'
       })
-      yargs.option('add-none', {
+      .option('add-none', {
         type: 'boolean',
         default: false,
         describe: 'if true, add no new chapters, just update other metadata'
@@ -87,6 +87,10 @@ const argv = yargs
       .option('and-scrape', {
         type: 'boolean',
         describe: 'pull chapters from BOTH the index AND the threadmarks'
+      })
+      .option('fast', {
+        type: 'boolean',
+        describe: "Don't do any updates if the chapter count hasn't changed"
       })
       .demand(1, '<fic> - A fic metadata file to update with the latest chapters. Typically ends in .fic.toml')
       networkOptions(yargs, false)

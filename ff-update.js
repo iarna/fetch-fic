@@ -40,14 +40,27 @@ function updateFic (fetch, args) {
   const add = addNone ? 'none' : addAll ? 'all' : 'new'
   let fromThreadmarks = !args.scrape || args['and-fetch']
   let fromScrape = args.scrape || args['and-scrape']
+  let fast = args.fast
 
   return ficFile => {
     const existingFic = readFic(ficFile)
     const newFic = fetchLatestVersion(fetch, existingFic, fromThreadmarks, fromScrape)
-    return mergeFic(existingFic, newFic, add).then(changes => {
-      const inflatedFic = ficInflate(existingFic, fetch.withOpts({cacheBreak: false}))
-      return writeUpdatedFic(ficFile, inflatedFic, refreshMetadata(inflatedFic, changes))
-    })
+    if (fast) {
+      return Bluebird.join(existingFic, newFic, (existingFic, newFic) => {
+        const lastExisting = existingFic.chapters.slice(-1)
+        const lastNew = newFic.chapters.slice(-1)
+        if (lastExisting.link === lastNew.link) return
+        return doMerge()
+      })
+    } else {
+      return doMerge()
+    }
+    function doMerge () {
+      return mergeFic(existingFic, newFic, add).then(changes => {
+        const inflatedFic = ficInflate(existingFic, fetch.withOpts({cacheBreak: false}))
+        return writeUpdatedFic(ficFile, inflatedFic, refreshMetadata(inflatedFic, changes))
+      })
+    }
   }
 }
 
