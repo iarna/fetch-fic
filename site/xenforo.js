@@ -50,6 +50,7 @@ class Xenforo extends Site {
       let mostRecent
       chapters.each((ii, chapter) => {
         const $chapter = $(chapter)
+        $chapter.find('li').remove() // remove child chapters so that $link.text() works right
         const $link = $chapter.find('a')
         const name = $link.text().trim()
         const link = this.normalizeLink($link.attr('href'), base)
