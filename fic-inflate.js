@@ -11,7 +11,7 @@ const progress = use('progress')
 
 function ficInflate (fic, fetch, tracker) {
   if (!tracker) tracker = progress.tracker
-  return fic.then(fic => {
+  return Bluebird.resolve(fic).then(fic => {
     const fics = [fic].concat(fic.fics)
     const completion = new Map()
     for (let fic of fics) {
