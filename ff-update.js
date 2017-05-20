@@ -44,12 +44,13 @@ function updateFic (fetch, args) {
 
   return ficFile => {
     const existingFic = readFic(ficFile)
-    const newFic = fetchLatestVersion(fetch, existingFic, fromThreadmarks, fromScrape)
+    let newFic = fetchLatestVersionWithoutInflate(fetch, existingFic, fromThreadmarks, fromScrape)
     if (fast) {
       return Bluebird.join(existingFic, newFic, (existingFic, newFic) => {
-        const lastExisting = existingFic.chapters.slice(-1)
-        const lastNew = newFic.chapters.slice(-1)
+        const lastExisting = existingFic.chapters.slice(-1)[0]
+        const lastNew = newFic.chapters.slice(-1)[0]
         if (lastExisting.link === lastNew.link) return
+        newFic = ficInflate(newFic, fetch.withOpts({cacheBreak: false}))
         return doMerge()
       })
     } else {
@@ -76,6 +77,12 @@ function writeUpdatedFic (ficFile, existingFic, changes) {
 }
 
 var fetchLatestVersion = promisify.args((fetch, existingFic, fromThreadmarks, fromScrape) => {
+  const newFic = fetchLatestVersionWithoutInflate(fetch, existingFic, fromThreadmarks, fromScrape)
+
+  return ficInflate(newFic, fetch.withOpts({cacheBreak: false}))
+})
+
+var fetchLatestVersionWithoutInflate = promisify.args((fetch, existingFic, fromThreadmarks, fromScrape) => {
   const updateFrom = existingFic.updateWith()
   let thisFromThreadmarks = (!existingFic.scrapeMeta && fromThreadmarks) || existingFic.fetchMeta
   let thisFromScrape = fromScrape || existingFic.scrapeMeta
@@ -92,9 +99,7 @@ var fetchLatestVersion = promisify.args((fetch, existingFic, fromThreadmarks, fr
 
   // Fetch the fic from cache first, which ensures we get any cookies
   // associated with it, THEN fetch it w/o the cache to get updates.
-  let newFic = getFic(fetch.withOpts({cacheBreak: false})).then(()=> getFic(fetch))
-
-  return ficInflate(newFic, fetch.withOpts({cacheBreak: false}))
+  return getFic(fetch.withOpts({cacheBreak: false})).then(()=> getFic(fetch))
 })
 
 function chapterCreated (chapter) {
