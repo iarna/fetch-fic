@@ -150,7 +150,7 @@ class Fic {
     fic.link = fic.site.link
     fic.scrapeMeta = true
     if (!fic.site.canScrape) {
-      const err = new Error(`Site ${fic.site.publisherName || fic.site.publisher} does not support fetching via scraping`)
+      const err = new Error(`Site ${fic.site.publisherName || fic.site.publisher} does not support fetching via scraping for ${fic.title} @ ${fic.link}`)
       err.code = 'ENOSCRAPE'
       return Bluebird.reject(err)
     }
