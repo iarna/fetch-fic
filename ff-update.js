@@ -177,8 +177,10 @@ var mergeFic = promisify.args(function mergeFic (existingFic, newFic, add) {
         }
         for (let prop of qw`name link fetchFrom author authorUrl tags words`) {
           if (chapter[prop] == null && newChapter[prop] != null) {
-            chapter[prop] = newChapter[prop]
-            changes.push(`${fic.title}: Set ${prop} for chapter "${newChapter.name}" to ${chapter[prop]}`)
+            if (newChapter[prop] != fic[prop]) {
+              chapter[prop] = newChapter[prop]
+              changes.push(`${fic.title}: Set ${prop} for chapter "${newChapter.name}" to ${chapter[prop]}`)
+            }
           }
         }
       }
