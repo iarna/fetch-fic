@@ -102,16 +102,16 @@ var fetchLatestVersionWithoutInflate = promisify.args((fetch, existingFic, fromT
   return getFic(fetch.withOpts({cacheBreak: false})).then(()=> getFic(fetch))
 })
 
-function chapterCreated (chapter) {
-  return chapter.created || chapter.modified
+function createdDate (chapOrFic) {
+  return chapOrFic.created || chapOrFic.modified
 }
 
 var mergeFic = promisify.args(function mergeFic (existingFic, newFic, add) {
   const changes = []
   const toAdd = []
-  const latestExisting = existingFic.chapters.reduce((aa, bb) => {
-    return chapterCreated(aa) > chapterCreated(bb) ? aa : bb
-  }, {created: new Date(0)})
+  const latestExisting = existingFic.chapters.concat(existingFic.fics).map(createdDate).reduce((aa, bb) => {
+    return aa > bb ? aa : bb
+  }, new Date(0))
 
   if (add !== 'none') {
     const newestIndex = newFic.chapters.length - 1
@@ -121,7 +121,7 @@ var mergeFic = promisify.args(function mergeFic (existingFic, newFic, add) {
           continue
         }
         const created = newChapter.created || newChapter.modified
-        if (add === 'all' || chapterCreated(newChapter) > chapterCreated(latestExisting)) {
+        if (add === 'all' || createdDate(newChapter) > latestExisting) {
           toAdd.push(newChapter)
         }
       }
