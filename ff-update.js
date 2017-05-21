@@ -149,7 +149,7 @@ var mergeFic = promisify.args(function mergeFic (existingFic, newFic, add) {
     changes.push(`${existingFic.title}: Set fic tags to ${newFic.tags.join(', ')}`)
   }
   for (let prop of qw`publisher author authorUrl updateFrom link title`) {
-    if (existingFic[prop] == null && newFic[prop] != null) {
+    if (existingFic[prop] == null && newFic[prop] != null && (!existingFic.parent || existingFic.parent[prop] !== newFic[prop])) {
       existingFic[prop] = newFic[prop]
       changes.push(`${existingFic.title}: Set fic ${prop} to ${existingFic[prop]}`)
     }
