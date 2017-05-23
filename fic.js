@@ -219,6 +219,12 @@ class SubFic extends Fic {
   set publisher (value) {
     return this._publisher = value
   }
+  get title () {
+    return this._title || this.chapters[0].name
+  }
+  set title (value) {
+    return this._title = value
+  }
   get link () {
     return this._link || this.chapters[0].link
   }
@@ -254,7 +260,7 @@ class SubFic extends Fic {
   toJSON () {
     const result = {}
     for (let prop of qw`
-         title _link _author _authorUrl created modified _publisher
+         _title _link _author _authorUrl created modified _publisher
          description _tags chapters _chapterHeadings words includeTOC numberTOC
          `) {
       const assignTo = prop[0] === '_' ? prop.slice(1) : prop
