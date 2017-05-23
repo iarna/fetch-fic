@@ -207,13 +207,13 @@ var refreshMetadata = promisify.args(function mergeFic (existingFic, changes) {
     let now = new Date()
     let then = new Date(0)
     let created = fic.chapters.filter(c => c.created).reduce((ficCreated, chapter) => ficCreated < chapter.created ? ficCreated : chapter.created, now)
-    if (isDate(created) && (created !== now && (!isDate(fic.created) || created < fic.created))) {
+    if (isDate(created) && (created !== now && (!isDate(fic.created) || !dateEqual(created, fic.created)))) {
       changes.push(`${fic.title}: Updated fic publish time from ${fic.created} to ${created} (from earliest chapter)`)
       fic.created = created
     }
 
     let modified = fic.chapters.filter(c => c.modified || c.created).reduce((ficModified, chapter) => ficModified > (chapter.modified||chapter.created) ? ficModified : (chapter.modified||chapter.created), then)
-    if (isDate(modified) && (modified !== then && (!isDate(fic.modified) || modified > fic.modified))) {
+    if (isDate(modified) && (modified !== then && (!isDate(fic.modified) || !dateEqual(modified, fic.modified)))) {
       changes.push(`${fic.title}: Updated fic last update time from ${fic.modified} to ${modified} (from latest chapter)`)
       fic.modified = modified
     }
