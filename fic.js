@@ -104,7 +104,11 @@ class Fic {
         this.fics.push(SubFic.fromJSON(this, fic))
       }
     }
-    this.site = Site.fromUrl(this.updateWith())
+    try {
+      this.site = Site.fromUrl(this.updateWith())
+    } catch (ex) {
+      process.emit('warn', ex)
+    }
     return this
   }
 
