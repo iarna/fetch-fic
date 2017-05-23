@@ -7,7 +7,7 @@ let Site
 
 class Fic {
   constructor (fetch) {
-    this.id = null
+    this._id = null
     this.fetch = fetch
     this.title = null
     this.link = null
@@ -31,6 +31,13 @@ class Fic {
     this._numberTOC = null
     this.fetchMeta = null
     this.scrapeMeta = null
+  }
+
+  get id () {
+    return this._id || this.link || this.updateFrom
+  }
+  set id (value) {
+    return this._id = value
   }
 
   get includeTOC () {
