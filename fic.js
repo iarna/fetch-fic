@@ -190,8 +190,11 @@ class Fic {
 class SubFic extends Fic {
   constructor (parentFic) {
     super()
-    delete this.fics
     this.parent = parentFic
+    delete this.fics
+    for (let prop of qw`_title _link _author _authorUrl _tags _chapterHeadings`) {
+      this[prop] = null
+    }
   }
   chapterExists (link) {
     return this.chapters.chapterExists(link, this)
