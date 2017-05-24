@@ -178,7 +178,7 @@ class Fic {
   toJSON () {
     const result = {}
     for (let prop of qw`
-         _id title link updateFrom author authorUrl created modified publisher cover
+         title _id link updateFrom author authorUrl created modified publisher cover
          description tags words fics chapters chapterHeadings _includeTOC _numberTOC fetchMeta scrapeMeta
        `) {
       if (this[prop] != null && (!Array.isArray(this[prop]) || this[prop].length)) result[prop.replace(/^_/,'')] = this[prop]
