@@ -51,10 +51,6 @@ function write (args) {
         process.emit('warn', `Skipping #${subficNum} in ${ficFile}, missing title`)
         return false
       }
-      for (let key of Object.keys(topFic)) {
-        if (key === 'fics' || key === 'chapters') continue
-        if (!fic[key]) fic[key] = topFic[key]
-      }
       tracker.addWork(fic.chapters.length)
       process.emit('debug', `Fetching #${ficNum} for ${ficFile}: ${fic.title}`)
       return true
