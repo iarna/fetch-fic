@@ -266,7 +266,7 @@ class SubFic extends Fic {
     const result = {}
     for (let prop of qw`
          _title _id _link _author _authorUrl created modified _publisher
-         description _tags chapters _chapterHeadings words includeTOC numberTOC
+         description _tags chapters _chapterHeadings words _includeTOC _numberTOC
          `) {
       const assignTo = prop[0] === '_' ? prop.slice(1) : prop
       if (this[prop] && (this[prop].length == null || this[prop].length)) result[assignTo] = this[prop]
