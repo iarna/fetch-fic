@@ -34,7 +34,9 @@ class Fic {
   }
 
   get id () {
-    return this._id || this.link || this.updateFrom
+    if (this._id) return this._id
+    const link = this.link || this.updateFrom
+    if (link) return 'url:' + link
   }
   set id (value) {
     return this._id = value
