@@ -50,7 +50,7 @@ function updateFic (fetch, args) {
         return Bluebird.join(existingFic, newFic, (existingFic, newFic) => {
           const lastExisting = existingFic.chapters.slice(-1)[0] || existingFic
           const lastNew = newFic.chapters.slice(-1)[0] || newFic
-          if (createdDate(lastExisting.link) >= createdDate(lastNew)) return
+          if (lastExisting === lastNew || (lastExisting && lastNew && createdDate(lastExisting) >= createdDate(lastNew))) return
           newFic = ficInflate(newFic, fetch.withOpts({cacheBreak: false}))
           return doMerge()
         })
