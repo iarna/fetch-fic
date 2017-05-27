@@ -392,7 +392,9 @@ class Xenforo extends Site {
   }
 
   dateTime (elem) {
-    if (elem.attr('data-datestring')) {
+    if (elem.attr('data-time')) {
+      return new Date(elem.attr('data-time') * 1000)
+    } else if (elem.attr('data-datestring')) {
       return new Date(elem.attr('data-datestring') + ' ' + elem.attr('data-timestring'))
     } else if (elem.attr('title')) {
       return new Date(elem.attr('title').replace(/ at/, ''))
