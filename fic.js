@@ -11,6 +11,7 @@ class Fic {
     this.fetch = fetch
     this.title = null
     this.link = null
+    this.altlinks = null
     this.updateFrom = null
     this.author = null
     this.authorUrl = null
@@ -85,7 +86,7 @@ class Fic {
   }
 
   importFromJSON (raw) {
-    const props = qw`id link title author authorUrl created modified
+    const props = qw`id link altlinks title author authorUrl created modified
      description tags publisher cover chapterHeadings words updateFrom
      includeTOC numberTOC fetchMeta scrapeMeta`
 
@@ -178,7 +179,7 @@ class Fic {
   toJSON () {
     const result = {}
     for (let prop of qw`
-         title _id link updateFrom author authorUrl created modified publisher cover
+         title _id link altlinks updateFrom author authorUrl created modified publisher cover
          description tags words fics chapters chapterHeadings _includeTOC _numberTOC fetchMeta scrapeMeta
        `) {
       if (this[prop] != null && (!Array.isArray(this[prop]) || this[prop].length)) result[prop.replace(/^_/,'')] = this[prop]
