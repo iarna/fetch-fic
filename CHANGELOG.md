@@ -1,5 +1,52 @@
 # CHANGES TO `fetch-fic`
 
+## v3.7.0
+
+A big release so let's break this up. So first, important bug fixes:
+
+* Xenforo dates were screwing up timezones.  We now consistently import
+  dates and times correctly.  Previously we were using a value that was in
+  the local timezone of the forum but treating it as if it was in the local
+  timezone of the user.
+* A BIG fix to FanFiction.net metadata parsing.  Specifically, this means
+  the tags you get from FanFiction.net sources will now be consitent and
+  complete.
+
+Major features & behavior changes:
+
+* Added new flag `ff update --fast` which skips a bunch of work if it's pretty sure there won't be any new chapters.
+* When generating bbcode we no longer set the font family.
+* `ff update`: Always set fic update times based on chapters and subfics.
+
+Speed improvements:
+
+* Speed up `ff generate` when it's used on multiple fics at once.
+
+Minor features & behavior changes:
+
+* Fics now support a new attribute: `altlinks`. This is optionally an array of
+  other URLs that this fic is available from.
+* Subfics now have their title default to the name of their first chapter.
+* `ff cache-clear` now has an alias in `ff clear-cache` because I kept on
+  typing the wrong one.
+* `ff update` now returns an error if there was no update, success if there were new chapters.
+  I use this like `ff update x.fic.toml && ff generate x.fic.toml` to get a
+  new epub only if the fic has updated.  This inverts the previous behavior.
+  The previous behaviour was problematic because errors were treated the
+  same as updates and generally you wanted to trigger further actions on
+  updates.  So errors would end up triggering the follow-on stages.
+
+Minor bug fixes:
+
+* Improve support for nested threadmarks.
+* When importing RTF (from Scriviner or rtfdir sources) explicitly set an
+  HTML5 doctype and UTF8 mimetype.
+
+Error message improvements:
+
+* Much improved error messages, particularly on various network-type errors.
+* Report AO3's "down for maintenance errors" which are 200s.
+
 ## v3.6.0
 
 * Fix a number of long standing layout issues involving indexes and chapters
