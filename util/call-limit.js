@@ -34,7 +34,7 @@ const limit = module.exports = (func, maxRunning, minTimeMS) => {
     const grouping = args.shift()
     ++state[grouping].running
     state[grouping].lastCall = Date.now()
-    return func.apply(self, args).finally(() => {
+    return Bluebird.resolve(func.apply(self, args)).finally(() => {
       --state[grouping].running
       if (tillNext(grouping) > 0) {
         setTimeout(callNext(grouping), tillNext(grouping))

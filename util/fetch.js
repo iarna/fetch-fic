@@ -3,14 +3,16 @@ const url = require('url')
 const util = require('util')
 
 const Bluebird = require('bluebird')
-const rawFetch = require('node-fetch-npm')
+const rawFetch = require('make-fetch-happen').defaults({
+  cache: 'no-store',
+  retry: 3
+})
 const tough = require('tough-cookie')
 
 const cache = use('cache')
 const callLimit = use('call-limit')
 const curryOptions = use('curry-options')
 
-rawFetch.Promise = Bluebird
 const CookieJar = tough.CookieJar
 
 const cookieJar = new CookieJar()

@@ -29,7 +29,7 @@ class Output {
 
   transform () {
     const out = this
-    const Transform = require('readable-stream').Transform
+    const Transform = require('stream').Transform
     return new Transform({
       objectMode: true,
       transform: function (chapter, _, done) {

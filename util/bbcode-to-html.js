@@ -1,5 +1,5 @@
 'use strict'
-const Transform = require('readable-stream').Transform
+const Transform = require('stream').Transform
 const Bluebird = require('bluebird')
 
 module.exports = bbcodeToHTML

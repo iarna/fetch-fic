@@ -29,7 +29,7 @@ class OutputHTML extends Output {
     if (chapter.type === 'image') {
       return fs.writeFile(filename, chapter.content)
     } else if (chapter.type === 'cover') {
-      const stream = require('readable-stream')
+      const stream = require('stream')
       if (chapter.content instanceof stream.Stream) {
         const tmpname = path.join(this.outname, 'cover-tmp')
         const Bluebird = require('bluebird')

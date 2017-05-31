@@ -1,6 +1,6 @@
 'use strict'
 const Bluebird = require('bluebird')
-const Readable = require('readable-stream').Readable
+const Readable = require('stream').Readable
 const qw = require('qw')
 
 function proxy (from, prop, to) {
