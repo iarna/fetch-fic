@@ -209,13 +209,13 @@ class SubFic extends Fic {
     return fic
   }
   get author () {
-    return this._author || this.parent.author
+    return this._author || (this.chapters.length && this.chapters[0].author)|| this.parent.author
   }
   set author (value) {
     return this._author = value
   }
   get authorUrl () {
-    return this._authorUrl || this.parent.authorUrl
+    return this._authorUrl || (this.chapters.length && this.chapters[0].authorurl)|| this.parent.authorUrl
   }
   set authorUrl (value) {
     return this._authorUrl = value
