@@ -381,6 +381,7 @@ class Chapter {
 }
 
 module.exports = Fic
+module.exports.SubFic = SubFic
 module.exports.Chapter = Chapter
 
 // defer 'cause `class` definitions don't hoist
