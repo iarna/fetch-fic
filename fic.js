@@ -227,13 +227,13 @@ class SubFic extends Fic {
     return this._publisher = value
   }
   get title () {
-    return this._title || this.chapters[0].name
+    return this._title || (this.chapters.length && this.chapters[0].name)
   }
   set title (value) {
     return this._title = value
   }
   get link () {
-    return this._link || this.chapters[0].link
+    return this._link || (this.chapters.length && this.chapters[0].link)
   }
   set link (value) {
     return this._link = value
