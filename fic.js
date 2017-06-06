@@ -286,7 +286,7 @@ class SubFic extends Fic {
   toJSON () {
     const result = {}
     for (let prop of qw`
-         _title _id _link _author _authorUrl _created _modified _publisher
+         _title _id _link altlinks _author _authorUrl _created _modified _publisher
          _description _tags chapters _chapterHeadings words _includeTOC _numberTOC
          `) {
       const assignTo = prop[0] === '_' ? prop.slice(1) : prop
