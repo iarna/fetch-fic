@@ -40,6 +40,7 @@ function updateFic (fetch, args) {
   const add = addNone ? 'none' : addAll ? 'all' : 'new'
   let fromThreadmarks = !args.scrape || args['and-fetch']
   let fromScrape = args.scrape || args['and-scrape']
+  const refresh = args['refresh']
   let fast = args.fast
 
   return ficFile => {
@@ -60,7 +61,7 @@ function updateFic (fetch, args) {
       function doMerge () {
         return mergeFic(existingFic, newFic, add).then(changes => {
           const inflatedFic = ficInflate(existingFic, fetch.withOpts({cacheBreak: false}))
-          return writeUpdatedFic(ficFile, inflatedFic, refreshMetadata(inflatedFic, changes))
+          return writeUpdatedFic(ficFile, inflatedFic, refreshMetadata(inflatedFic, changes), refresh)
         })
       }
     }).catch(ex => {
@@ -69,9 +70,9 @@ function updateFic (fetch, args) {
   }
 }
 
-function writeUpdatedFic (ficFile, existingFic, changes) {
+function writeUpdatedFic (ficFile, existingFic, changes, forceSave) {
   return Bluebird.resolve(changes).then(changes => {
-    if (!changes.length) return null
+    if (!changes.length && !forceSave) return null
     return fs.writeFile(ficFile, TOML.stringify(existingFic)).then(() => {
       progress.output(`${ficFile}\n`)
       if (changes.length) progress.output(`    ${changes.join('\n    ')} \n`)

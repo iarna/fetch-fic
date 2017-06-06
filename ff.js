@@ -92,6 +92,10 @@ const argv = yargs
         type: 'boolean',
         describe: "Don't do any updates if the chapter count hasn't changed"
       })
+      .option('refresh', {
+        type: 'boolean',
+        describe: "Write a fresh copy of the fic.toml file even if there were not updates"
+      })
       .demand(1, '<fic> - A fic metadata file to update with the latest chapters. Typically ends in .fic.toml')
       networkOptions(yargs, false)
     },
