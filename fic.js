@@ -196,7 +196,7 @@ class SubFic extends Fic {
     super()
     this.parent = parentFic
     delete this.fics
-    for (let prop of qw`_title _link _author _authorUrl _tags _chapterHeadings`) {
+    for (let prop of qw`_title _created _modified _description _link _author _authorUrl _tags _chapterHeadings`) {
       this[prop] = null
     }
   }
@@ -238,6 +238,25 @@ class SubFic extends Fic {
   set link (value) {
     return this._link = value
   }
+  get description () {
+    return this._description || (this.chapters.length && this.chapters[0].description)
+  }
+  set description (value) {
+    return this._description = value
+  }
+  get created () {
+    return this._created || (this.chapters.length && this.chapters[0].created)
+  }
+  set created (value) {
+    return this._created = value
+  }
+  get modified () {
+    const lastChapter = this.chapters.length && this.chapters[this.chapters.length-1]
+    return this._modified || (lastChapter && (lastChapter.modified || lastChapter.created))
+  }
+  set modified (value) {
+    return this._modified = value
+  }
   get chapterHeadings () {
     return this._chapterHeadings || this.parent.chapterHeadings
   }
@@ -267,8 +286,8 @@ class SubFic extends Fic {
   toJSON () {
     const result = {}
     for (let prop of qw`
-         _title _id _link _author _authorUrl created modified _publisher
-         description _tags chapters _chapterHeadings words _includeTOC _numberTOC
+         _title _id _link _author _authorUrl _created _modified _publisher
+         _description _tags chapters _chapterHeadings words _includeTOC _numberTOC
          `) {
       const assignTo = prop[0] === '_' ? prop.slice(1) : prop
       if (this[prop] && (this[prop].length == null || this[prop].length)) result[assignTo] = this[prop]
