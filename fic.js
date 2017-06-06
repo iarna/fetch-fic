@@ -184,7 +184,7 @@ class Fic {
        `) {
       if (this[prop] != null && (!Array.isArray(this[prop]) || this[prop].length)) result[prop.replace(/^_/,'')] = this[prop]
     }
-    result.fics.sort((a, b) => a.created > b.created ? 1 : a.created < b.created ? -1 : 0)
+    result.fics && result.fics.sort((a, b) => a.created > b.created ? 1 : a.created < b.created ? -1 : 0)
     if (!this.externals) result.externals = this.externals
     if (!this.spoilers) result.spoilers = this.spoilers
     return result
