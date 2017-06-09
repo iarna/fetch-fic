@@ -2,6 +2,9 @@
 const url = require('url')
 const util = require('util')
 
+const pkg = require('../package.json')
+const USER_AGENT = `${pkg.name}/${pkg.version} (+${pkg.homepage})`
+
 const Bluebird = require('bluebird')
 const rawFetch = require('make-fetch-happen').defaults({
   cache: 'no-store',
@@ -82,6 +85,7 @@ function fetchWithCache (fetch, toFetch, opts) {
         if (meta.headers && meta.headers['last-modified']) {
           opts.headers['If-Modified-Since'] = meta.headers['last-modified']
         }
+        opts.headers['user-agent'] = USER_AGENT
         process.emit('debug', 'Downloading', toFetch, opts)
         return fetch(domain, toFetch, opts)
       })
