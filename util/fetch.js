@@ -35,7 +35,13 @@ function cookiedFetch (href, opts) {
     opts.headers.Referer = opts.referer
   }
   if (!limitedFetch) limitedFetch = callLimit(rawFetch, opts.maxConcurrency || 4, 1000 / (opts.requestsPerSecond || 1))
-  return fetchWithCache(limitedFetch, href, opts)
+  return fetchWithCache(limitedFetch, href, opts).catch(err => {
+    if (err.code === 403 || /timeout/i.test(err.message)) {
+      return fetchWithCache(limitedFetch, href, opts)
+    } else {
+      throw err
+    }
+  })
 }
 
 function addCookieFuncs (fetch) {
