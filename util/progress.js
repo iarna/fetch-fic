@@ -16,6 +16,7 @@ const Gauge = require('gauge')
 const caller = use('caller')
 
 progress.setVerbose = setVerbose
+progress.spinWhile = spinWhile
 progress.spinWhileAnd = spinWhileAnd
 progress.show = show
 progress.hide = hide
