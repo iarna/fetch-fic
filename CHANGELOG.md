@@ -1,5 +1,12 @@
 # CHANGES TO `fetch-fic`
 
+* Pick up relationship markers from AO3 with `ship:` prefix in tags (like FFNet).
+* Better timeout retries for hopefully better results when doing batch operations on questionable networks.
+* Our useragent now advertises fetch-fic (or takes blame for our requests)
+* Better subfic handling (default description, created, modified, author and authorurl from chapters).
+* Subfics are sorted by creation date.
+* `ff update --refresh` forces an update of the `.fic.toml` file even if we don't think there were changes.
+
 ## v3.7.0
 
 A big release so let's break this up. So first, important bug fixes:
