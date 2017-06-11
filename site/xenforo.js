@@ -2,6 +2,7 @@
 /* eslint-disable no-useless-escape */
 const url = require('url')
 const Site = use('site')
+const Bluebird = require('bluebird')
 
 const knownSites = {
   'forums.sufficientvelocity.com': 'Sufficient Velocity',
@@ -33,40 +34,61 @@ class Xenforo extends Site {
   }
 
   getFicMetadata (fetch, fic) {
-    fic.link = this.link
-    fic.publisher = this.publisherName
-    return fetch(this.threadmarkUrl()).spread((meta, html) => {
-      const cheerio = require('cheerio')
-      const $ = cheerio.load(html)
+    return Bluebird.try(async () => {
+      async function fetchCheerio (url) {
+        const cheerio = require('cheerio')
+        const [meta, html] = await fetch(url)
+        return cheerio.load(html)
+      }
+
+      fic.link = this.link
+      fic.publisher = this.publisherName
+
+      const $ = await fetchCheerio(this.threadmarkUrl())
+
       const base = $('base').attr('href') || this.threadmarkUrl()
       const tat = this.detagTitle(this.scrapeTitle($))
       fic.title = tat.title
       if (!fic.tags.length) {
         fic.tags = tat.tags
       }
-      let chapters = $('li.threadmarkItem')
-      if (chapters.length === 0) chapters = $('li.primaryContent') // qq
+      const $sections = $('div.threadmarks ol.tabs li')
       let leastRecent
       let mostRecent
-      chapters.each((ii, chapter) => {
-        const $chapter = $(chapter)
-        $chapter.find('li').remove() // remove child chapters so that $link.text() works right
-        const $link = $chapter.find('a')
-        const name = $link.text().trim()
-        const link = this.normalizeLink($link.attr('href'), base)
-        const created = this.dateTime($chapter.find('.DateTime'))
-        if (!leastRecent || created < leastRecent) leastRecent = created
-        if (!mostRecent || created > mostRecent) mostRecent = created
-        fic.chapters.addChapter({name, link, created})
-      })
+      const loadThreadmarks = (type, $) => {
+        let chapters = $('li.threadmarkItem')
+        if (chapters.length === 0) chapters = $('li.primaryContent') // qq
+        chapters.each((ii, chapter) => {
+          const $chapter = $(chapter)
+          $chapter.find('li').remove() // remove child chapters so that $link.text() works right
+          const $link = $chapter.find('a')
+          const name = $link.text().trim()
+          const link = this.normalizeLink($link.attr('href'), base)
+          const created = this.dateTime($chapter.find('.DateTime'))
+          if (!leastRecent || created < leastRecent) leastRecent = created
+          if (!mostRecent || created > mostRecent) mostRecent = created
+          fic.chapters.addChapter({name, type, link, created})
+        })
+      }
+      loadThreadmarks('chapter', $)
+      if ($sections.length > 1) {
+        const sections = []
+        $sections.each((ii, section) => {
+          if (ii === 0) return
+          const $section = $(section)
+          sections.push({type: $section.text().trim(), link: url.resolve(base, $section.find('a').attr('href'))})
+        })
+        for (let section of sections) {
+          loadThreadmarks(section.type, await fetchCheerio(section.link))
+        }
+      }
       fic.created = leastRecent
       fic.modified = mostRecent
       if (!fic.chapters.length) return
-      return fic.chapters[0].getContent(fetch.withOpts({cacheBreak: false})).then(chapter => {
-        fic.author = chapter.author
-        fic.authorUrl = chapter.authorUrl
-        fic.description = chapter.$content.text().trim().replace(/^([^\n]+)[\s\S]*?$/, '$1')
-      })
+      const chapter = await fic.chapters[0].getContent(fetch.withOpts({cacheBreak: false}))
+      fic.author = chapter.author
+      fic.authorUrl = chapter.authorUrl
+      fic.description = chapter.$content.text().trim().replace(/^([^\n]+)[\s\S]*?$/, '$1')
     })
   }
 
