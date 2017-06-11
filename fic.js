@@ -119,7 +119,7 @@ class Fic {
     const fic = new this(fetch)
     fic.site = Site.fromUrl(link)
     fic.link = fic.site.link
-    return fic.site.getFicMetadata(fetch, fic).then(thenMaybeFallback, elseMaybeFallback).thenReturn(fic)
+    return fic.site.getFicMetadata(fetch, fic).then(thenMaybeFallback, elseMaybeFallback).then(() => fic)
     function elseMaybeFallback (err) {
       if (err && (!err.meta || err.meta.status !== 404)) throw err
       return thenMaybeFallback(err)
@@ -151,7 +151,7 @@ class Fic {
     fic.scrapeMeta = true
     return fic.site.getFicMetadata(fetch, fic).then(() => {
       if (fic.site.canScrape) {
-        return fic.site.scrapeFicMetadata(fetch, fic).thenReturn(fic)
+        return fic.site.scrapeFicMetadata(fetch, fic).then(() => fic)
       } else {
         return fic
       }
@@ -168,7 +168,7 @@ class Fic {
       err.code = 'ENOSCRAPE'
       return Bluebird.reject(err)
     }
-    return fic.site.scrapeFicMetadata(fetch, fic).thenReturn(fic)
+    return fic.site.scrapeFicMetadata(fetch, fic).then(() => fic)
   }
 
   static fromJSON (raw) {

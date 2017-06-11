@@ -55,5 +55,5 @@ function ficInflate (fic, fetch, tracker) {
         tracker.finish()
       })
     })
-  }).thenReturn(fic)
+  }).then(() => fic)
 }

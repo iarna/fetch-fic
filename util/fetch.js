@@ -99,7 +99,7 @@ function fetchWithCache (fetch, toFetch, opts) {
   }).spread((meta, content) => {
     if (meta.headers && meta.headers['set-cookie']) {
       const setCookies = meta.headers['set-cookie'].map(rawCookie => setCookieP(opts.cookieJar, rawCookie, meta.finalUrl || toFetch))
-      return Bluebird.all(setCookies.map(P => P.catch(()=> true))).thenReturn([meta, content])
+      return Bluebird.all(setCookies.map(P => P.catch(()=> true))).then(() => [meta, content])
     } else {
       return [meta, content]
     }

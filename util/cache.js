@@ -50,7 +50,7 @@ function readFile (filename, onMiss) {
 
 function writeFile (filename, content) {
   const cacheFile = cacheFilename(filename)
-  return inflight(['write:', filename], thenWriteFile).thenReturn(content)
+  return inflight(['write:', filename], thenWriteFile).then(() => content)
 
   function thenWriteFile () {
     return mkdirp(pathDirname(cacheFile)).then(() => fs.writeFile(cacheFile, content))
@@ -84,7 +84,7 @@ function readGzipFile (filename, onMiss) {
 }
 
 function writeGzipFile (filename, content) {
-  return writeFile(filename, zlib.gzip(content)).thenReturn(content)
+  return writeFile(filename, zlib.gzip(content)).then(() => content)
 }
 
 function getUrlHash (toFetch) {
