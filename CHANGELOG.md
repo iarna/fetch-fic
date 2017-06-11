@@ -1,5 +1,16 @@
 # CHANGES TO `fetch-fic`
 
+* Recently two large xenforo sites, spacebattles.com and
+  sufficientvelocity.com, started supporting categorized threadmarks which
+  in turn implies categorized chapters.  This is now support with the `type`
+  attribute on chapters.  Currently this bit of metadata is not used (all
+  chapters are munged together) but in future I'd like to:
+  * Add new chapters next to other chapters of their type.  This lets omake
+    come after main chapters but still have new main chapters show up where
+    we'd want them.
+  * Prefix the type for non-chapter types during output.
+  * Not count non-chapter words in word count.
+  * Include non-chapter sections as roman-numeral chapters in the index/appendix.
 * Pick up relationship markers from AO3 with `ship:` prefix in tags (like FFNet).
 * Better timeout retries for hopefully better results when doing batch operations on questionable networks.
 * Our useragent now advertises fetch-fic (or takes blame for our requests)
