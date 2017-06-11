@@ -336,6 +336,7 @@ class Chapter {
     this.order = opts.order
     this.name = opts.name
     this.link = opts.link
+    this.type = opts.type || 'chapter'
     this.description = opts.description
     this.fetchFrom = opts.fetchFrom
     this.created = opts.created
@@ -351,6 +352,7 @@ class Chapter {
   toJSON () {
     return {
       name: this.name,
+      type: this.type !== 'chapter' ? this.type : undefined,
       description: this.description,
       link: this.link,
       fetchFrom: this.fetchFrom,
