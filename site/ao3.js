@@ -87,6 +87,16 @@ class ArchiveOfOurOwn extends Site {
       const language = 'language:' + $meta.find('dd.language').text().trim()
       fic.tags = [].concat(ratings, warnings, category, fandom, relationship, characters, freeform, language)
       const $stats = $meta.find('dl.stats')
+      const chapterCounts = $stats.find('dd.chapters').text().trim().split('/')
+      const written = chapterCounts[0]
+      const planned = chapterCounts[1]
+      if (written === planned) {
+        if (written === '1') {
+          fic.tags.push('status:one-shot')
+        } else {
+          fic.tags.push('status:complete')
+        }
+      }
       fic.created = new Date($stats.find('dd.published').text().trim())
       const modified = $stats.find('dd.status').text().trim()
       fic.modified = modified && new Date(modified)
