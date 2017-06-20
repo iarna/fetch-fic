@@ -358,7 +358,7 @@ class Xenforo extends Site {
   threadmarkUrl () {
     const threadUrl = url.parse(this.raw)
     const path = threadUrl.pathname || threadUrl.path
-    const threadMatch = /^([/]threads[/][^/]+\.\d+)(?:[/].*)?$/
+    const threadMatch = /^([/]threads[/](?:[^/]+\.)?\d+)(?:[/].*)?$/
     if (threadMatch.test(path)) {
       threadUrl.hash = ''
       threadUrl.pathname = threadUrl.pathname.replace(threadMatch, '$1/threadmarks')
