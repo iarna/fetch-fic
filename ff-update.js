@@ -168,6 +168,10 @@ var mergeFic = promisify.args(function mergeFic (existingFic, newFic, add) {
     for (let chapter of fic.chapters) {
       const match = newFic.chapters.filter(andChapterEquals(chapter))
       for (let newChapter of match) {
+        if (chapter.type === 'chapter' && newChapter.type !== chapter.type) {
+          changes.push(`${fic.title}: Updated type for chapter "${newChapter.name}" from ${chapter.type} to ${newChapter.type}`)
+          chapter.type = newChapter.type
+        }
         if (isDate(newChapter.created) && !dateEqual(newChapter.created, chapter.created)) {
           changes.push(`${fic.title}: Updated creation date for chapter "${newChapter.name}" from ${chapter.created} to ${newChapter.created}`)
           chapter.created = newChapter.created
