@@ -59,6 +59,14 @@ class Fic {
     this._numberTOC = value
   }
 
+  get words () {
+    return this.chapters.filter(ch => ch.type === 'chapter').reduce((acc, ch) => acc + ch.words, 0)
+  }
+
+  set words (val) {
+    return
+  }
+
   updateWith () {
     return this.updateFrom || this.link
   }
