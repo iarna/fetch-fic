@@ -35,7 +35,7 @@ class Xenforo extends Site {
 
   getFicMetadata (fetch, fic) {
     return Bluebird.try(async () => {
-      async function fetchCheerio (url) {
+      async function fetchWithCheerio (url) {
         const cheerio = require('cheerio')
         const [meta, html] = await fetch(url)
         return cheerio.load(html)
@@ -44,7 +44,7 @@ class Xenforo extends Site {
       fic.link = this.link
       fic.publisher = this.publisherName
 
-      const $ = await fetchCheerio(this.threadmarkUrl())
+      const $ = await fetchWithCheerio(this.threadmarkUrl())
 
       const base = $('base').attr('href') || this.threadmarkUrl()
       const tat = this.detagTitle(this.scrapeTitle($))
@@ -79,7 +79,7 @@ class Xenforo extends Site {
           sections.push({type: $section.text().trim(), link: url.resolve(base, $section.find('a').attr('href'))})
         })
         for (let section of sections) {
-          loadThreadmarks(section.type, await fetchCheerio(section.link))
+          loadThreadmarks(section.type, await fetchWithCheerio(section.link))
         }
       }
       fic.created = leastRecent
