@@ -379,7 +379,7 @@ class Chapter {
     this.externals = opts.externals != null ? opts.externals : true
     this.spoilers = opts.spoilers != null ? opts.spoilers : true
     this.headings = opts.headings
-    this.words = opts.words
+    this.words = opts.words || 0
   }
   toJSON () {
     return {
