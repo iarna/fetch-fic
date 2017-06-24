@@ -131,7 +131,7 @@ function getFic (fetch, fic) {
   const stream = new FicStream(fic, {highWaterMark: 8})
   const externals = {}
   const images = {}
-  const chapters = fic.chapters
+  const chapters = fic.chapters.filter(ch => ch.type !== 'Staff Post')
   const maxConcurrency = 40 // limit saves memory, not network, network is protected elsewhere
 
   process.emit('debug', `Outputting ${chapters.length} chapters of ${fic.title}`)
