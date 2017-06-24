@@ -143,6 +143,9 @@ function getFic (fetch, fic) {
   concurrently(chapters, maxConcurrency, (chapterInfo) => {
     return chapterInfo.getContent(fetch).then(chapter => {
       chapter.order = chapterInfo.order
+      if (chapterInfo.type !== 'chapter' && !/^Omake:|^Apocrypha:|^Art:/.test(chapter.name)) {
+        chapter.name = `${chapterInfo.type}: ${chapterInfo.name}`
+      }
       if (fic.chapterHeadings || chapterInfo.headings) {
         const headerName = html`${chapterInfo.name}`
         const byline = !chapterInfo.author ? ''
