@@ -324,6 +324,19 @@ class ChapterList extends Array {
     }
     if (opts.created && (!this.created || opts.created < this.created)) this.created = opts.created
     this.push(new Chapter(Object.assign({}, opts, {name, order: this.length})))
+    this.sort()
+  }
+  sort () {
+    const types = {}
+    types['chapter'] = 0
+    types['Sidestory'] = 50
+    types['Media'] = 75
+    types['Informational'] = 90
+    types['Apocrypha'] = 100
+    types['Staff Post'] = 9999
+    Array.prototype.sort.call(this, (a, b) => {
+      return (types[a.type] - types[b.type]) || a.order - b.order
+    })
   }
   importFromJSON (fic, raw) {
     if (raw.fics && !raw.chapters) return
@@ -336,6 +349,7 @@ class ChapterList extends Array {
       if (chapter.spoilers == null) chapter.spoilers = fic.spoilers
       this.push(Chapter.fromJSON(this.length, chapter))
     }
+    this.sort()
   }
 }
 
