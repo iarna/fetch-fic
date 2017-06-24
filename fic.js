@@ -358,7 +358,17 @@ class Chapter {
     this.order = opts.order
     this.name = opts.name
     this.link = opts.link
-    this.type = opts.type || 'chapter'
+    if (opts.type) {
+      this.type = opts.type
+    } else if (/^Omake:/.test(this.name)) {
+      this.type = 'Sidestory'
+    } else if (/^Appendix:/.test(this.name)) {
+      this.type = 'Apocrypha'
+    } else if (/^Art:/.test(this.name)) {
+      this.type = 'Media'
+    } else {
+      this.type = 'chapter'
+    }
     this.description = opts.description
     this.fetchFrom = opts.fetchFrom
     this.created = opts.created
