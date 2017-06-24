@@ -26,9 +26,9 @@ class OutputAO3 extends Output {
     const path = require('path')
     const filename = chaptername && path.join(this.outname, this.chapterFilename(chapter))
     const fs = use('fs-promises')
-    if (chapter.type === 'image') {
+    if (chapter.outputType === 'image') {
       return fs.writeFile(filename, chapter.content)
-    } else if (chapter.type === 'cover') {
+    } else if (chapter.outputType === 'cover') {
       const stream = require('stream')
       if (chapter.content instanceof stream.Stream) {
         const tmpname = path.join(this.outname, 'cover-tmp')

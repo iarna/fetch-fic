@@ -80,16 +80,16 @@ class OutputEpub extends Output {
 
   transformChapter (chapter) {
     const Streampub = require('streampub')
-    if (chapter.type === 'image') {
+    if (chapter.outputType === 'image') {
       return Streampub.newFile(chapter.filename, chapter.content)
     }
-    if (chapter.type === 'cover') {
+    if (chapter.outputType === 'cover') {
       return Streampub.newCoverImage(chapter.content)
     }
     const index = chapter.order != null && (1 + chapter.order)
     let name = chapter.name
     if (name != null && this.fic.numberTOC) {
-      if (chapter.type === 'external') {
+      if (chapter.outputType === 'external') {
         name = letterCount(index - 9000) + '. ' + name
       } else {
         name = String(index) + '. ' + name

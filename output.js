@@ -78,7 +78,7 @@ class Output {
   }
 
   chapterLink (chapter) {
-    return this.chapterFilename({type: 'chapter', order: chapter.order, name: chapter.name, filename: chapter.filename})
+    return this.chapterFilename({outputType: 'chapter', order: chapter.order, name: chapter.name, filename: chapter.filename})
   }
 
   html (content) {
@@ -215,27 +215,28 @@ class Output {
   }
   chapterFilename (chapter) {
     const name = chapter.name || ''
-    if (chapter.type === 'chapter') {
+    if (chapter.outputType === 'chapter') {
       const index = 1 + chapter.order
       const filename = `chapter-${index}${name ? ' ' + name : ''}`
       const filenameize = use('filenameize')
       return filenameize(filename) + this.chapterExt()
-    } else if (chapter.type === 'external') {
+    } else if (chapter.outputType === 'external') {
       const index = chapter.num || chapter.order
       const filename = `external-${index}`
       const filenameize = use('filenameize')
       return filenameize(filename) + this.chapterExt()
-    } else if (chapter.type === 'image') {
+    } else if (chapter.outputType === 'image') {
       return chapter.filename
-    } else if (chapter.type === 'cover') {
+    } else if (chapter.outputType === 'cover') {
       return
     } else {
-      throw new Error('Unknown chapter filename type: ' + chapter.type)
+console.log(chapter)
+      throw new Error('Unknown chapter filename type: ' + chapter.outputType)
     }
   }
   replaceLinks (content) {
     return content.replace(/_LINK_(\w+)#LINK#(\d+)#LINK#(.*?)_LINK_/g,
-      (_, type, order, name) => this.chapterFilename({type, order: Number(order), name: name.replace(/&lt;/g, '<').replace(/&amp;/g, '&')}))
+      (_, outputType, order, name) => this.chapterFilename({outputType, order: Number(order), name: name.replace(/&lt;/g, '<').replace(/&amp;/g, '&')}))
   }
 }
 Output.registered = {}

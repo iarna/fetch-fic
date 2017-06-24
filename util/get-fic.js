@@ -169,7 +169,7 @@ function getFic (fetch, fic) {
         })
       })
       rewriteIframes(fic, chapter)
-      chapter.type = 'chapter'
+      chapter.outputType = 'chapter'
       return stream.queueChapter(chapter)
     }).catch((err) => {
       process.emit('error', 'Error while fetching chapter', chapterInfo, err.stack)
@@ -209,7 +209,7 @@ function getFic (fetch, fic) {
         external.content = `${header}<hr>${external.content}`
         external.name = exterNum ? null : `External References (${externalCount} ${pages})`
         external.filename = externalName(external)
-        external.type = 'external'
+        external.outputType = 'external'
         rewriteImages(fic, external, inlineImages(images))
         rewriteLinks(fic, external, linklocalChapters(fic, externals))
         rewriteIframes(fic, external)
@@ -220,7 +220,7 @@ function getFic (fetch, fic) {
           order: 9000 + exterNum,
           name: exterNum ? null : `External References (${externalCount} ${pages})`,
           filename: externalName(externals[href]),
-          type: 'external',
+          outputType: 'external',
           content: html`<p>External link to <a href="${href}">${href}</a></p><pre>${err.stack}</pre>`
         })
       }).finally(() => {
@@ -239,7 +239,7 @@ function getFic (fetch, fic) {
     return concurrently(Object.keys(images), maxConcurrency, (src, imageNum) => {
       return fetch(src).spread((meta, imageData) => {
         return stream.queueChapter({
-          type: 'image',
+          outputType: 'image',
           filename: images[src].filename,
           content: imageData
         })
@@ -257,13 +257,13 @@ function getFic (fetch, fic) {
         progress.show('Fetching cover…')
         return fetch(fic.cover, {referer: fic.link}).spread((meta, imageData) => {
           return stream.queueChapter({
-            type: 'cover',
+            outputType: 'cover',
             content: imageData
           })
         }).catch(err => process.emit('error', `Error while fetching cover ${fic.cover}: ${err.message}`))
       } else {
         return stream.queueChapter({
-          type: 'cover',
+          outputType: 'cover',
           content: fs.createReadStream(fic.cover)
         })
       }
