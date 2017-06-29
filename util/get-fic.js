@@ -140,7 +140,7 @@ function getFic (fetch, fic) {
     progress.show(`Fetching chapters [${completed}/${chapters.length}]`)
   }
   showChapterStatus()
-  concurrently(chapters, maxConcurrency, (chapterInfo) => {
+  Bluebird.each(chapters, chapterInfo => {
     return chapterInfo.getContent(fetch).then(chapter => {
       chapter.order = chapterInfo.order
       if (chapterInfo.type !== 'chapter' && !/^Omake:|^Apocrypha:|^Art:/.test(chapter.name)) {
