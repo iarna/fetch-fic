@@ -61,6 +61,7 @@ class Xenforo extends Site {
         chapters.each((ii, chapter) => {
           const $chapter = $(chapter)
           $chapter.find('li').remove() // remove child chapters so that $link.text() works right
+          if ($chapter.find('a.username').length) return
           const $link = $chapter.find('a')
           const name = $link.text().trim()
           const link = this.normalizeLink($link.attr('href'), base)
