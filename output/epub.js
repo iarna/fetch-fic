@@ -8,6 +8,13 @@ function letterCount (nn) {
     String.fromCharCode(97 + num)
 }
 
+function upperLetterCount (nn) {
+  let base = Math.floor((nn-1) / 26)
+  let num = (nn-1) % 26
+  return (base > 0 ? String.fromCharCode(64 + base) : '') +
+    String.fromCharCode(65 + num)
+}
+
 
 class OutputEpub extends Output {
   from (fic) {
@@ -89,8 +96,10 @@ class OutputEpub extends Output {
     const index = chapter.order != null && (1 + chapter.order)
     let name = chapter.name
     if (name != null && this.fic.numberTOC) {
-      if (chapter.outputType === 'external') {
-        name = letterCount(index - 9000) + '. ' + name
+      if (index >= 9000) {
+        name = upperLetterCount(index - 9000) + '. ' + name
+      } else if (index >= 8000) {
+        name = letterCount(index - 8000) + '. ' + name
       } else {
         name = String(index) + '. ' + name
         if (chapter.author && chapter.author != this.fic.author) {
