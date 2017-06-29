@@ -262,13 +262,14 @@ class Xenforo extends Site {
       }
       $content.find('[style *= color]').each((ii, vv) => {
         const style = chapter.$(vv).attr('style')
-        let ns = `xenforo-color: ${style};`
         const colorMatch = style.match(/color: #(\S\S)(\S\S)(\S\S)/)
+        let ns = ''
         let opacity = 1
         if (colorMatch) {
           const r = Number('0x' + colorMatch[1])
           const g = Number('0x' + colorMatch[2])
           const b = Number('0x' + colorMatch[3])
+          ns += `xenforo-color: rgb(${r},${g},${b});`
           const lightness = color.lightness(color.rgb(r, g, b))
           opacity = lightness / baseLightness
           if (baseLightness < 0.5) opacity = 1 - opacity
