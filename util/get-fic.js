@@ -136,14 +136,16 @@ function getFic (fetch, fic) {
 
   process.emit('debug', `Outputting ${chapters.length} chapters of ${fic.title}`)
   let completed = 0
+  let headIndex = 0
+  let tailIndex = 0
   function showChapterStatus () {
     progress.show(`Fetching chapters [${completed}/${chapters.length}]`)
   }
   showChapterStatus()
   Bluebird.each(chapters, chapterInfo => {
     return chapterInfo.getContent(fetch).then(chapter => {
-      chapter.order = chapterInfo.order
-      if (chapterInfo.type !== 'chapter' && !/^Omake:|^Apocrypha:|^Art:/.test(chapter.name)) {
+      chapter.order = chapterInfo.type === 'chapter' ? headIndex++ : (8000 + tailIndex ++)
+      if (chapterInfo.type !== 'chapter' && !/:/.test(chapter.name)) {
         chapter.name = `${chapterInfo.type}: ${chapterInfo.name}`
       }
       if (fic.chapterHeadings || chapterInfo.headings) {
