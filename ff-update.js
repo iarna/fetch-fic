@@ -191,17 +191,6 @@ var mergeFic = promisify.args(function mergeFic (existingFic, newFic, add) {
       }
     }
   }
-  if (existingFic.chapters.length !== 0) {
-    if (isDate(existingFic.created) && (!isDate(existingFic.created) || newFic.created < existingFic.created)) {
-      changes.push(`${existingFic.title}: Updated fic publish time from ${existingFic.created} to ${newFic.created} (from newFic)`)
-      existingFic.created = newFic.created
-    }
-    if (isDate(existingFic.modified) && (!isDate(existingFic.modified) || newFic.modified > existingFic.modified)) {
-      changes.push(`${existingFic.title}: Updated fic last update time from ${existingFic.modified} to ${newFic.modified} (from newFic)`)
-      existingFic.modified = newFic.modified
-    }
-  }
-
   return changes
 })
 
