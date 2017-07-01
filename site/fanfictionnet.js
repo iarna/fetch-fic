@@ -76,7 +76,6 @@ class FanFictionNet extends Site {
         for (let p of info.pairing) {
           for (let c of p) fic.tags.push('character:' + c)
         }
-        if (info.status === 'Complete') fic.tags.push('status:complete')
         fic.tags.sort()
         fic.words = info.words
         fic.comments = fic.reviews = info.reviews
@@ -93,6 +92,13 @@ class FanFictionNet extends Site {
       const $chapters = $index.find('option')
       if (info && info.chapters !== $chapters.length) {
         throw new Error(`Failed to find all the chapters, expected ${info.chapters}, got ${$chapters.length}`)
+      }
+      if (info && info.status === 'Complete') {
+        if ($chapters.length <= 1) {
+          fic.tags.push('status:one-shot')
+        } else {
+          fic.tags.push('status:complete')
+        }
       }
       if ($chapters.length) {
         $chapters.each((ii, vv) => {
