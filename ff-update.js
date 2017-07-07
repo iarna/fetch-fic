@@ -96,7 +96,7 @@ var fetchLatestVersionWithoutInflate = promisify.args((fetch, existingFic, fromT
     if (thisFromThreadmarks && thisFromScrape) {
       return Fic.fromUrlAndScrape(fetch, updateFrom)
     } else if (thisFromThreadmarks) {
-      return Fic.fromUrl(fetch, updateFrom)
+      return Fic.fromOnlyUrl(fetch, updateFrom)
     } else {
       return Fic.scrapeFromUrl(fetch, updateFrom)
     }
