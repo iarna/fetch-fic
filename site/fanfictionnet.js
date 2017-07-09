@@ -52,6 +52,7 @@ class FanFictionNet extends Site {
       }
       const $meta = chapter.$('#profile_top')
       const $dates = $meta.find('span[data-xutime]')
+      const fandom = chapter.$('#pre_story_links a:last-child').text().trim()
       fic.title = $meta.find('b.xcontrast_txt').text()
       fic.link = this.normalizeLink(chapter.link)
       fic.author = chapter.author
@@ -86,6 +87,14 @@ class FanFictionNet extends Site {
         // id
       } else {
         process.emit('error', 'NOMATCH:', infoline)
+      }
+      if (fandom) {
+        if (/ Crossover$/.test(fandom)) {
+          const [name, xover] = fandom.replace(/ Crossover$/, '').split(/ [+] /)
+          fic.tags.unshift(`fandom:${name}`, `xover:${xover}`)
+        } else {
+          fic.tags.unshift(`fandom:${fandom}`)
+        }
       }
 
       const $index = chapter.$(chapter.$('#chap_select')[0])
