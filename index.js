@@ -16,3 +16,7 @@ Object.defineProperty(exports, 'generate', {
 Object.defineProperty(exports, 'cacheClear', {
   get: () => require('./ff-cache-clear.js')
 })
+
+Object.defineProperty(exports, 'Fic', {
+  get: () => require('./fic.js')
+})
