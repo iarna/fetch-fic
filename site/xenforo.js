@@ -87,6 +87,7 @@ class Xenforo extends Site {
       fic.modified = mostRecent
       if (!fic.chapters.length) return
       const chapter = await fic.chapters[0].getContent(fetch.withOpts({cacheBreak: false}))
+      fic.tags = fic.tags.concat(chapter.tags)
       fic.author = chapter.author
       fic.authorUrl = chapter.authorUrl
       fic.description = chapter.$content.text().trim().replace(/^([^\n]+)[\s\S]*?$/, '$1')
@@ -108,6 +109,7 @@ class Xenforo extends Site {
         if (!fic.title) fic.title = ficTitle
         if (!fic.tags) fic.tags = ficTags
       }
+      fic.tags = fic.tags.concat(this.getTags(chapter.$))
       if (!fic.author) fic.author = chapter.author
       if (!fic.authorUrl) fic.authorUrl = chapter.authorUrl
 
@@ -302,6 +304,7 @@ class Xenforo extends Site {
         }
         chapter.$(vv).attr('style', ns)
       })
+      chapter.tags = this.getTags(chapter.$)
       $content.find('div.messageTextEndMarker').remove()
       chapter.content =  $content.html().trim()
           // content is blockquoted, for some reason
@@ -310,6 +313,14 @@ class Xenforo extends Site {
           .replace(/^<p style="padding: 5px 0px; font-weight: bold; font-style: oblique; text-align: center; font-size: 12pt">.*?<[/]p>/g, '')
       return chapter
     })
+  }
+
+  getTags ($) {
+    const tags = []
+    $('.tagList a.tag').each((ii, tag) => {
+      tags.push($(tag).text().trim())
+    })
+    return tags
   }
 
   sanitizeHtmlConfig () {
@@ -385,7 +396,7 @@ class Xenforo extends Site {
     } catch (_) {
       // qq
       try {
-        return $('div.titleBar h1').text().replace(/^\[\w+\] /, '').replace(/Threadmarks for: /i, '')
+        return $('div.titleBar h1').text().replace(/Threadmarks for: /i, '')
       } catch (_) {
         return
       }
@@ -393,12 +404,13 @@ class Xenforo extends Site {
   }
 
   detagTitle (title) {
-    const tagExp = /[\[(](.*?)[\])]/
+    const tagExp = /[\[(](.*?)[\])]/g
     const tagMatch = title.match(tagExp)
     let tags = []
     if (tagMatch) {
       title = title.replace(tagExp, '').trim()
-      tags = tagMatch[1].split(/[/,]/).map(tag => tag.trim())
+      tagMatch.map(t => t.replace(/[\[(](.*)[\])]/g, '$1').split(/[/,]/).map(st => st.trim()))
+              .forEach(t => t.forEach(st => tags.push(st)))
     }
     return {title, tags}
   }
