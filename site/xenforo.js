@@ -95,7 +95,7 @@ class Xenforo extends Site {
   scrapeFicMetadata (fetch, fic) {
     if (!fic.publisher) fic.publisher = this.publisherName
     const Chapter = use('fic').Chapter
-    return Chapter.getContent(fetch, this.link).then(chapter => {
+    return Chapter.getContent(fetch, this.link).then(async chapter => {
       // we guard all the fic metadata updates because we might be
       // acting in addition to the result from getFicMetadata
       if (!fic.link) fic.link = this.normalizeLink(chapter.link)
@@ -113,15 +113,8 @@ class Xenforo extends Site {
 
       const firstPara = chapter.$content.text().trim().replace(/^([^\n]+)[\s\S]*?$/, '$1')
       if (!fic.description) fic.description = firstPara
+      const chapters = []
       const links = chapter.$content('a')
-      if (links.length === 0) {
-        if (!chapter.name) chapter.name = fic.title
-        fic.addChapter(chapter)
-      } else {
-        chapter.name = 'Table of Contents'
-        fic.addChapter(chapter)
-        fic.includeTOC = false
-      }
       links.each((_, link) => {
         const $link = chapter.$content(link)
         const href = this.normalizeLink($link.attr('href'), chapter.base)
@@ -144,17 +137,23 @@ class Xenforo extends Site {
           }
         }
         if (/^[/](?:threads|posts|s|art)[/]|^[/]index.php[?]topic/.test(url.parse(href).path)) {
-          fic.addChapter({name, link: href})
+          chapters.push({name, link: href})
         }
       })
-      if (!fic.modified && fic.chapters.slice(-1).created) {
-        fic.modified = fic.chapters.slice(-1).created
-      }
-      if (fic.modified || fic.chapters.length === 0) return
-      const lastChapter = fic.chapters.slice(-1)[0]
-      return lastChapter.getContent(fetch.withOpts({cacheBreak: false})).then((chapter) => {
-        fic.modified = chapter.created
+      const Chapter = use('fic').Chapter
+      const fetchWithCache = fetch.withOpts({cacheBreak: false})
+      if (!chapter.name) chapter.name = fic.title
+      fic.addChapter(chapter)
+      await Bluebird.each(chapters, async ch => {
+        return this.getChapter(fetchWithCache, new Chapter(ch)).then(inf => {
+          fic.modified = inf.modified || inf.created
+          fic.addChapter(ch)
+        }, err => null)
       })
+      if (fic.chapters.length > 1) {
+        fic.chapters[0].name = 'Table of Contents'
+        fic.includeTOC = false
+      }
     })
   }
 
