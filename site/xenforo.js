@@ -49,9 +49,7 @@ class Xenforo extends Site {
       const base = $('base').attr('href') || this.threadmarkUrl()
       const tat = this.detagTitle(this.scrapeTitle($))
       fic.title = tat.title
-      if (!fic.tags.length) {
-        fic.tags = tat.tags
-      }
+      fic.tags = fic.tags.concat(tat.tags)
       const $sections = $('div.threadmarks ol.tabs li')
       let leastRecent
       let mostRecent
@@ -107,7 +105,7 @@ class Xenforo extends Site {
         const ficTitle = tat.title
         const ficTags = tat.tags
         if (!fic.title) fic.title = ficTitle
-        if (!fic.tags) fic.tags = ficTags
+        if (!fic.tags.length) fic.tags = ficTags
       }
       fic.tags = fic.tags.concat(this.getTags(chapter.$))
       if (!fic.author) fic.author = chapter.author
@@ -390,27 +388,26 @@ class Xenforo extends Site {
   }
 
   scrapeTitle ($) {
-    // sv, sb
     try {
-      return $('meta[property="og:title"]').attr('content').replace(/Threadmarks for: /i, '')
+      const titleChunk = $('div.titleBar h1')
+      titleChunk.find('span').remove()
+      return titleChunk.text().replace(/Threadmarks for: /i, '').trim()
     } catch (_) {
-      // qq
-      try {
-        return $('div.titleBar h1').text().replace(/Threadmarks for: /i, '')
-      } catch (_) {
-        return
-      }
+      return
     }
   }
 
   detagTitle (title) {
-    const tagExp = /[\[(](.*?)[\])]/g
+    const tagExp = /[(](.*?)[)]|[\[](.*?)[\]]/g
     const tagMatch = title.match(tagExp)
     let tags = []
     if (tagMatch) {
       title = title.replace(tagExp, '').trim()
-      tagMatch.map(t => t.replace(/[\[(](.*)[\])]/g, '$1').split(/[/,]/).map(st => st.trim()))
-              .forEach(t => t.forEach(st => tags.push(st)))
+      tagMatch.map(t =>
+        t.slice(1,-1)
+         .split(/[/,]/)
+         .map(st => st.trim())
+         .forEach(st => tags.push(st)))
     }
     return {title, tags}
   }
