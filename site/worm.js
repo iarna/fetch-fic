@@ -36,11 +36,13 @@ class Worm extends Site {
     fic.author = 'John McCrae'
     fic.authorUrl = 'https://wildbow.wordpress.com'
 
-    return Chapter.getContent(fetch, this.link).then(info => {
-      fic.created = info.created
-      fic.modified = info.modified
-      fic.title = info.name
-      fic.addChapter({name: info.name, link: info.finalUrl, created: info.created})
+    const Chapter = use('fic').Chapter
+    return Chapter.getContent(fetch, fic.link).then(chap => {
+      fic.title = chap.name
+      fic.link = chap.fetchFrom || chap.link
+      fic.modified = chap.modified
+      fic.updated = chap.updated
+      fic.addChapter(chap)
     })
   }
 
