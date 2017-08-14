@@ -19,6 +19,7 @@ class Fic {
     this.modified = null
     this.publisher = null
     this.description = null
+    this.notes = null
     this.cover = null
     this.chapterHeadings = null
     this.externals = null
@@ -95,7 +96,7 @@ class Fic {
 
   importFromJSON (raw) {
     const props = qw`id link altlinks title author authorUrl created modified
-     description tags publisher cover chapterHeadings words updateFrom
+     description notes tags publisher cover chapterHeadings words updateFrom
      includeTOC numberTOC fetchMeta scrapeMeta`
 
     for (let prop of props) {
@@ -211,7 +212,7 @@ class Fic {
     const result = {}
     for (let prop of qw`
          title _id link altlinks updateFrom author authorUrl created modified publisher cover
-         description tags words fics chapters chapterHeadings _includeTOC _numberTOC fetchMeta scrapeMeta
+         description notes tags words fics chapters chapterHeadings _includeTOC _numberTOC fetchMeta scrapeMeta
        `) {
       if (this[prop] != null && (!Array.isArray(this[prop]) || this[prop].length)) result[prop.replace(/^_/,'')] = this[prop]
     }
@@ -227,7 +228,7 @@ class SubFic extends Fic {
     super()
     this.parent = parentFic
     delete this.fics
-    for (let prop of qw`_title _created _modified _description _link _author _authorUrl _tags _chapterHeadings`) {
+    for (let prop of qw`_title _created _modified _description _notes _link _author _authorUrl _tags _chapterHeadings`) {
       this[prop] = null
     }
   }
@@ -275,6 +276,12 @@ class SubFic extends Fic {
   set description (value) {
     return this._description = value
   }
+  get notes () {
+    return this._notes || (this.chapters.length && this.chapters[0].notes)
+  }
+  set notes (value) {
+    return this._notes = value
+  }
   get created () {
     return this._created || (this.chapters.length && this.chapters[0].created)
   }
@@ -318,7 +325,7 @@ class SubFic extends Fic {
     const result = {}
     for (let prop of qw`
          _title _id _link altlinks _author _authorUrl _created _modified _publisher
-         _description _tags chapters _chapterHeadings words _includeTOC _numberTOC
+         _description _notes _tags chapters _chapterHeadings words _includeTOC _numberTOC
          `) {
       const assignTo = prop[0] === '_' ? prop.slice(1) : prop
       if (this[prop] && (this[prop].length == null || this[prop].length)) result[assignTo] = this[prop]
@@ -393,6 +400,7 @@ class Chapter {
       this.type = 'chapter'
     }
     this.description = opts.description
+    this.notes = opts.notes
     this.fetchFrom = opts.fetchFrom
     this.created = opts.created
     this.modified = opts.modified
@@ -409,6 +417,7 @@ class Chapter {
       name: this.name,
       type: this.type !== 'chapter' ? this.type : undefined,
       description: this.description,
+      notes: this.notes,
       link: this.link,
       fetchFrom: this.fetchFrom,
       author: this.author,
