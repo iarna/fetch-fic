@@ -25,9 +25,10 @@ const curriedFetch = module.exports = curryOptions(cookiedFetch, addCookieFuncs,
 
 let limitedFetch
 function cookiedFetch (href, opts) {
+  const ourCookieJar = opts.cookieJar || cookieJar
   for (let cookie of globalCookies) {
     try {
-      opts.cookieJar.setCookieSync(cookie, href)
+      ourCookieJar.setCookieSync(cookie, href)
     } catch (_) {}
   }
   if (opts.referer) {
@@ -46,7 +47,7 @@ function cookiedFetch (href, opts) {
 
 function addCookieFuncs (fetch) {
   fetch.setCookieSync = function () {
-    const ourCookieJar = fetch.options.cookieJar
+    const ourCookieJar = fetch.options.cookieJar || cookieJar
     return ourCookieJar.setCookieSync.apply(ourCookieJar, arguments)
   }
   fetch.setGlobalCookie = cookie => globalCookies.push(cookie)
