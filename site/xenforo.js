@@ -88,7 +88,7 @@ class Xenforo extends Site {
     fic.tags = fic.tags.concat(chapter.tags)
     fic.author = chapter.author
     fic.authorUrl = chapter.authorUrl
-    fic.description = chapter.$content.text().trim().replace(/^([^\n]+)[\s\S]*?$/, '$1')
+    fic.notes = chapter.$content.text().trim().replace(/^([^\n]+)[\s\S]*?$/, '$1')
   }
 
   async scrapeFicMetadata (fetch, fic) {
@@ -112,7 +112,7 @@ class Xenforo extends Site {
     if (!fic.authorUrl) fic.authorUrl = chapter.authorUrl
 
     const firstPara = chapter.$content.text().trim().replace(/^([^\n]+)[\s\S]*?$/, '$1')
-    if (!fic.description) fic.description = firstPara
+    if (!fic.notes) fic.notes = firstPara
     const chapters = []
     const links = chapter.$content('a')
     links.each((_, link) => {

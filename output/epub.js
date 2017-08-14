@@ -52,7 +52,7 @@ class OutputEpub extends Output {
       title: this.fic.title,
       author: this.fic.author,
       authorUrl: this.fic.authorUrl,
-      description: this.fic.description,
+      description: this.fic.notes || this.fic.description,
       source: this.fic.link,
       subject: tags && tags.length && tags.join(','),
       publisher: this.fic.publisher,
@@ -63,7 +63,8 @@ class OutputEpub extends Output {
         'words': {'#value#': this.fic.words, 'datatype': 'int'},
         'authorurl': {'#value#': this.fic.authorUrl, 'datatype': 'text'},
         'status': status && {'#value#': status, 'datatype': 'enumeration'},
-        'fandom': fandom && {'#value#': fandom, 'datatype': 'text'}
+        'fandom': fandom && {'#value#': fandom, 'datatype': 'text'},
+        'rec': this.fic.description && {'#value#': this.fic.description, 'datatype': 'text'}
       }
     })
 
