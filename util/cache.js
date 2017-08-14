@@ -76,7 +76,9 @@ function writeJSON (filename, content) {
 */
 
 function readGzipFile (filename, onMiss) {
-  return readFile(filename, gzipOnMiss).then(buf => zlib.gunzip(buf))
+  return readFile(filename, gzipOnMiss).then(buf => zlib.gunzip(buf).catch(() => {
+    return clearFile(filename).then(() => readGzipFile(filename, onMiss))
+  }))
 
   function gzipOnMiss () {
     return resolveCall(onMiss).then(result => zlib.gzip(result))
