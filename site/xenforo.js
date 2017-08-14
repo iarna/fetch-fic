@@ -182,8 +182,7 @@ class Xenforo extends Site {
         finalUrl = url.format(parsed)
       }
       if (finalUrl !== chapter.link) {
-        chapter.fetchFrom = chapter.link
-        chapter.link = finalUrl
+        chapter.fetchFrom = finalUrl
       }
       let $message
       if (id.length > 1) {
