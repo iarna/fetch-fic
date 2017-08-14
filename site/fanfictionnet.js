@@ -3,6 +3,7 @@ const url = require('url')
 
 const Bluebird = require('bluebird')
 const Site = use('site')
+const moment = require('moment')
 
 class FanFictionNet extends Site {
   static matches (siteUrlStr) {
@@ -179,10 +180,12 @@ function num (n) {
 }
 function date (d) {
   if (d==null) return d
-  if (/[/]/.test(d)) {
-    var sp = d.split(/[/]/)
-    return new Date(sp[2] + '-' + sp[0] + '-' + sp[1])
+  let m
+  if (/^(\w+ \d+(, \d+)?|\d+[/]\d+)$/.test(d)) {
+    return moment.utc(d, ['MMM DD, YYYY', 'MMM DD', 'M/D'])
+  } else if (m = d.match(/(\d+)h/)) {
+    return moment().utc().subtract(2 + Number(m[1]), 'hour')
   } else {
-    return new Date(String((new Date().getYear())+1900) + '-' + d)
+    return null
   }
 }
