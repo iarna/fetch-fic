@@ -49,7 +49,7 @@ class Xenforo extends Site {
       const base = $('base').attr('href') || this.threadmarkUrl()
       const tat = this.detagTitle(this.scrapeTitle($))
       fic.title = tat.title
-      fic.tags = fic.tags.concat(tat.tags)
+      fic.tags = fic.tags.concat(tat.tags.map(t => `title:${t}`))
       const $sections = $('div.threadmarks ol.tabs li')
       let leastRecent
       let mostRecent
@@ -103,7 +103,7 @@ class Xenforo extends Site {
       if (!fic.title || !fic.tags) {
         const tat = this.detagTitle(this.scrapeTitle(chapter.$))
         const ficTitle = tat.title
-        const ficTags = tat.tags
+        const ficTags = tat.tags.map(t => `title:${t}`)
         if (!fic.title) fic.title = ficTitle
         if (!fic.tags.length) fic.tags = ficTags
       }
@@ -404,7 +404,7 @@ class Xenforo extends Site {
       title = title.replace(tagExp, '').trim()
       tagMatch.map(t =>
         t.slice(1,-1)
-         .split(/[/,]/)
+         .split(/[/,|]/)
          .map(st => st.trim())
          .forEach(st => tags.push(st)))
     }
