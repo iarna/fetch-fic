@@ -119,6 +119,10 @@ class FanFictionNet extends Site {
       } else {
         fic.addChapter({name: 'Chapter 1', link: this.chapterUrl(1)})
       }
+      const first = fic.chapters[0]
+      const last = fic.chapters[fic.chapters.length - 1]
+      if (!first.created) first.created = fic.created || (info && (info.published || info.updated)) || fic.modified
+      if (!last.modified) last.modified = fic.modified || (info && (info.updated || info.published)) || fic.created
     })
   }
 
