@@ -424,7 +424,7 @@ class Chapter {
       authorUrl: this.authorUrl,
       created: this.created === 'Invalid Date' ? null : this.created,
       modified: this.modified === 'Invalid Date' ? null : this.modified,
-      tags: this.tags,
+      tags: this.tags && this.tags.length > 0 ? this.tags : null,
       externals: this.externals !== true ? this.externals : null,
       spoilers: this.spoilers !== true ? this.spoilers: null,
       headings: this.headings,
