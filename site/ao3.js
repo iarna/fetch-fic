@@ -16,6 +16,7 @@ class ArchiveOfOurOwn extends Site {
 
   constructor (siteUrlStr) {
     super(siteUrlStr)
+    this.link = this.link.replace(/[/]works[/](\d+).*?$/, '/works/$1')
     this.publisher = 'archiveofourown.org'
     this.publisherName = 'Archive of Our Own'
     const siteUrl = url.parse(siteUrlStr)
