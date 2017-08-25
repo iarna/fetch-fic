@@ -90,7 +90,7 @@ function _reallyRead (urls, args) {
       const filenameize = use('filenameize')
       // we shouldn't get here, but this acts as a final guard against an
       // empty fic getting written out to disk.
-      if (fic.words === 0) {
+      if (fic.words === 0 && !fic.fics.length) {
         const err = Error(`${url} could not be retrieved.`)
         err.code = 404
         err.url = url

@@ -134,7 +134,7 @@ class Fic {
       return thenMaybeFallback(err)
     }
     function thenMaybeFallback (err) {
-      if (fic.chapters.length === 0 ) {
+      if (fic.chapters.length === 0 && fic.fics.length === 0) {
         fic.scrapeMeta = true
         if (fic.site.canScrape) {
           return fic.site.scrapeFicMetadata(fetch, fic).catch(scrapeErr => Bluebird.reject(err || scrapeErr))
