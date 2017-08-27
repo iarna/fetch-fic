@@ -67,14 +67,6 @@ class OutputEpub extends Output {
       }
     })
 
-    let title = 'Title Page'
-    if (this.fic.numberTOC) title = 'ⅰ. ' + title
-    epub.write(Streampub.newChapter(title, this.titlePageHTML(), 0, 'top.xhtml'))
-    if (this.fic.includeTOC) {
-      let toctitle = 'Table of Contents'
-      if (this.fic.numberTOC) toctitle = 'ⅱ. ' + toctitle
-      epub.write(Streampub.newChapter(toctitle, this.tableOfContentsHTML(), 1, 'toc.xhtml'))
-    }
     const WriteStreamAtomic = require('fs-write-stream-atomic')
     const output = new WriteStreamAtomic(this.outname)
     const pump = use('pump')
@@ -85,8 +77,19 @@ class OutputEpub extends Output {
       output).then(() => this.outname)
   }
 
-  transformChapter (chapter) {
+  transformChapter (chapter, stream) {
     const Streampub = require('streampub')
+    if (!this.seenAny) {
+      this.seenAny = true
+      let title = 'Title Page'
+      if (this.fic.numberTOC) title = 'ⅰ. ' + title
+      stream.push(Streampub.newChapter(title, this.titlePageHTML(), 0, 'top.xhtml'))
+      if (this.fic.includeTOC) {
+        let toctitle = 'Table of Contents'
+        if (this.fic.numberTOC) toctitle = 'ⅱ. ' + toctitle
+        stream.push(Streampub.newChapter(toctitle, this.tableOfContentsHTML(), 1, 'toc.xhtml'))
+      }
+    }
     if (chapter.outputType === 'image') {
       return Streampub.newFile(chapter.filename, chapter.content)
     }
