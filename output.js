@@ -34,7 +34,7 @@ class Output {
       objectMode: true,
       transform: function (chapter, _, done) {
         const Bluebird = require('bluebird')
-        return new Bluebird(resolve => resolve(out.transformChapter(chapter))).then(result => {
+        return new Bluebird(resolve => resolve(out.transformChapter(chapter, this))).then(result => {
           if (result != null) this.push(result)
           done()
           return null
@@ -78,7 +78,9 @@ class Output {
   }
 
   chapterLink (chapter) {
-    return this.chapterFilename({outputType: 'chapter', order: chapter.order, name: chapter.name, filename: chapter.filename})
+    const ch = Object.create(chapter)
+    if (!ch.outputType) ch.outputType = 'chapter'
+    return this.chapterFilename(ch)
   }
 
   html (content) {
@@ -230,7 +232,6 @@ class Output {
     } else if (chapter.outputType === 'cover') {
       return
     } else {
-console.log(chapter)
       throw new Error('Unknown chapter filename type: ' + chapter.outputType)
     }
   }
