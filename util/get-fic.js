@@ -142,9 +142,10 @@ function getFic (fetch, fic) {
     progress.show(`Fetching chapters [${completed}/${chapters.length}]`)
   }
   showChapterStatus()
+  const finishedChapters = []
   Bluebird.each(chapters, chapterInfo => {
     return chapterInfo.getContent(fetch).then(chapter => {
-      chapter.order = chapterInfo.type === 'chapter' ? headIndex++ : (8000 + tailIndex ++)
+      chapterInfo.order = chapter.order = chapterInfo.type === 'chapter' ? headIndex++ : (8000 + tailIndex ++)
       if (chapterInfo.type !== 'chapter' && !/:/.test(chapter.name)) {
         chapter.name = `${chapterInfo.type}: ${chapterInfo.name}`
       }
@@ -157,9 +158,22 @@ function getFic (fetch, fic) {
         chapter.content = headerLine + chapter.content
       }
       rewriteImages(fic, chapter, inlineImages(images))
-      rewriteLinks(fic, chapter, (href, $a) => {
+      rewriteIframes(fic, chapter)
+      chapter.outputType = 'chapter'
+      finishedChapters.push({info: chapterInfo, content: chapter})
+    }).catch((err) => {
+      process.emit('error', 'Error while fetching chapter', chapterInfo, err.stack)
+    }).finally(() => {
+      ++completed
+      showChapterStatus()
+    })
+  }).then(() => {
+    completed = 0
+    showChapterStatus()
+    return Bluebird.each(finishedChapters, (chapter, ii) => {
+      rewriteLinks(fic, chapter.content, (href, $a) => {
         return linklocalChapters(fic, externals)(href, $a, (href) => {
-          if (!chapterInfo.externals || !fic.externals) return
+          if (!chapter.info.externals || !fic.externals) return
           try {
             Site.fromUrl(href)
           } catch (ex) {
@@ -168,19 +182,16 @@ function getFic (fetch, fic) {
           externals[href] = {
             order: 9000 + Object.keys(externals).length,
             num: Object.keys(externals).length + 1,
-            requestedBy: chapterInfo
+            requestedBy: chapter.info
           }
           return externalName(externals[href])
         })
       })
-      rewriteIframes(fic, chapter)
-      chapter.outputType = 'chapter'
-      return stream.queueChapter(chapter)
-    }).catch((err) => {
-      process.emit('error', 'Error while fetching chapter', chapterInfo, err.stack)
-    }).finally(() => {
-      ++completed
-      showChapterStatus()
+
+      stream.queueChapter(chapter.content).then(() => {
+        ++completed
+        showChapterStatus()
+      })
     })
   }).then(() => {
     const externalCount = Object.keys(externals).length
