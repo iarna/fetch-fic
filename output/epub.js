@@ -1,5 +1,6 @@
 'use strict'
 const Output = use('output')
+const moment = require('moment')
 
 function letterCount (nn) {
   let base = Math.floor((nn-1) / 26)
@@ -31,16 +32,15 @@ class OutputEpub extends Output {
     const statusRe = /^status:(stalled|abandoned|complete|one-shot)$/
     const fandomRe = /^fandom:/
     let tags = this.fic.tags && this.fic.tags.filter(tag => !fandomRe.test(tag) && !statusRe.test(tag))
-    let modified = this.fic.modified || this.fic.started || this.fic.created
+    let modified = moment(this.fic.modified || this.fic.started || this.fic.created)
     let status = this.fic.tags && this.fic.tags.filter(tag => statusRe.test(tag))[0]
     if (status) status = status.replace(/^status:/, '')
     if (!status && modified) {
-      const now = new Date()
-      const oneMonth = 86400*30*1000
-      const sixMonths = 86400*182*1000
-      if (now - modified > sixMonths) {
+      const oneMonthAgo = moment().subtract(1, 'month')
+      const sixMonthsAgo = moment().subtract(6, 'months')
+      if (modified.isBefore(sixMonthsAgo)) {
         status = 'abandoned'
-      } else if (now - modified > oneMonth) {
+      } else if (modified.isBefore(oneMonthAgo)) {
         status = 'stalled'
       } else {
         status = 'in-progress'

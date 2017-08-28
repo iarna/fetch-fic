@@ -2,6 +2,7 @@
 const url = require('url')
 const Bluebird = require('bluebird')
 const Site = use('site')
+const moment = require('moment')
 
 // This exists to support pulling in singular posts relating to Worm as
 // context in large works of fanfiction.
@@ -60,8 +61,8 @@ class Worm extends Site {
         chapter.link = meta.finalUrl
       }
       chapter.name = chapter.$('h1.entry-title').text().trim()
-      chapter.created = new Date(chapter.$('meta[property="article:published_time"]').attr('content') || chapter.$('time.entry-date').attr('datetime'))
-      chapter.modified = new Date(chapter.$('meta[property="article:modified_time"]').attr('content'))
+      chapter.created = moment(chapter.$('meta[property="article:published_time"]').attr('content') || chapter.$('time.entry-date').attr('datetime'))
+      chapter.modified = moment(chapter.$('meta[property="article:modified_time"]').attr('content'))
 
       if (useComments) {
         const $comments = chapter.$('#comments')

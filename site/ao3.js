@@ -3,6 +3,7 @@ const Bluebird = require('bluebird')
 const url = require('url')
 const Site = use('site')
 const cache = use('cache')
+const moment = require('moment')
 
 class ArchiveOfOurOwn extends Site {
   static matches (siteUrlStr) {
@@ -62,7 +63,7 @@ class ArchiveOfOurOwn extends Site {
         const $vv = $(vv)
         const name = $vv.find('a').text().replace(/^\d+[.] /, '')
         const link = this.normalizeLink($vv.find('a').attr('href'), base)
-        const created = new Date($vv.find('span.datetime').text().replace(/\((.*)\)/, '$1'))
+        const created = moment.utc($vv.find('span.datetime').text(), '(YYYY-MM-DD)')
         fic.addChapter({name, link, created})
       })
       return fic.chapters[0].getContent(fetch)
@@ -100,9 +101,9 @@ class ArchiveOfOurOwn extends Site {
           fic.tags.push('status:complete')
         }
       }
-      fic.created = new Date($stats.find('dd.published').text().trim())
+      fic.created = moment.utc($stats.find('dd.published').text().trim())
       const modified = $stats.find('dd.status').text().trim()
-      fic.modified = modified && new Date(modified)
+      fic.modified = modified && moment.utc(modified)
       fic.words = Number($stats.find('dd.words').text().trim())
       fic.comments = Number($stats.find('dd.comments').text().trim())
       fic.kudos = Number($stats.find('dd.kudos').text().trim())

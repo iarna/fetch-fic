@@ -13,6 +13,7 @@ const fs = use('fs-promises')
 const progress = use('progress')
 const promisify = use('promisify')
 const TOML = use('toml')
+const moment = require('moment')
 
 function update (args) {
   const fetchOpts = {
@@ -51,7 +52,7 @@ function updateFic (fetch, args) {
         return Bluebird.join(existingFic, newFic, (existingFic, newFic) => {
           const lastExisting = existingFic.chapters.slice(-1)[0] || existingFic
           const lastNew = newFic.chapters.slice(-1)[0] || newFic
-          if (lastExisting === lastNew || (lastExisting && lastNew && createdDate(lastExisting) >= createdDate(lastNew))) return
+          if (lastExisting === lastNew || (lastExisting && lastNew && createdDate(lastExisting).isAfter(createdDate(lastNew)))) return
           newFic = ficInflate(newFic, fetch.withOpts({cacheBreak: false}))
           return doMerge()
         })
@@ -108,7 +109,7 @@ var fetchLatestVersionWithoutInflate = promisify.args((fetch, existingFic, fromT
 })
 
 function createdDate (chapOrFic) {
-  return chapOrFic.created || chapOrFic.modified
+  return moment(chapOrFic.created || chapOrFic.modified)
 }
 
 var mergeFic = promisify.args(function mergeFic (existingFic, newFic, add) {
@@ -126,7 +127,7 @@ var mergeFic = promisify.args(function mergeFic (existingFic, newFic, add) {
           continue
         }
         const created = newChapter.created || newChapter.modified
-        if (add === 'all' || createdDate(newChapter) > latestExisting) {
+        if (add === 'all' || createdDate(newChapter).isAfter(latestExisting)) {
           toAdd.push(newChapter)
         }
       }
@@ -239,13 +240,11 @@ function chapterEqual (chapterA, chapterB) {
 }
 
 function dateEqual (dateA, dateB) {
-  const dateAStr = isDate(dateA) && dateA.toISOString && dateA.toISOString()
-  const dateBStr = isDate(dateB) && dateB.toISOString && dateB.toISOString()
-  return dateAStr === dateBStr
+  return moment(dateA).isSame(dateB)
 }
 
 function isDate (date) {
   if (date == null) return false
   if (isNaN(date)) return false
-  return date instanceof Date
+  return date instanceof Date || date instanceof moment
 }

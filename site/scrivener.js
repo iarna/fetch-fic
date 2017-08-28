@@ -2,6 +2,7 @@
 const Bluebird = require('bluebird')
 const Site = use('site')
 const fs = use('fs-promises')
+const moment = require('moment')
 
 class Scrivener extends Site {
   static matches (siteUrlStr) {
@@ -54,8 +55,8 @@ class Scrivener extends Site {
         fic.addChapter({
           name: item.Title,
           fetchFrom: filename,
-          created: new Date(item.Created),
-          modified: new Date(item.Modified),
+          created: moment.unix(item.Created),
+          modified: moment.unix(item.Modified),
         })
       }).catch(_ => process.emit('warn', `Skipping ${item.Title}`))
     })

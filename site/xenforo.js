@@ -3,6 +3,7 @@
 const url = require('url')
 const Site = use('site')
 const Bluebird = require('bluebird')
+const moment = require('moment')
 
 const knownSites = {
   'forums.sufficientvelocity.com': 'Sufficient Velocity',
@@ -380,14 +381,6 @@ class Xenforo extends Site {
     return url.format(threadUrl)
   }
 
-  scrapeDateTime (elem) {
-    if (elem.attr('data-datestring')) {
-      return new Date(elem.attr('data-datestring') + ' ' + elem.attr('data-timestring'))
-    } else if (elem.attr('title')) {
-      return new Date(elem.attr('title').replace(/ at/, ''))
-    }
-  }
-
   scrapeTitle ($) {
     try {
       const titleChunk = $('div.titleBar h1')
@@ -427,11 +420,12 @@ class Xenforo extends Site {
 
   dateTime (elem) {
     if (elem.attr('data-time')) {
-      return new Date(elem.attr('data-time') * 1000)
+      return moment.unix(elem.attr('data-time'))
     } else if (elem.attr('data-datestring')) {
-      return new Date(elem.attr('data-datestring') + ' ' + elem.attr('data-timestring'))
+      process.emit('warn', 'Using legacy data-datestring, times may be in the wrong timezone')
+      return moment.utc(elem.attr('data-datestring') + ' ' + elem.attr('data-timestring'), 'MMM DD, YYYY h:mm A')
     } else if (elem.attr('title')) {
-      return new Date(elem.attr('title').replace(/ at/, ''))
+      return moment.utc(lastPost.attr('title'), 'MMM DD, YYYY [at] h:mm A Z')
     }
   }
 

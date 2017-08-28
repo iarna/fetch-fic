@@ -58,8 +58,8 @@ class FanFictionNet extends Site {
       fic.link = this.normalizeLink(chapter.link)
       fic.author = chapter.author
       fic.authorUrl = chapter.authorUrl
-      fic.created = new Date(Number(chapter.$($dates[1]).attr('data-xutime')) * 1000)
-      fic.modified = new Date(Number(chapter.$($dates[0]).attr('data-xutime')) * 1000)
+      fic.created = moment.unix(chapter.$($dates[1]).attr('data-xutime'))
+      fic.modified = moment.unix(chapter.$($dates[0]).attr('data-xutime'))
       fic.publisher = this.publisherName
       fic.description = $meta.find('div.xcontrast_txt').text()
       const img = chapter.$('#img_large img').attr('data-original')
