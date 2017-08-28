@@ -301,6 +301,9 @@ class Xenforo extends Site {
         chapter.$(vv).attr('style', ns)
       })
       chapter.tags = this.getTags(chapter.$)
+      if (/Discussion in .*Quest(s|ing)/i.test(chapter.$('#pageDescription').text())) {
+        chapter.tags.push('Quest')
+      }
       $content.find('div.messageTextEndMarker').remove()
       chapter.content =  $content.html().trim()
           // content is blockquoted, for some reason
