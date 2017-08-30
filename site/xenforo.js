@@ -3,7 +3,7 @@
 const url = require('url')
 const Site = use('site')
 const Bluebird = require('bluebird')
-const moment = require('moment')
+const moment = require('moment-timezone')
 
 const knownSites = {
   'forums.sufficientvelocity.com': 'Sufficient Velocity',
@@ -54,6 +54,7 @@ class Xenforo extends Site {
       const $sections = $('div.threadmarks ol.tabs li')
       let leastRecent
       let mostRecent
+      const tz = this.getTz($)
       const loadThreadmarks = (type, $) => {
         let chapters = $('li.threadmarkItem')
         if (chapters.length === 0) chapters = $('li.primaryContent') // qq
@@ -64,7 +65,7 @@ class Xenforo extends Site {
           const $link = $chapter.find('a')
           const name = $link.text().trim()
           const link = this.normalizeLink($link.attr('href'), base)
-          const created = this.dateTime($chapter.find('.DateTime'))
+          const created = this.dateTime($chapter.find('.DateTime'), tz)
           if (!leastRecent || created < leastRecent) leastRecent = created
           if (!mostRecent || created > mostRecent) mostRecent = created
           fic.chapters.addChapter({name, type, link, created})
@@ -100,7 +101,8 @@ class Xenforo extends Site {
       // we guard all the fic metadata updates because we might be
       // acting in addition to the result from getFicMetadata
       if (!fic.link) fic.link = this.normalizeLink(chapter.link)
-      if (!fic.created) fic.created = this.dateTime(chapter.$('.DateTime'))
+      const tz = this.getTz(chapter.$)
+      if (!fic.created) fic.created = this.dateTime(chapter.$('.DateTime'), tz)
       if (!fic.title || !fic.tags) {
         const tat = this.detagTitle(this.scrapeTitle(chapter.$))
         const ficTitle = tat.title
@@ -185,6 +187,7 @@ class Xenforo extends Site {
       if (finalUrl !== chapter.link) {
         chapter.fetchFrom = finalUrl
       }
+      const tz = this.getTz(chapter.$)
       let $message
       if (id.length > 1) {
         $message = chapter.$('li.message#' + id.slice(1).replace(/[)]$/, ''))
@@ -252,7 +255,7 @@ class Xenforo extends Site {
       const $author = chapter.$($message.find('a.username')[0])
       chapter.authorUrl = url.resolve(chapter.base, $author.attr('href'))
       chapter.author = $author.text().trim()
-      chapter.created = this.dateTime($message.find('a.datePermalink .DateTime'))
+      chapter.created = this.dateTime($message.find('a.datePermalink .DateTime'), tz)
       let baseLightness = 100
       const color = require('color-ops')
       if (/spacebattles/.test(chapter.link)) {
@@ -421,14 +424,13 @@ class Xenforo extends Site {
     return href
   }
 
-  dateTime (elem) {
+  dateTime (elem, tz) {
     if (elem.attr('data-time')) {
       return moment.unix(elem.attr('data-time'))
     } else if (elem.attr('data-datestring')) {
-      process.emit('warn', 'Using legacy data-datestring, times may be in the wrong timezone')
-      return moment.utc(elem.attr('data-datestring') + ' ' + elem.attr('data-timestring'), 'MMM DD, YYYY h:mm A')
+      return moment.tz(elem.attr('data-datestring') + ' ' + elem.attr('data-timestring'), 'MMM DD, YYYY h:mm A Z', tz)
     } else if (elem.attr('title')) {
-      return moment.utc(lastPost.attr('title'), 'MMM DD, YYYY [at] h:mm A Z')
+      return moment.tz(elem.attr('title'), 'MMM DD, YYYY [at] h:mm A Z', tz)
     }
   }
 
@@ -442,6 +444,18 @@ class Xenforo extends Site {
       return wordcount($content.text().trim())
     } else {
       return wordcount(chapter.$content.text().trim())
+    }
+  }
+
+  getTz ($) {
+    switch (this.publisherName) {
+      case 'Sufficient Velocity':
+      case 'Spacebattles':
+        return 'America/New_York'
+      case 'Questionable Questing':
+        return 'Europe/London'
+      default:
+        return 'America/Los_Angeles'
     }
   }
 }
