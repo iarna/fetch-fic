@@ -39,7 +39,7 @@ function networkOptions (yargs, cacheDefault) {
   .option('requests-per-second', {
     alias: 'rps',
     type: 'number',
-    default: 1,
+    default: 4,
     describe: 'maximum number of HTTP requests per second'
   })
 }

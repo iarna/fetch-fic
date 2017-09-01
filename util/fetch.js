@@ -1,6 +1,7 @@
 'use strict'
 const url = require('url')
 const util = require('util')
+const moment = require('moment')
 
 const pkg = require('../package.json')
 const USER_AGENT = `${pkg.name}/${pkg.version} (+${pkg.homepage})`
@@ -38,7 +39,19 @@ function cookiedFetch (href, opts) {
   if (!limitedFetch) limitedFetch = callLimit(rawFetch, opts.maxConcurrency || 4, 1000 / (opts.requestsPerSecond || 1))
   return fetchWithCache(limitedFetch, href, opts).catch(err => {
     if (err.code === 403 || /timeout/i.test(err.message)) {
-      return fetchWithCache(limitedFetch, href, opts)
+      process.emit('warn', 'Timeout fetching', href, 'retrying in 1.5 seconds')
+      return Promise.delay(1500).fetchWithCache(limitedFetch, href, opts)
+    } else if (err.code === 429) {
+      let retryAfter = 10
+      if (err.retryAfter) {
+        if (/^\d+$/.test(err.retryAfter)) {
+          retryAfter = Number(err.retryAfter) * 1000
+        } else {
+          retryAfter = (moment().unix() - moment.utc(err.retryAfter, 'ddd, DD MMM YYYY HH:mm:ss ZZ').unix()) * 1000
+        }
+      }
+      process.emit('warn', 'Request backoff requested, sleeping', retryAfter / 1000, 'seconds')
+      return Promise.delay(retryAfter).fetchWithCache(limitedFetch, href, opts)
     } else {
       throw err
     }

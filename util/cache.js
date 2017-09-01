@@ -171,12 +171,20 @@ function readUrl (fetchUrl, onMiss) {
       meta.headers = res.headers.raw()
       meta.fetchedAt = fetchedAt
       if (meta.status && meta.status === 304) {
-        const err304 = new Error('Got status: ' + meta.status + ' ' + meta.statusText + ' for ' + fetchUrl)
-        err304.code = meta.status
-        err304.url = fetchUrl
-        err304.meta = meta
-        return Bluebird.reject(err304)
         return thenReadContent().spread((_, data) => data)
+      } else if (meta.status && meta.status === 403) {
+        const err403 = new Error('Got status: ' + meta.status + ' ' + meta.statusText + ' for ' + fetchUrl)
+        err403.code = meta.status
+        err403.url = fetchUrl
+        err403.meta = meta
+        return Bluebird.reject(err403)
+      } else if (meta.status && meta.status === 429) {
+        const err429 = new Error('Got status: ' + meta.status + ' ' + meta.statusText + ' for ' + fetchUrl)
+        err429.code = meta.status
+        err429.url = fetchUrl
+        err429.meta = meta
+        err429.retryAfter = res.headers['retry-after']
+        return Bluebird.reject(err429)
       } else if (meta.status && meta.status !== 200) {
         const non200 = new Error('Got status: ' + meta.status + ' ' + meta.statusText + ' for ' + fetchUrl)
         non200.code = meta.status
