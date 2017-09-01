@@ -34,7 +34,7 @@
     "gauge": "^2.7.4",
     "html-escape": "^2.0.0",
     "iconv-lite": "^0.4.18",
-    "make-fetch-happen": "^2.4.12",
+    "make-fetch-happen": "^2.5.0",
     "mkdirp": "^0.5.1",
     "moment": "^2.18.1",
     "moment-timezone": "^0.5.13",
