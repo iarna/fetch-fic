@@ -25,7 +25,7 @@
     "are-we-there-yet": "^1.1.4",
     "bluebird": "^3.4.2",
     "buffer-signature": "^1.0.0",
-    "cheerio": "^1.0.0-rc.1",
+    "cheerio": "^1.0.0-rc.2",
     "color-ops": "^2.0.0",
     "comma-number": "^2.0.0",
     "concat-stream": "^1.5.2",
