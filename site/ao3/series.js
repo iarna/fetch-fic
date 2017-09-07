@@ -68,5 +68,9 @@ class ArchiveOfOurOwnSeries extends Site {
       })
     })
   }
+  getChapter (fetch, chapterInfo) {
+    const ChapterContent = use('chapter-content')
+    return Bluebird.resolve(new ChapterContent(chapterInfo, {html: '', site: this}))
+  }
 }
 module.exports = ArchiveOfOurOwnSeries
