@@ -201,27 +201,29 @@ var refreshMetadata = promisify.args(function mergeFic (existingFic, changes) {
   const fics = [existingFic].concat(existingFic.fics)
 
   for (let fic of fics) {
-    let now = new Date()
-    let then = new Date(0)
-    let created = fic.chapters.filter(c => c.type === 'chapter' && c.created).reduce((ficCreated, chapter) => ficCreated < chapter.created ? ficCreated : chapter.created, now)
+    let now = moment()
+    let then = moment(0)
+    let created = fic.chapters.filter(c => c.type === 'chapter' && (c.created || c.modified)).reduce((ficCreated, chapter) => {
+      return ficCreated < moment(chapter.created || chapter.modified) ? ficCreated : moment(chapter.created || chapter.modified)
+    }, now)
     if (isDate(created) && (created !== now && (!isDate(fic.created) || !dateEqual(created, fic.created)))) {
       changes.push(`${fic.title}: Updated fic publish time from ${fic.created} to ${created} (from earliest chapter)`)
       fic.created = created
     }
 
-    let modified = fic.chapters.filter(c => c.type === 'chapter' && (c.modified || c.created)).reduce((ficModified, chapter) => ficModified > (chapter.modified||chapter.created) ? ficModified : (chapter.modified||chapter.created), then)
+    let modified = fic.chapters.filter(c => c.type === 'chapter' && (c.modified || c.created)).reduce((ficModified, chapter) => ficModified > moment(chapter.modified||chapter.created) ? ficModified : moment(chapter.modified||chapter.created), then)
     if (isDate(modified) && (modified !== then && (!isDate(fic.modified) || !dateEqual(modified, fic.modified)))) {
       changes.push(`${fic.title}: Updated fic last update time from ${fic.modified} to ${modified} (from latest chapter)`)
       fic.modified = modified
     }
   }
   if (existingFic.chapters.length === 0) {
-    let created = existingFic.fics.filter(f => f.created).reduce((ficCreated, subfic) => ficCreated < subfic.created ? ficCreated : subfic.created, existingFic.created)
+    let created = existingFic.fics.filter(f => f.created).reduce((ficCreated, subfic) => ficCreated < moment(subfic.created) ? ficCreated : moment(subfic.created), moment(existingFic.created))
     if (isDate(created) && (!dateEqual(existingFic.created, created))) {
       changes.push(`${existingFic.title}: Updated fic publish time from ${existingFic.created} to ${created} (from earliest subfic)`)
       existingFic.created = created
     }
-    let modified = existingFic.fics.filter(f => f.modified || f.created).reduce((ficModified, subfic) => ficModified > (subfic.modified||subfic.created) ? ficModified : (subfic.modified||subfic.created), existingFic.modified)
+    let modified = existingFic.fics.filter(f => f.modified || f.created).reduce((ficModified, subfic) => ficModified > moment(subfic.modified||subfic.created) ? ficModified : moment(subfic.modified||subfic.created), moment(existingFic.modified))
     if (isDate(modified) && (!dateEqual(existingFic.modified, modified))) {
       changes.push(`${existingFic.title}: Updated fic last update time from ${existingFic.modified} to ${modified} (from latest subfic)`)
       existingFic.modified = modified
