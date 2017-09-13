@@ -6,15 +6,14 @@ const moment = require('moment')
 const pkg = require('../package.json')
 const USER_AGENT = `${pkg.name}/${pkg.version} (+${pkg.homepage})`
 
-const Bluebird = require('bluebird')
+const fetchBackOff = use('fetch-back-off')
 const rawFetch = require('make-fetch-happen').defaults({
   cache: 'no-store',
-  retry: 3
+  retry: 0
 })
 const tough = require('tough-cookie')
 
 const cache = use('cache')
-const callLimit = use('call-limit')
 const curryOptions = use('curry-options')
 
 const CookieJar = tough.CookieJar
@@ -22,32 +21,8 @@ const CookieJar = tough.CookieJar
 const cookieJar = new CookieJar()
 const globalCookies = []
 
-const curriedFetch = module.exports = curryOptions(cookiedFetch, addCookieFuncs, {cookieJar})
+module.exports = curryOptions(cookiedFetch, addCookieFuncs, {cookieJar})
 
-
-const backoffs = {}
-function ready (href) {
-  const host = url.parse(href).host
-  return backoffs[host] ? backoffs[host].promise : Bluebird.resolve()
-}
-function backoff (href, time) {
-  const host = url.parse(href).host
-  if (backoffs[host]) {
-    backoffs[host].till += time
-  } else {
-    backoffs[host] = {}
-    backoffs[host].till = moment() + time
-    backoffs[host].promise = new Bluebird((resolve, reject) => {
-      setTimeout(() => checkTime(host, resolve), time)
-    })
-  }
-  return backoffs[host].promise
-}
-function checkTime (host, resolve) {
-  if (backoffs[host].till < Number(moment())) {
-    setTimeout(() => checkTime(host, resolve), backoffs[host].till - moment())
-  }
-}
 
 let limitedFetch
 function cookiedFetch (href, opts) {
@@ -61,27 +36,13 @@ function cookiedFetch (href, opts) {
     if (!opts.headers) opts.headers = {}
     opts.headers.Referer = opts.referer
   }
-  if (!limitedFetch) limitedFetch = callLimit(rawFetch, opts.maxConcurrency || 4, 1000 / (opts.requestsPerSecond || 1))
-  return ready(href).then(() => fetchWithCache(limitedFetch, href, opts).catch(err => {
-    if (err.code === 403 || /timeout/i.test(err.message)) {
-      throw err
-      process.emit('warn', 'Timeout fetching', href, 'retrying in 1.5 seconds')
-      return backoff(href, 1500).then(() => fetchWithCache(limitedFetch, href, opts))
-    } else if (err.code === 429) {
-      let retryAfter = 10000
-      if (err.retryAfter) {
-        if (/^\d+$/.test(err.retryAfter)) {
-          retryAfter = Number(err.retryAfter) * 1000
-        } else {
-          retryAfter = (moment().unix() - moment.utc(err.retryAfter, 'ddd, DD MMM YYYY HH:mm:ss ZZ').unix()) * 1000
-        }
-      }
-      process.emit('warn', 'Request backoff requested, sleeping', retryAfter / 1000, 'seconds', `(at: ${err.retryAfter}, now: ${moment.utc()})`)
-      return backoff(href, retryAfter).then(() => fetchWithCache(limitedFetch, href, opts))
-    } else {
-      throw err
-    }
-  }))
+  if (!limitedFetch) {
+    limitedFetch = fetchBackOff(rawFetch.defaults({
+      maxConcurrency: opts.maxConcurrency || 4,
+      requestsPerSecond: opts.requestsPerSecond || 1
+    }))
+  }
+  return fetchWithCache(limitedFetch, href, opts)
 }
 
 function addCookieFuncs (fetch) {
@@ -100,7 +61,7 @@ function NoNetwork (toFetch, opts) {
 }
 
 function getCookieStringP (jar, url) {
-  return new Bluebird((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     return jar.getCookieString(url, (err, cookies) => {
       return err ? reject(err) : resolve(cookies)
     })
@@ -110,38 +71,36 @@ function getCookieStringP (jar, url) {
 function setCookieP (jar, cookie, link) {
   const linkP = url.parse(link)
   linkP.pathname = ''
-  return new Bluebird((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     jar.setCookie(cookie, url.format(linkP), (err, cookie) => {
       return err ? reject(err) : resolve(cookie)
     })
   })
 }
 
-function fetchWithCache (fetch, toFetch, opts) {
-  return Bluebird.resolve(opts).then(opts => {
-    process.emit('debug', 'Fetching', toFetch, opts)
-    if (opts.cacheBreak) return cache.invalidateUrl(toFetch)
-  }).then(() => {
-    return cache.readUrl(toFetch, (toFetch, meta) => {
-      if (opts.noNetwork) throw NoNetwork(toFetch, opts)
-      return getCookieStringP(opts.cookieJar, toFetch).then(cookies => {
-        if (!opts.headers) opts.headers = {}
-        opts.headers.Cookie = cookies
-        const domain = url.parse(toFetch).hostname.replace(/^forums?[.]/, '')
-        if (meta.headers && meta.headers['last-modified']) {
-          opts.headers['If-Modified-Since'] = meta.headers['last-modified']
-        }
-        opts.headers['user-agent'] = USER_AGENT
-        process.emit('debug', 'Downloading', toFetch, opts)
-        return fetch(domain, toFetch, opts)
-      })
-    })
-  }).spread((meta, content) => {
-    if (meta.headers && meta.headers['set-cookie']) {
-      const setCookies = meta.headers['set-cookie'].map(rawCookie => setCookieP(opts.cookieJar, rawCookie, meta.finalUrl || toFetch))
-      return Bluebird.all(setCookies.map(P => P.catch(()=> true))).then(() => [meta, content])
-    } else {
-      return [meta, content]
+async function fetchWithCache (fetch, toFetch, opts$) {
+  const opts = await opts$
+  process.emit('debug', 'Fetching', toFetch, opts)
+  if (opts.cacheBreak) await cache.invalidateUrl(toFetch)
+  const [meta, content] = await cache.readUrl(toFetch, async (toFetch, meta) => {
+    if (opts.noNetwork) throw NoNetwork(toFetch, opts)
+    const cookies = await getCookieStringP(opts.cookieJar, toFetch)
+    if (!opts.headers) opts.headers = {}
+    opts.headers.Cookie = cookies
+    const domain = url.parse(toFetch).hostname.replace(/^forums?[.]/, '')
+    if (meta.headers && meta.headers['last-modified']) {
+      opts.headers['If-Modified-Since'] = meta.headers['last-modified']
     }
+    opts.headers['user-agent'] = USER_AGENT
+    process.emit('debug', 'Downloading', toFetch, opts)
+    return fetch(toFetch, opts)
   })
+  if (meta.headers && meta.headers['set-cookie']) {
+    for (let rawCookie of meta.headers['set-cookie']) {
+      try {
+        await setCookieP(opts.cookieJar, rawCookie, meta.finalUrl || toFetch)
+      } catch (_) {}
+    }
+  }
+  return [meta, content]
 }

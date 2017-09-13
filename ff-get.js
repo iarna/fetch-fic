@@ -56,9 +56,27 @@ async function _reallyRead (urls, args) {
   const fetchOpts = {
     cacheBreak: !args.cache,
     noNetwork: !args.network,
-    maxConcurrency: args.concurrency,
-    requestsPerSecond: args['requests-per-second'],
-    timeout: 10000
+    maxConcurrency: 6,
+    requestsPerSecond: 10,
+    perSite: {
+      "forums.spacebattles.com": {
+        maxConcurrency: 2,
+        requestsPerSecond: 1,
+      },
+      "forums.sufficientvelocity.com": {
+        maxConcurrency: 6,
+        requestsPerSecond: 4,
+      },
+      "forum.questionablequesting.com": {
+        maxConcurrency: 6,
+        requestsPerSecond: 4,
+      },
+      "questionablequesting.com": {
+        maxConcurrency: 6,
+        requestsPerSecond: 4,
+      },
+    },
+    timeout: 3500
   }
   const fetch = use('fetch')
   const fetchAndSpin = fetch.withOpts(fetchOpts).wrapWith(progress.spinWhileAnd)

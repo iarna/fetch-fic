@@ -22,9 +22,27 @@ function write (args) {
   const fetchOpts = {
     cacheBreak: !args.cache,
     noNetwork: !args.network,
-    timeout: 10000,
-    maxConcurrency,
-    requestsPerSecond
+    timeout: 3500,
+    maxConcurrency: 6,
+    requestsPerSecond: 10,
+    perSite: {
+      "forums.spacebattles.com": {
+        maxConcurrency: 2,
+        requestsPerSecond: 1,
+      },
+      "forums.sufficientvelocity.com": {
+        maxConcurrency: 6,
+        requestsPerSecond: 4,
+      },
+      "forum.questionablequesting.com": {
+        maxConcurrency: 6,
+        requestsPerSecond: 4,
+      },
+      "questionablequesting.com": {
+        maxConcurrency: 6,
+        requestsPerSecond: 4,
+      },
+    }
   }
 
   const fetchAndSpin = fetch.withOpts(fetchOpts).wrapWith(progress.spinWhileAnd)

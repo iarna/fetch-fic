@@ -164,7 +164,7 @@ function readUrl (fetchUrl, onMiss) {
   }
 
   function orFetchUrl () {
-    return resolveCall(onMiss, fetchUrl, existingMeta).then(res => {
+    return resolveCall(onMiss, fetchUrl, existingMeta).spread((res, content) => {
       meta.finalUrl = res.url || meta.startUrl
       meta.status = res.status
       meta.statusText = res.statusText
@@ -192,7 +192,7 @@ function readUrl (fetchUrl, onMiss) {
         non200.meta = meta
         return Bluebird.reject(non200)
       }
-      return res.buffer()
+      return content
     })
   }
 
