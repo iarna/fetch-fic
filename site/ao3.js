@@ -26,6 +26,9 @@ class ArchiveOfOurOwn extends Site {
     this.workId = ficMatch[1]
   }
 
+  normalizeLink (href, base) {
+    return super.normalizeLink(href, base).replace(/#.*$/, '')
+  }
   chapterIndex () {
     return 'https://archiveofourown.org/works/' + this.workId + '/navigate'
   }
