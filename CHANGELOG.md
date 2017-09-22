@@ -1,5 +1,17 @@
 # CHANGES TO `fetch-fic`
 
+## v3.8.0
+
+* Vastly improve concurrency limits. Saves you from newly strict Space Battles restrictions.
+* ff update: You can now update fics that only contain other fics (series on ao3, for example)
+* ff: CLI now uses more RAM by default
+* Vastly better back-off support, log current status of requests in flight.
+* Xenforo: Fix a crahser when no chapter was found
+* Xenforo: Truncate to minutes when using unix timestamps.  This is
+  important because recent articles get timestamps and older one's get
+  date-time text with minute resolution.  Not having this results
+  in churn.
+* FFNet: Using rating as tag, instead of rated. Aligns with AO3.
 * Recently two large xenforo sites, spacebattles.com and
   sufficientvelocity.com, started supporting categorized threadmarks which
   in turn implies categorized chapters.  This is now support with the `type`
@@ -11,12 +23,38 @@
   * Prefix the type for non-chapter types during output.
   * Not count non-chapter words in word count.
   * Include non-chapter sections as roman-numeral chapters in the index/appendix.
-* Pick up relationship markers from AO3 with `ship:` prefix in tags (like FFNet).
-* Better timeout retries for hopefully better results when doing batch operations on questionable networks.
+* Pick up relationship markers from AO3 with `ship:` and `friendship:` prefixs in tags (like FFNet).
 * Our useragent now advertises fetch-fic (or takes blame for our requests)
 * Better subfic handling (default description, created, modified, author and authorurl from chapters).
 * Subfics are sorted by creation date.
 * `ff update --refresh` forces an update of the `.fic.toml` file even if we don't think there were changes.
+* Support for congested sites asking us to backoff, both with site provided
+  timeouts and just delaying on our own.
+* Support for site-specific request limits (specifically for SpaceBattles
+  which seems to be more strict).
+* AO3: Support for fetching an entire series.  This produces a fic with
+  subfics for each entry in the series.
+* Fixes to the date calculations by using moment with timezones everywhere
+  and hard coding timezones for the forum sites we know about.  (There's
+  still date churn due to the timestamp data we get early on having higher
+  resolution than the timestamp data we get later.)
+* AO3: Cross linking now works when cross-links include anchors.
+* Xenforo: Fix bug that mangled multiple spoiler tags in a single chapter.
+* Xenforo: Add Quest tag if the forum looks like a quest & roleplay forum.
+* Many fixes to cross-linking of resources.
+* FFNet: When updating a fic, set the timestamp on the last chapter to the fic's timestamp.
+* Xenforo: Tags when parsed out of the title now get a prefix to easily
+  distinguish them from actual Xenforo tags.
+* Cache: Corrupted entries are retried better now.
+* Fics: New notes field goes along side description.  The value guessed by
+  the Xenforo source now goes in Notes.  Description is now intended to
+  always actually be a description/summary of the fic, where notes is
+  anything else.
+* Xenforo: Fetch all chapter data when initially getting metadata as much is chapter-specific.
+* FFNet: Parse the fandom (or fandom and crossover) from ffnet fics.
+* Update: When updating don't fallback to scraping if fetching is unavailable.
+* FFNet: Correctly flag one-shots.
+* Xenforo: Fix how color-styles are injected.
 
 ## v3.7.0
 
