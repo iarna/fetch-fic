@@ -44,6 +44,7 @@ const trackerGroup = new TrackerGroup().on('change', (section, completed) => {
   } else {
     gauge.show({completed})
   }
+  gauge.pulse()
 })
 progress.tracker = trackerGroup
 
@@ -85,6 +86,7 @@ function show (section, message) {
   } else {
     gauge.show()
   }
+  gauge.pulse()
 }
 
 function hide () {
