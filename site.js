@@ -20,7 +20,11 @@ class Site {
       }
     }
     for (const SpecificSite of this.registered) {
-      if (SpecificSite.matches(rawUrl)) return new SpecificSite(rawUrl)
+      try {
+        if (SpecificSite.matches(rawUrl)) return new SpecificSite(rawUrl)
+      } catch (ex) {
+        // try next
+      }
     }
     const err = new Error('Could not find supported site for: ' + rawUrl)
     err.code = 'ENOSITE'
