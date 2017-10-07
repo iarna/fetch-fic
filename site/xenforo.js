@@ -426,7 +426,7 @@ class Xenforo extends Site {
 
   dateTime (elem, tz) {
     if (elem.attr('data-time')) {
-      return moment.unix(elem.attr('data-time'))
+      return moment.unix(elem.attr('data-time')).millisecond(0).second(0)
     } else if (elem.attr('data-datestring')) {
       return moment.tz(elem.attr('data-datestring') + ' ' + elem.attr('data-timestring'), 'MMM DD, YYYY h:mm A Z', tz)
     } else if (elem.attr('title')) {
