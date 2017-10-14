@@ -33,7 +33,7 @@ function write (args) {
   const trackers = args.fic.map(() => progress.tracker.newItem(1))
 
   process.emit('debug', `Generating epubs for ${args.fic.join(', ')}`)
-  return Bluebird.map(args.fic, fetchTopFic, {concurrency: 10})
+  return Bluebird.map(args.fic, fetchTopFic, {concurrency: 3})
 
   function fetchTopFic (ficFile, ficNum) {
     process.emit('debug', `Generating #${ficNum} for ${ficFile}`)
