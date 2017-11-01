@@ -14,6 +14,7 @@ const progress = use('progress')
 const promisify = use('promisify')
 const TOML = use('toml')
 const moment = require('moment')
+const uniq = require('lodash.uniq')
 
 function update (args) {
   const fetchOpts = {
@@ -115,31 +116,35 @@ function createdDate (chapOrFic) {
 var mergeFic = promisify.args(function mergeFic (existingFic, newFic, add) {
   const changes = []
   const toAdd = []
-  const latestExisting = existingFic.chapters.concat(existingFic.fics).map(createdDate).reduce((aa, bb) => {
-    return aa > bb ? aa : bb
-  }, new Date(0))
 
   if (add !== 'none') {
-    const newestIndex = newFic.chapters.length - 1
-    if (newFic.chapters[newestIndex].created || newFic.chapters[newestIndex].modified) {
-      for (let newChapter of newFic.chapters) {
-        if (existingFic.chapterExists(newChapter.link) || existingFic.chapterExists(newChapter.fetchFrom)) {
-          continue
+    const types = uniq(newFic.chapters.map(ch => ch.type))
+    types.forEach(type => {
+      const latestExisting = existingFic.chapters.filter(ch => ch.type === type).concat(existingFic.fics).map(createdDate).reduce((aa, bb) => {
+        return aa > bb ? aa : bb
+      }, new Date(0))
+      const chapters = newFic.chapters.filter(ch => ch.type === type)
+      const newestIndex = chapters.length - 1
+      if (chapters[newestIndex].created || chapters[newestIndex].modified) {
+        for (let newChapter of chapters) {
+          if (existingFic.chapterExists(newChapter.link) || existingFic.chapterExists(newChapter.fetchFrom)) {
+            continue
+          }
+          const created = newChapter.created || newChapter.modified
+          if (add === 'all' || createdDate(newChapter).isAfter(latestExisting)) {
+            toAdd.push(newChapter)
+          }
         }
-        const created = newChapter.created || newChapter.modified
-        if (add === 'all' || createdDate(newChapter).isAfter(latestExisting)) {
-          toAdd.push(newChapter)
+      } else {
+        for (let ii = newestIndex; ii >= 0; --ii) {
+          const newChapter = chapters[ii]
+          if (existingFic.chapterExists(newChapter.link) || existingFic.chapterExists(newChapter.fetchFrom)) {
+            if (add === 'all') { continue } else { break }
+          }
+          toAdd.unshift(newChapter)
         }
       }
-    } else {
-      for (let ii = newestIndex; ii >= 0; --ii) {
-        const newChapter = newFic.chapters[ii]
-        if (existingFic.chapterExists(newChapter.link) || existingFic.chapterExists(newChapter.fetchFrom)) {
-          if (add === 'all') { continue } else { break }
-        }
-        toAdd.unshift(newChapter)
-      }
-    }
+    })
   }
 
   if (existingFic.description == null && newFic.description != null) {

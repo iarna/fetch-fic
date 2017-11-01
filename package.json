@@ -34,6 +34,7 @@
     "gauge": "^2.7.4",
     "html-escape": "^2.0.0",
     "iconv-lite": "^0.4.19",
+    "lodash.uniq": "^4.5.0",
     "make-fetch-happen": "^2.5.0",
     "mkdirp": "^0.5.1",
     "moment": "^2.19.1",
