@@ -93,7 +93,7 @@ function inlineImages (images) {
   return (src, $img) => {
     if (/clear[.]png$/.test(src)) return // xenforo
     if (/Special:CentralAutoLogin/.test(src)) return // wikipedia
-    src = src.replace(/^https:[/][/]api[.]imgble[.]com[/](.*)[/]\d+[/]\d+$/, '$1')
+    src = src.replace(/^https?:[/][/]api[.]imgble[.]com[/](.*)[/]\d+[/]\d+$/, '$1')
     src = src.replace(/\b(?:41|36|67)[.]media[.]tumblr[.]com\b/, '40.media.tumblr.com')
     if (!images[src]) {
       let ext = src.match(/([.](?:jpe?g|gif|png))/i) || src.match(/([.]svg)/i)
