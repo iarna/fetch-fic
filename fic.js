@@ -156,13 +156,13 @@ class Fic {
     const fic = new this(fetch)
     fic.site = Site.fromUrl(link)
     fic.link = fic.site.link
-    return fic.site.getFicMetadata(fetch, fic).then(thenMaybeFallback, elseMaybeFallback).then(() => fic)
+    return fic.site.getFicMetadata(fetch, fic).then(() => thenMaybeFallback(), elseMaybeFallback).then(() => fic)
     function elseMaybeFallback (err) {
       if (err && (!err.meta || err.meta.status !== 404)) throw err
       return thenMaybeFallback(err)
     }
     function thenMaybeFallback (err) {
-      if (fic.chapters.length === 0 ) {
+      if (fic.chapters.length === 0 && fic.fics.length === 0) {
         if (!err) {
           err = new Error(`Could not fetch: ${link}`)
           err.code = 404
