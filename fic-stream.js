@@ -1,5 +1,4 @@
 'use strict'
-const Bluebird = require('bluebird')
 const Readable = require('stream').Readable
 const qw = require('qw')
 
@@ -38,19 +37,19 @@ class FicStream extends Readable {
       proxy(fic, pp, this)
     }
   }
-  queueChapter (chapter) {
+  async queueChapter (chapter) {
     const state = this.FicStream
     if (state.reading) {
       state.reading = this.push(chapter)
-      if (chapter == null) return Bluebird.resolve()
+      if (chapter == null) return
     } else {
       state.chapterBuffer.push(chapter)
     }
     if (state.reading) {
-      return Bluebird.resolve()
+      return
     } else {
       if (state.readyP) return state.readyP
-      state.readyP = new Bluebird(resolve => {
+      state.readyP = new Promise(resolve => {
         state.readyR = resolve
       })
       return state.readyP
