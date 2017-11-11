@@ -147,5 +147,5 @@ function addWork (todo, tracker) {
 }
 
 function completeWorkWhenResolved (todo, tracker) {
-  return todo.finally(() => tracker.completeWork(1))
+  return Bluebird.resolve(todo).finally(() => tracker.completeWork(1))
 }

@@ -144,7 +144,7 @@ function getFic (fetch, fic) {
   showChapterStatus()
   const finishedChapters = []
   Bluebird.each(chapters, chapterInfo => {
-    return chapterInfo.getContent(fetch).then(chapter => {
+    return Bluebird.resolve(chapterInfo.getContent(fetch)).then(chapter => {
       chapterInfo.order = chapter.order = chapterInfo.type === 'chapter' ? headIndex++ : (8000 + tailIndex ++)
       if (chapterInfo.type !== 'chapter' && !/:/.test(chapter.name)) {
         chapter.name = `${chapterInfo.type}: ${chapterInfo.name}`
@@ -205,7 +205,7 @@ function getFic (fetch, fic) {
     const pages = externalCount === 1 ? 'page' : 'pages'
     return concurrently(Object.keys(externals), maxConcurrency, (href, exterNum) => {
       const externalInfo = externals[href]
-      return Chapter.getContent(fetch, href).then(external => {
+      return Bluebird.resolve(Chapter.getContent(fetch, href)).then(external => {
         external.order = externalInfo.order
         external.num = externalInfo.num
         const name = external.name || external.ficTitle
