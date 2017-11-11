@@ -14,7 +14,7 @@ class Site {
   static fromUrl (rawUrl) {
     if (this.registered.length === 0) {
       const sitesAvailable = qw`
-        xenforo fanfictionnet ao3 ao3/series worm worm2
+        xenforo fanfictionnet ao3 ao3/series seananmcguire worm worm2
         deviantart gravatar wp-facebook wikipedia youtube
         scrivener local
         generic-image generic-html`
