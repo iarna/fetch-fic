@@ -1,7 +1,6 @@
 'use strict'
 /* eslint-disable no-return-assign */
 const qw = require('qw')
-const Bluebird = require('bluebird')
 
 let Site
 
@@ -124,73 +123,60 @@ class Fic {
     return this
   }
 
-  static fromUrl (fetch, link) {
+  static async fromUrl (fetch, link) {
     const fic = new this(fetch)
     fic.site = Site.fromUrl(link)
     fic.link = fic.site.link
-    return fic.site.getFicMetadata(fetch, fic).then(thenMaybeFallback, elseMaybeFallback).then(() => fic)
-    function elseMaybeFallback (err) {
-      if (err && (!err.meta || err.meta.status !== 404)) throw err
-      return thenMaybeFallback(err)
+    try {
+      await fic.site.getFicMetadata(fetch, fic)
+    } catch (err) {
+      if (!fic.site.canScrape || !err.meta || err.meta.status !== 404) throw err
     }
-    function thenMaybeFallback (err) {
-      if (fic.chapters.length === 0 && fic.fics.length === 0) {
-        fic.scrapeMeta = true
-        if (fic.site.canScrape) {
-          return fic.site.scrapeFicMetadata(fetch, fic).catch(scrapeErr => Bluebird.reject(err || scrapeErr))
-        } else {
-          if (!err) {
-            err = new Error(`Could not fetch: ${link}`)
-            err.code = 404
-            err.url = link
-          }
-          return Bluebird.reject(err)
-        }
+    if (fic.chapters.length === 0 && fic.fics.length === 0) {
+      fic.scrapeMeta = true
+      if (fic.site.canScrape) {
+        await fic.site.scrapeFicMetadata(fetch, fic)
       } else {
-        fic.fetchMeta = true
+        const err = new Error(`No chapters found in: ${link}`)
+        err.code = 404
+        err.url = link
+        throw err
       }
+    } else {
+      fic.fetchMeta = true
     }
+    return fic
   }
 
-  static fromOnlyUrl (fetch, link) {
-    const fic = new this(fetch)
-    fic.site = Site.fromUrl(link)
-    fic.link = fic.site.link
-    return fic.site.getFicMetadata(fetch, fic).then(() => thenMaybeFallback(), elseMaybeFallback).then(() => fic)
-    function elseMaybeFallback (err) {
-      if (err && (!err.meta || err.meta.status !== 404)) throw err
-      return thenMaybeFallback(err)
-    }
-    function thenMaybeFallback (err) {
-      if (fic.chapters.length === 0 && fic.fics.length === 0) {
-        if (!err) {
-          err = new Error(`Could not fetch: ${link}`)
-          err.code = 404
-          err.url = link
-        }
-        return Bluebird.reject(err)
-      } else {
-        fic.fetchMeta = true
-      }
-    }
-  }
-
-  static fromUrlAndScrape (fetch, link) {
+  static async fromOnlyUrl (fetch, link) {
     const fic = new this(fetch)
     fic.site = Site.fromUrl(link)
     fic.link = fic.site.link
     fic.fetchMeta = true
-    fic.scrapeMeta = true
-    return fic.site.getFicMetadata(fetch, fic).then(() => {
-      if (fic.site.canScrape) {
-        return fic.site.scrapeFicMetadata(fetch, fic).then(() => fic)
-      } else {
-        return fic
-      }
-    })
+    await fic.site.getFicMetadata(fetch, fic)
+    if (fic.chapters.length === 0 && fic.fics.length === 0) {
+      const err = new Error(`Could not find chapters in: ${link}`)
+      err.code = 404
+      err.url = link
+      throw err
+    }
+    return fic
   }
 
-  static scrapeFromUrl (fetch, link) {
+  static async fromUrlAndScrape (fetch, link) {
+    const fic = new this(fetch)
+    fic.site = Site.fromUrl(link)
+    fic.link = fic.site.link
+    fic.fetchMeta = true
+    await fic.site.getFicMetadata(fetch, fic)
+    if (fic.site.canScrape) {
+      fic.scrapeMeta = true
+      await fic.site.scrapeFicMetadata(fetch, fic)
+    }
+    return fic
+  }
+
+  static async scrapeFromUrl (fetch, link) {
     const fic = new this()
     fic.site = Site.fromUrl(link)
     fic.link = fic.site.link
@@ -198,9 +184,10 @@ class Fic {
     if (!fic.site.canScrape) {
       const err = new Error(`Site ${fic.site.publisherName || fic.site.publisher} does not support fetching via scraping for ${fic.title} @ ${fic.link}`)
       err.code = 'ENOSCRAPE'
-      return Bluebird.reject(err)
+      throw err
     }
-    return fic.site.scrapeFicMetadata(fetch, fic).then(() => fic)
+    await fic.site.scrapeFicMetadata(fetch, fic)
+    return fic
   }
 
   static fromJSON (raw) {
