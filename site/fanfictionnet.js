@@ -1,7 +1,6 @@
 'use strict'
 const url = require('url')
 
-const Bluebird = require('bluebird')
 const Site = use('site')
 const moment = require('moment')
 
@@ -40,108 +39,106 @@ class FanFictionNet extends Site {
     return this.chapterUrl(1)
   }
 
-  getFicMetadata (fetch, fic) {
+  async getFicMetadata (fetch, fic) {
     fic.link = this.link
     fic.publisher = this.publisherName
     const Chapter = use('fic').Chapter
-    return Chapter.getContent(fetch, this.chapterListUrl()).then(chapter => {
-      if (/Story Not Found/.test(chapter.$('.gui_warning').text())) {
-        var err = new Error(`Story Not Found: ${fic.link}`)
-        err.code = 404
-        err.url = fic.link
-        return Bluebird.reject(err)
-      }
-      const $meta = chapter.$('#profile_top')
-      const $dates = $meta.find('span[data-xutime]')
-      const fandom = chapter.$('#pre_story_links a:last-child').text().trim()
-      fic.title = $meta.find('b.xcontrast_txt').text()
-      fic.link = this.normalizeLink(chapter.link)
-      fic.author = chapter.author
-      fic.authorUrl = chapter.authorUrl
-      fic.created = moment.unix(chapter.$($dates[1]).attr('data-xutime'))
-      fic.modified = moment.unix(chapter.$($dates[0]).attr('data-xutime'))
-      fic.publisher = this.publisherName
-      fic.description = $meta.find('div.xcontrast_txt').text()
-      const img = chapter.$('#img_large img').attr('data-original')
-      if (img) {
-        fic.cover = url.resolve(chapter.base, img)
-      }
+    const chapter = await Chapter.getContent(fetch, this.chapterListUrl())
+    if (/Story Not Found/.test(chapter.$('.gui_warning').text())) {
+      var err = new Error(`Story Not Found: ${fic.link}`)
+      err.code = 404
+      err.url = fic.link
+      throw err
+    }
+    const $meta = chapter.$('#profile_top')
+    const $dates = $meta.find('span[data-xutime]')
+    const fandom = chapter.$('#pre_story_links a:last-child').text().trim()
+    fic.title = $meta.find('b.xcontrast_txt').text()
+    fic.link = this.normalizeLink(chapter.link)
+    fic.author = chapter.author
+    fic.authorUrl = chapter.authorUrl
+    fic.created = moment.unix(chapter.$($dates[1]).attr('data-xutime'))
+    fic.modified = moment.unix(chapter.$($dates[0]).attr('data-xutime'))
+    fic.publisher = this.publisherName
+    fic.description = $meta.find('div.xcontrast_txt').text()
+    const img = chapter.$('#img_large img').attr('data-original')
+    if (img) {
+      fic.cover = url.resolve(chapter.base, img)
+    }
 
-      const infoline = $meta.find('span.xgray').text()
-      const info = ffp(infoline)
-      if (info) {
-        fic.language = info.language
-        fic.tags = info.genre.map(g => 'genre:' + g)
-          .concat(['rating:' + info.rating])
-          .concat(info.characters.map(c => 'character:' + c))
-          .concat(info.pairing.map(p => 'ship:' + p.join('/')))
-        for (let p of info.pairing) {
-          for (let c of p) fic.tags.push('character:' + c)
-        }
-        fic.tags.sort()
-        fic.words = info.words
-        fic.comments = fic.reviews = info.reviews
-        fic.kudos = fic.favs = info.favs
-        fic.bookmarks = fic.follows = info.follows
-        // updated
-        // published
-        // id
+    const infoline = $meta.find('span.xgray').text()
+    const info = ffp(infoline)
+    if (info) {
+      fic.language = info.language
+      fic.tags = info.genre.map(g => 'genre:' + g)
+        .concat(['rating:' + info.rating])
+        .concat(info.characters.map(c => 'character:' + c))
+        .concat(info.pairing.map(p => 'ship:' + p.join('/')))
+      for (let p of info.pairing) {
+        for (let c of p) fic.tags.push('character:' + c)
+      }
+      fic.tags.sort()
+      fic.words = info.words
+      fic.comments = fic.reviews = info.reviews
+      fic.kudos = fic.favs = info.favs
+      fic.bookmarks = fic.follows = info.follows
+      // updated
+      // published
+      // id
+    } else {
+      process.emit('error', 'NOMATCH:', infoline)
+    }
+    if (fandom) {
+      if (/ Crossover$/.test(fandom)) {
+        const [name, xover] = fandom.replace(/ Crossover$/, '').split(/ [+] /)
+        fic.tags.unshift(`fandom:${name}`, `xover:${xover}`)
       } else {
-        process.emit('error', 'NOMATCH:', infoline)
+        fic.tags.unshift(`fandom:${fandom}`)
       }
-      if (fandom) {
-        if (/ Crossover$/.test(fandom)) {
-          const [name, xover] = fandom.replace(/ Crossover$/, '').split(/ [+] /)
-          fic.tags.unshift(`fandom:${name}`, `xover:${xover}`)
-        } else {
-          fic.tags.unshift(`fandom:${fandom}`)
-        }
-      }
+    }
 
-      const $index = chapter.$(chapter.$('#chap_select')[0])
-      const $chapters = $index.find('option')
-      if (info && info.chapters !== $chapters.length) {
-        throw new Error(`Failed to find all the chapters, expected ${info.chapters}, got ${$chapters.length}`)
-      }
-      if (info && info.status === 'Complete') {
-        if ($chapters.length <= 1) {
-          fic.tags.push('status:one-shot')
-        } else {
-          fic.tags.push('status:complete')
-        }
-      }
-      if ($chapters.length) {
-        $chapters.each((ii, vv) => {
-          const chapterName = chapter.$(vv).text().match(/^\d+[.](?: (.*))?$/)
-          const chapterNum = chapter.$(vv).attr('value') || ii
-          fic.addChapter({name: chapterName[1] || (String(chapterNum) + '.'), link: this.chapterUrl(chapterNum)})
-        })
+    const $index = chapter.$(chapter.$('#chap_select')[0])
+    const $chapters = $index.find('option')
+    if (info && info.chapters !== $chapters.length) {
+      throw new Error(`Failed to find all the chapters, expected ${info.chapters}, got ${$chapters.length}`)
+    }
+    if (info && info.status === 'Complete') {
+      if ($chapters.length <= 1) {
+        fic.tags.push('status:one-shot')
       } else {
-        fic.addChapter({name: 'Chapter 1', link: this.chapterUrl(1)})
+        fic.tags.push('status:complete')
       }
-      const first = fic.chapters[0]
-      const last = fic.chapters[fic.chapters.length - 1]
-      if (!first.created) first.created = fic.created || (info && (info.published || info.updated)) || fic.modified
-      if (!last.modified) last.modified = fic.modified || (info && (info.updated || info.published)) || fic.created
-    })
+    }
+    if ($chapters.length) {
+      $chapters.each((ii, vv) => {
+        const chapterName = chapter.$(vv).text().match(/^\d+[.](?: (.*))?$/)
+        const chapterNum = chapter.$(vv).attr('value') || ii
+        fic.addChapter({name: chapterName[1] || (String(chapterNum) + '.'), link: this.chapterUrl(chapterNum)})
+      })
+    } else {
+      fic.addChapter({name: 'Chapter 1', link: this.chapterUrl(1)})
+    }
+    const first = fic.chapters[0]
+    const last = fic.chapters[fic.chapters.length - 1]
+    if (!first.created) first.created = fic.created || (info && (info.published || info.updated)) || fic.modified
+    if (!last.modified) last.modified = fic.modified || (info && (info.updated || info.published)) || fic.created
   }
 
-  getChapter (fetch, chapterInfo) {
-    return fetch(chapterInfo.fetchWith()).spread((meta, html) => {
-      const ChapterContent = use('chapter-content')
-      const chapter = new ChapterContent(chapterInfo, {html, site: this})
-      chapter.$content = chapter.$('#storytextp')
-      chapter.base = chapter.$('base').attr('href') || meta.finalUrl
-      const links = chapter.$('a.xcontrast_txt')
-      links.each(function (ii, vv) {
-        const href = chapter.$(vv).attr('href')
-        if (/^[/]u[/]\d+[/]/.test(href)) {
-          chapter.author = chapter.$(vv).text()
-          chapter.authorUrl = url.resolve(chapter.base, href)
-        }
-      })
-      return chapter
+  async getChapter (fetch, chapterInfo) {
+    const [meta, html] = await fetch(chapterInfo.fetchWith())
+    const ChapterContent = use('chapter-content')
+    const chapter = new ChapterContent(chapterInfo, {html, site: this})
+    chapter.$content = chapter.$('#storytextp')
+    chapter.base = chapter.$('base').attr('href') || meta.finalUrl
+    const links = chapter.$('a.xcontrast_txt')
+    links.each(function (ii, vv) {
+      const href = chapter.$(vv).attr('href')
+      if (/^[/]u[/]\d+[/]/.test(href)) {
+        chapter.author = chapter.$(vv).text()
+        chapter.authorUrl = url.resolve(chapter.base, href)
+      }
     })
+    return chapter
   }
 }
 

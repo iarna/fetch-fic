@@ -1,5 +1,4 @@
 'use strict'
-const Bluebird = require('bluebird')
 const Site = use('site')
 
 class WpFacebook extends Site {
@@ -13,13 +12,13 @@ class WpFacebook extends Site {
     linkBits.pathname = linkBits.pathname.replace(/v2.2[/]/, '') + '/.jpg'
     return url.format(linkBits)
   }
-  getChapter (fetch, chapter) {
+  async getChapter (fetch, chapter) {
     const ChapterContent = use('chapter-content')
-    return Bluebird.resolve(new ChapterContent(chapter, {
+    return new ChapterContent(chapter, {
       name: chapter.link,
       base: chapter.link,
       content: '<img src="' + chapter.fetchWith() + '">'
-    }))
+    })
   }
 }
 module.exports = WpFacebook

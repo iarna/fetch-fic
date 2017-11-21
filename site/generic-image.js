@@ -1,8 +1,6 @@
 'use strict'
 const url = require('url')
 
-const Bluebird = require('bluebird')
-
 const Site = use('site')
 
 class GenericImage extends Site {
@@ -21,22 +19,21 @@ class GenericImage extends Site {
     return href
   }
 
-  getFicMetadata (fetch, fic) {
+  async getFicMetadata (fetch, fic) {
     fic.title = this.link
     fic.link = this.link
     fic.publisher = this.publisher
     fic.link = this.normalizeLink(this.link)
     fic.addChapter({name: this.link, link: fic.link})
-    return Bluebird.resolve()
   }
 
-  getChapter (fetch, chapterInfo) {
+  async getChapter (fetch, chapterInfo) {
     const ChapterContent = use('chapter-content')
-    return Bluebird.resolve(new ChapterContent(chapterInfo, {
+    return new ChapterContent(chapterInfo, {
       site: this,
       base: chapterInfo.link,
       content: `<img src="${chapterInfo.fetchWith()}">`
-    }))
+    })
   }
 }
 module.exports = GenericImage

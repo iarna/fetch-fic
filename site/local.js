@@ -1,5 +1,4 @@
 'use strict'
-const Bluebird = require('bluebird')
 
 const Site = use('site')
 
@@ -29,30 +28,32 @@ class Local extends Site {
     return this.recursedir(fic, fic.updateFrom)
   }
 
-  recursedir (fic, dir) {
+  async recursedir (fic, dir) {
     const fs = use('fs-promises')
-    return fs.readdir(dir).then(files => {
-      const path = require('path')
-      const list = files.map(file => path.join(dir, file)).sort()
-      const todo = []
-      return Bluebird.map(list, filename => fs.stat(filename).then(info => {
-        if (info.isDirectory()) {
-          return filename
-        } else if (/\.rtf$/.test(filename)) {
-          const name = path.relative(fic.updateFrom, filename)
-          fic.addChapter({name, fetchFrom: filename, created: info.birthtime, modified: info.mtime})
-        }
-      })).each(filename => filename && this.recursedir(fic, filename))
-      return Bluebird.all(todo).catch(x => process.emit('error', 'TAP', x))
-    })
+    const files = await fs.readdir(dir)
+    const path = require('path')
+    const list = files.map(file => path.join(dir, file)).sort()
+    const fun = require('fun-stream')
+    const map = use('map')
+    const forEach = use('for-each')
+    return fun(list).flatMap(async filename => {
+      const info = await fs.stat(filename)
+      if (info.isDirectory()) {
+        return [filename]
+      } else if (/\.rtf$/.test(filename)) {
+        const name = path.relative(fic.updateFrom, filename)
+        fic.addChapter({name, fetchFrom: filename, created: info.birthtime, modified: info.mtime})
+      }
+      return []
+    }).forEach(filename => this.recurseDir(fic, filename))
   }
 
-  getChapter (fetch, chapter) {
+  async getChapter (fetch, chapter) {
     const fs = use('fs-promises')
     const ChapterContent = use('chapter-content')
     const rtfToHTML = use('rtf-to-html')
-    return rtfToHTML(fs.readFile(chapter.fetchWith(), 'ascii'))
-      .then(content => new ChapterContent(chapter, {site: this, content}))
+    const content = await rtfToHTML(fs.readFile(chapter.fetchWith(), 'ascii'))
+    return new ChapterContent(chapter, {site: this, content})
   }
 }
 module.exports = Local

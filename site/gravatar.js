@@ -1,8 +1,6 @@
 'use strict'
 const url = require('url')
 
-const Bluebird = require('bluebird')
-
 const Site = use('site')
 
 class Gravatar extends Site {
@@ -17,14 +15,14 @@ class Gravatar extends Site {
     }
     return url.format(linkBits)
   }
-  getChapter (fetch, chapter) {
+  async getChapter (fetch, chapter) {
     const ChapterContent = use('chapter-content')
-    return Bluebird.resolve(new ChapterContent(chapter, {
+    return new ChapterContent(chapter, {
       site: this,
       name: chapter.link,
       base: chapter.fetchWith(),
       content: '<img src="' + chapter.fetchWith() + '">'
-    }))
+    })
   }
 }
 module.exports = Gravatar

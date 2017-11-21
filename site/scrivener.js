@@ -1,5 +1,4 @@
 'use strict'
-const Bluebird = require('bluebird')
 const Site = use('site')
 const fs = use('fs-promises')
 const moment = require('moment')
@@ -32,33 +31,36 @@ class Scrivener extends Site {
     return this.fromScrivener(fic, scrivname)
   }
 
-  fromScrivener (fic, scrivx) {
+  async fromScrivener (fic, scrivx) {
     const fs = use('fs-promises')
     const promisify = use('promisify')
     const parseString = promisify(require('xml2js').parseString)
-    return parseString(fs.readFile(scrivx)).then(data => {
-      const props = this.scrivMap(data.ScrivenerProject, 'ProjectProperties')
-      if (props.ProjectTitle) fic.title = props.ProjectTitle
-      if (props.FullName) fic.author = props.FullName
-      const items = this.scrivBinder(data.ScrivenerProject, 'Binder')
-      return this.recurseItems(fic, items)
-    })
+    const data = await parseString(fs.readFile(scrivx))
+    const props = this.scrivMap(data.ScrivenerProject, 'ProjectProperties')
+    if (props.ProjectTitle) fic.title = props.ProjectTitle
+    if (props.FullName) fic.author = props.FullName
+    const items = this.scrivBinder(data.ScrivenerProject, 'Binder')
+    return this.recurseItems(fic, items)
   }
 
   recurseItems (fic, items) {
-    return Bluebird.each(items, item => {
+    const forEach = use('for-each')
+    return forEach(items, async item => {
       if (item.Type === 'TrashFolder' || item.Type === 'ResearchFolder') return
       if (item.Children) return this.recurseItems(fic, item.Children)
       const path = require('path')
       const filename = path.join(fic.updateFrom, 'Files', 'Docs', item.ID + '.rtf')
-      return fs.stat(filename).then(_ => {
+      try {
+        await fs.stat(filename)
         fic.addChapter({
           name: item.Title,
           fetchFrom: filename,
           created: moment.unix(item.Created),
           modified: moment.unix(item.Modified),
         })
-      }).catch(_ => process.emit('warn', `Skipping ${item.Title}`))
+      } catch (_) {
+        process.emit('warn', `Skipping ${item.Title}`)
+      }
     })
   }
 
@@ -93,14 +95,17 @@ class Scrivener extends Site {
     return result
   }
 
-  getChapter (fetch, chapter) {
+  async getChapter (fetch, chapter) {
     const fs = use('fs-promises')
     const ChapterContent = use('chapter-content')
     const rtfToHTML = use('rtf-to-html')
     const bbcodeToHTML = use('bbcode-to-html')
-    return bbcodeToHTML(rtfToHTML(fs.readFile(chapter.fetchWith(), 'ascii')))
-      .then(content => new ChapterContent(chapter, {site: this, content}))
-      .catch(() => new ChapterContent(chapter, {site: this, content: ''}))
+    try {
+      const content = await bbcodeToHTML(rtfToHTML(fs.readFile(chapter.fetchWith(), 'ascii')))
+      return new ChapterContent(chapter, {site: this, content})
+    } catch (_) {
+      return new ChapterContent(chapter, {site: this, content: ''})
+    }
   }
 }
 module.exports = Scrivener
