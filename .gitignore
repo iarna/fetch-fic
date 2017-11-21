@@ -2,3 +2,9 @@
 node_modules
 .#*
 .DS_Store
+*.ao3
+*.bbcode
+*.epub
+*.ffnet
+*.html
+*.fic.toml
