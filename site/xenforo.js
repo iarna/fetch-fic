@@ -163,7 +163,7 @@ class Xenforo extends Site {
   getChapter (fetch, chapterInfo, retried) {
     return fetch(chapterInfo.fetchWith()).catch(err => {
       if (err.meta && err.meta.status === 404) {
-        throw new Error('No chapter found at ' + chapter)
+        throw new Error('No chapter found at ' + chapterInfo.fetchWith())
       } else {
         throw err
       }
