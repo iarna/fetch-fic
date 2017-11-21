@@ -1,31 +1,33 @@
 'use strict'
 module.exports = read
 const progress = use('progress')
-const Bluebird = require('bluebird')
+const map = use('map')
+const streamClose = use('stream-close')
 
-function read (args) {
+async function read (args) {
   const fs = use('fs-promises')
-  return Bluebird.map(args.fic, fic => {
-    return fs.stat(fic).then(file => {
-      return file.isDirectory() ? ['url', fic] : ['file', fic]
-    }, () => {
-      return ['url', fic]
-    })
-  }).then(fics => {
-    const urls = fics.filter(f => f[0] === 'url').map(f => f[1])
-    const files = fics.filter(f => f[0] === 'file').map(f => f[1])
-    const todo = []
-    if (files.length) {
-      todo.push(_generateInstead(files))
+  const fics = await map(args.fic, async fic => {
+    try {
+      const file = await fs.stat(fic)
+      return file.isDirectory() ? {type: 'url', fic} : {type: 'file', fic}
+    } catch (_) {
+      return {type: 'url', fic}
     }
-    if (urls.length) {
-      todo.push(_reallyRead(urls, args))
-    }
-    return Bluebird.all(todo)
   })
+
+  const urls = fics.filter(f => f.type === 'url').map(f => f.fic)
+  const files = fics.filter(f => f.type === 'file').map(f => f.fic)
+  const todo = []
+  if (files.length) {
+    todo.push(_generateInstead(files))
+  }
+  if (urls.length) {
+    todo.push(_reallyRead(urls, args))
+  }
+  return Promise.all(todo)
 }
 
-function _generateInstead (files) {
+async function _generateInstead (files) {
   const nodejs = process.argv[0]
   let args = [process.argv[1]]
   for (let ii in process.argv) {
@@ -39,18 +41,14 @@ function _generateInstead (files) {
     }
   }
   args = args.concat(files)
-  return new Bluebird((resolve, reject) => {
-    const child_process = require('child_process')
-    const child = child_process.spawn(nodejs, args, {
-      argv0: 'ff',
-      stdio: 'inherit',
-    })
-    child.on('error', reject)
-    child.on('close', resolve)
-  })
+  const spawn = require('child_process').spawn
+  await streamClose(spawn(nodejs, args, {
+    argv0: 'ff',
+    stdio: 'inherit',
+  }))
 }
 
-function _reallyRead (urls, args) {
+async function _reallyRead (urls, args) {
   const addAll = args['add-all']
   const fromThreadmarks = !args.scrape
   const fromScrape = args.scrape || args['and-scrape']
@@ -66,7 +64,7 @@ function _reallyRead (urls, args) {
   const fetchAndSpin = fetch.withOpts(fetchOpts).wrapWith(progress.spinWhileAnd)
   if (args.xf_user) fetchAndSpin.setGlobalCookie(`xf_user=${args.xf_user}`)
 
-  return Bluebird.map(urls, url => {
+  return map(urls, async url => {
     function fetchFic () {
       const Fic = use('fic')
       if (fromThreadmarks && fromScrape) {
@@ -84,25 +82,28 @@ function _reallyRead (urls, args) {
 
     const fetchTracker = progress.newWork('Table of Contents', 0)
     progress.show('Table of Contents', `Downloading ${url}`)
-    const deflatedFic = progress.addWork(fetchFic(), fetchTracker).finally(enableCache)
+    let deflatedFic
+    try {
+      deflatedFic = await progress.addWork(fetchFic(), fetchTracker)
+    } finally {
+      enableCache()
+    }
     const ficInflate = use('fic-inflate')
-    return ficInflate(deflatedFic, fetchAndSpin.withOpts({cacheBreak: false})).then(fic => {
-      const filenameize = use('filenameize')
-      // we shouldn't get here, but this acts as a final guard against an
-      // empty fic getting written out to disk.
-      if (fic.words === 0 && !fic.fics.length) {
-        const err = Error(`${url} could not be retrieved.`)
-        err.code = 404
-        err.url = url
-        throw err
-      }
-      const filename = filenameize(fic.title) + '.fic.toml'
-      const TOML = require('@iarna/toml')
-      const fs = use('fs-promises')
-      return fs.writeFile(filename, TOML.stringify(fic)).then(() => {
-        progress.output(filename + '\n')
-        return filename
-      })
-    })
+    const fic = await ficInflate(deflatedFic, fetchAndSpin.withOpts({cacheBreak: false}))
+    const filenameize = use('filenameize')
+    // we shouldn't get here, but this acts as a final guard against an
+    // empty fic getting written out to disk.
+    if (fic.words === 0 && !fic.fics.length) {
+      const err = Error(`${url} could not be retrieved.`)
+      err.code = 404
+      err.url = url
+      throw err
+    }
+    const filename = filenameize(fic.title) + '.fic.toml'
+    const TOML = require('@iarna/toml')
+    const fs = use('fs-promises')
+    await fs.writeFile(filename, TOML.stringify(fic))
+    progress.output(filename + '\n')
+    return filename
   })
 }
