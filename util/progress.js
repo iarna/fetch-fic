@@ -1,6 +1,5 @@
 'use strict'
 const progress = {}
-const Bluebird = require('bluebird')
 progress.id = Symbol()
 if (process.progress) {
    if (progress.id !== process.progress.id) {
@@ -66,9 +65,13 @@ function spinStop () {
   clearInterval(pulseInterval)
 }
 
-function spinWhile (promise) {
+async function spinWhile (promise) {
   spinStart()
-  return Bluebird.resolve(promise).finally(() => spinStop())
+  try {
+    return await promise
+  } finally {
+    spinStop()
+  }
 }
 
 function spinWhileAnd (fn) {
@@ -146,6 +149,10 @@ function addWork (todo, tracker) {
   return completeWorkWhenResolved(todo, tracker)
 }
 
-function completeWorkWhenResolved (todo, tracker) {
-  return Bluebird.resolve(todo).finally(() => tracker.completeWork(1))
+async function completeWorkWhenResolved (todo, tracker) {
+  try {
+    return await todo
+  } finally {
+    tracker.completeWork(1)
+  }
 }
