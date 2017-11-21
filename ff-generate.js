@@ -5,7 +5,6 @@ module.exports = write
 const fs = require('fs')
 const url = require('url')
 
-const Bluebird = require('bluebird')
 const TOML = require('@iarna/toml')
 
 const fetch = use('fetch')
@@ -13,6 +12,7 @@ const Fic = use('fic')
 const getFic = use('get-fic')
 const Output = use('output')
 const progress = use('progress')
+const forEach = use('for-each')
 
 function write (args) {
   const output = args.output
@@ -33,15 +33,19 @@ function write (args) {
   const trackers = args.fic.map(() => progress.tracker.newItem(1))
 
   process.emit('debug', `Generating epubs for ${args.fic.join(', ')}`)
-  return Bluebird.map(args.fic, fetchTopFic, {concurrency: 3})
-
-  function fetchTopFic (ficFile, ficNum) {
+  return forEach(args.fic, {concurrency: 3}, async (ficFile, ficNum) => {
     process.emit('debug', `Generating #${ficNum} for ${ficFile}`)
     const topFic = Fic.fromJSON(TOML.parse(fs.readFileSync(ficFile, 'utf8')))
     let fics = (topFic.chapters.length ? [topFic] : []).concat(topFic.fics || [])
     const tracker = trackers[ficNum]
     const completeWhenDone = (fetch) => {
-      return (href, opts) => fetch(href, opts).finally(() => tracker.completeWork(1))
+      return async (href, opts) => {
+        try {
+          return fetch(href, opts)
+        } finally {
+          tracker.completeWork(1)
+        }
+      }
     }
     const fetchAndFinish = fetchAndSpin.wrapWith(completeWhenDone)
     fetchAndFinish.tracker = tracker
@@ -56,15 +60,8 @@ function write (args) {
       return true
     })
 
-    return Bluebird.map(fics, fetchFic(fetchAndFinish), {concurrency: 10})
-      .finally(() => {
-        process.emit('debug', `Fetching #${ficNum} for ${ficFile}: Complete`)
-        tracker.finish()
-        progress.hide()
-      })
-
-    function fetchFic (fetch, subficNum, subficCount) {
-      return (fic) => {
+    try {
+      await forEach(fics, {concurrency: 10}, async (fic, subficNum, subficCount) => {
         let ficStatus = ''
         if (args.fic.length > 1) {
           ficStatus = subficCount > 1 ? ` [${ficNum + 1}.${subficNum + 1}/${args.fic.length}]` : ` [${ficNum + 1}/${args.fic.length}]`
@@ -73,11 +70,15 @@ function write (args) {
         }
         progress.show(`${fic.title}${ficStatus}`, 'Fetching fic')
         process.emit('debug', `Outputting ${fic.title}`)
-        const ficStream = getFic(fetch, fic)
-        return Output.as(output).from(ficStream).write().then(filename => {
-          progress.output(`${filename}\n`)
-        })
-      }
+        const ficStream = getFic(fetchAndFinish, fic)
+        const filename = await Output.as(output).from(ficStream).write()
+        progress.output(`${filename}\n`)
+      })
+    } finally {
+      process.emit('debug', `Fetching #${ficNum} for ${ficFile}: Complete`)
+      tracker.finish()
+      progress.hide()
+      return
     }
-  }
+  })
 }
