@@ -1,21 +1,14 @@
 'use strict'
 const Transform = require('stream').Transform
-const Bluebird = require('bluebird')
 
 module.exports = bbcodeToHTML
 
 function bbcodeToHTML (bbcode) {
-  return new Bluebird((resolve, reject) => {
-    const parser = new BBCodeParser()
-    const toHTML = new BBCodeToHTML({passThroughText: true})
-    parser.on('error', reject)
-    toHTML.on('error', reject)
-    let html = ''
-    toHTML.on('data', chunk => html += chunk)
-    toHTML.on('finish', () => resolve(html))
-    parser.pipe(toHTML)
-    return Promise.resolve(bbcode).then(bbcode => parser.end(bbcode))
-  })
+  const fun = require('funstream')
+  const parser = new BBCodeParser()
+  const toHTML = new BBCodeToHTML({passThroughText: true})
+
+  return fun(bbcode).pipe(parser).pipe(toHTML).concat()
 }
 
 function passthrough (name) {
