@@ -1,6 +1,4 @@
 'use strict'
-const Bluebird = require('bluebird')
-
 const defaultMaxRunning = 50
 
 const limit = module.exports = (func, maxRunning, minTimeMS) => {
@@ -13,7 +11,7 @@ const limit = module.exports = (func, maxRunning, minTimeMS) => {
     const self = this
     if (state[grouping].running >= maxRunning || tillNext(grouping) > 0) {
       if (!state[grouping].queue.length) setTimeout(callNext(grouping), tillNext(grouping))
-      return new Bluebird(resolve => {
+      return new Promise(resolve => {
         state[grouping].queue.push({resolve, self, args})
       })
     }
@@ -30,18 +28,20 @@ const limit = module.exports = (func, maxRunning, minTimeMS) => {
       }
     }
   }
-  function callFunc (self, args) {
+  async function callFunc (self, args) {
     const grouping = args.shift()
     ++state[grouping].running
     state[grouping].lastCall = Date.now()
-    return Bluebird.resolve(func.apply(self, args)).finally(() => {
+    try {
+      return await func.apply(self, args)
+    } finally {
       --state[grouping].running
       if (tillNext(grouping) > 0) {
         setTimeout(callNext(grouping), tillNext(grouping))
       } else {
         callNext(grouping)()
       }
-    })
+    }
   }
 }
 
