@@ -415,9 +415,8 @@ class Parser {
     })
     parser.on('text', text => this.addText(text))
 
-    parser.end(await html$)
     const fun = require('funstream')
-    await fun(parser)
+    await fun(html$).pipe(parser)
     this.endLine()
     return this.output.join('\n').replace(/\n+$/, '') + '\n'
   }
