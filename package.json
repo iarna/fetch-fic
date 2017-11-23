@@ -42,7 +42,6 @@
     "moment-timezone": "^0.5.13",
     "parse5": "^3.0.2",
     "promise-inflight": "^1.0.1",
-    "pump": "^1.0.1",
     "qw": "^1.0.1",
     "readable-stream": "^2.3.3",
     "safe-buffer": "^5.1.1",
