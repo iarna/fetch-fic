@@ -394,7 +394,7 @@ class Parser {
     }
   }
 
-  parse (html) {
+  async parse (html$) {
     const parse5 = require('parse5')
     const parser = new parse5.SAXParser()
     parser.on('startTag', (tag, attrs, selfClosing, location) => {
@@ -415,16 +415,10 @@ class Parser {
     })
     parser.on('text', text => this.addText(text))
 
-    const Bluebird = require('bluebird')
-    return Bluebird.resolve(html).then(html => {
-      return new Bluebird((resolve, reject) => {
-        parser.on('error', reject)
-        parser.on('finish', () => {
-          this.endLine()
-          resolve(this.output.join('\n').replace(/\n+$/, '') + '\n')
-        })
-        parser.end(html)
-      })
-    })
+    parser.end(await html$)
+    const fun = require('funstream')
+    await fun(parser)
+    this.endLine()
+    return this.output.join('\n').replace(/\n+$/, '') + '\n'
   }
 }

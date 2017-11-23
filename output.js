@@ -28,19 +28,11 @@ class Output {
   }
 
   transform () {
-    const out = this
-    const Transform = require('stream').Transform
-    return new Transform({
-      objectMode: true,
-      transform: function (chapter, _, done) {
-        const Bluebird = require('bluebird')
-        return new Bluebird(resolve => resolve(out.transformChapter(chapter, this))).then(result => {
-          if (result != null) this.push(result)
-          done()
-          return null
-        }).catch(err => done(err))
-      }
-    })
+    const fun = require('funstream')
+    return fun(stream => stream
+      .flatMap(async chapter => this.transformChapter(chapter))
+      .filter(res => res != null)
+    )
   }
 
   titlePageHTML () {

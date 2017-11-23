@@ -27,7 +27,7 @@ class OutputEpub extends Output {
     return '.xhtml'
   }
 
-  write () {
+  async write () {
     const Streampub = require('streampub')
     const statusRe = /^status:(stalled|abandoned|complete|one-shot)$/
     const fandomRe = /^fandom:/
@@ -69,32 +69,33 @@ class OutputEpub extends Output {
 
     const WriteStreamAtomic = require('fs-write-stream-atomic')
     const output = new WriteStreamAtomic(this.outname)
-    const pump = use('pump')
-    return pump(
-      this.fic,
-      this.transform(),
-      epub,
-      output).then(() => this.outname)
+    const fun = require('funstream')
+    await fun(this.fic)
+      .pipe(this.transform())
+      .pipe(epub)
+      .pipe(output)
+    return this.outname
   }
 
   transformChapter (chapter, stream) {
     const Streampub = require('streampub')
+    const result = []
     if (!this.seenAny) {
       this.seenAny = true
       let title = 'Title Page'
       if (this.fic.numberTOC) title = 'ⅰ. ' + title
-      stream.push(Streampub.newChapter(title, this.titlePageHTML(), 0, 'top.xhtml'))
+      result.push(Streampub.newChapter(title, this.titlePageHTML(), 0, 'top.xhtml'))
       if (this.fic.includeTOC) {
         let toctitle = 'Table of Contents'
         if (this.fic.numberTOC) toctitle = 'ⅱ. ' + toctitle
-        stream.push(Streampub.newChapter(toctitle, this.tableOfContentsHTML(), 1, 'toc.xhtml'))
+        result.push(Streampub.newChapter(toctitle, this.tableOfContentsHTML(), 1, 'toc.xhtml'))
       }
     }
     if (chapter.outputType === 'image') {
-      return Streampub.newFile(chapter.filename, chapter.content)
+      return result.concat(Streampub.newFile(chapter.filename, chapter.content))
     }
     if (chapter.outputType === 'cover') {
-      return Streampub.newCoverImage(chapter.content)
+      return result.concat(Streampub.newCoverImage(chapter.content))
     }
     const index = chapter.order != null && (1 + chapter.order)
     let name = chapter.name
@@ -116,7 +117,7 @@ class OutputEpub extends Output {
       (name ? html`<head><title>${name}</title></head>` : '') +
       '<section epub:type="chapter">' + chapter.content + '</section>\n' +
       '</html>\n'
-    return Streampub.newChapter(name, this.prepareHtml(toSanitize), 100 + index, filename)
+    return result.concat(Streampub.newChapter(name, this.prepareHtml(toSanitize), 100 + index, filename))
   }
 
   prepareHtml (html) {

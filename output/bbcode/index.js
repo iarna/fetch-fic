@@ -15,13 +15,17 @@ class OutputBBCode extends Output {
     return chapter.link
   }
 
-  write () {
+  async write () {
     const mkdirp = use('mkdirp')
-    const pump = use('pump')
-    return mkdirp(this.outname)
-      .then(() => pump(this.fic, this.transform()))
-      .then(() => this.writeIndex())
-      .then(() => this.outname)
+    const fun = require('funstream')
+    try {
+      await mkdirp(this.outname)
+      await fun(this.fic).pipe(this.transform())
+      await this.writeIndex()
+      return this.outname
+    } catch (err) {
+      process.emit('error', err.stack)
+    }
   }
 
   transformChapter (chapter) {
@@ -35,8 +39,7 @@ class OutputBBCode extends Output {
       const stream = require('stream')
       if (chapter.content instanceof stream.Stream) {
         const tmpname = path.join(this.outname, 'cover-tmp')
-        const Bluebird = require('bluebird')
-        return new Bluebird((resolve, reject) => {
+        return new Promise((resolve, reject) => {
           const identifyStream = require('buffer-signature').identifyStream
           const WriteStreamAtomic = require('fs-write-stream-atomic')
           chapter.content.pipe(identifyStream(info => {
