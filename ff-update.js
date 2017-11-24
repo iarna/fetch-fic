@@ -120,9 +120,13 @@ var mergeFic = promisify.args(function mergeFic (existingFic, newFic, add) {
   if (add !== 'none') {
     const types = uniq(newFic.chapters.map(ch => ch.type))
     types.forEach(type => {
-      const latestExisting = existingFic.chapters.filter(ch => ch.type === type).concat(existingFic.fics).map(createdDate).reduce((aa, bb) => {
-        return aa > bb ? aa : bb
-      }, new Date(0))
+      const latestExisting = existingFic
+        .chapters
+        .filter(ch => ch.type === type)
+        .concat(existingFic.fics)
+        .filter(c => c.created || c.modified)
+        .map(createdDate)
+        .reduce((aa, bb) => aa > bb ? aa : bb, new Date(0))
       const chapters = newFic.chapters.filter(ch => ch.type === type)
       const newestIndex = chapters.length - 1
       if (chapters[newestIndex].created || chapters[newestIndex].modified) {
