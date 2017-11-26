@@ -177,4 +177,9 @@ onExit(() => {
 
 if (argv.debug) process.env.BLUEBIRD_DEBUG = '1'
 if (argv.verbose) progress.setVerbose(argv.verbose)
+
+process.on('unhandledRejection', (reason, p) => {
+   console.log('Unhandled Rejection at:', p, 'reason:', reason);
+});
+
 command(argv).catch(errorHandler).then(exitCodeHandler)
