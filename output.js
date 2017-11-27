@@ -76,11 +76,11 @@ class Output {
   }
 
   html (content) {
-    return `<html>\n${content}</html>\n`
+    return `<!doctype html><html>\n${content}</html>\n`
   }
 
   htmlHead (header) {
-    return `<head>\n${header}</head>\n`
+    return `<head>\n<meta charset="utf-8"/>\n${header}</head>\n`
   }
 
   htmlHeaderTitle () {
