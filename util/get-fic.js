@@ -253,7 +253,7 @@ function getFic (fetch, fic) {
     }
     showImageStatus()
     return concurrently(Object.keys(images), maxConcurrency, (src, imageNum) => {
-      return fetch(src).spread((meta, imageData) => {
+      return Bluebird.resolve(fetch(src)).spread((meta, imageData) => {
         return stream.queueChapter({
           outputType: 'image',
           filename: images[src].filename,
