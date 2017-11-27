@@ -52,12 +52,13 @@ class Site {
         figcaption figure footer h1 h2 h3 h4 h5 h6 head header hgroup hr
         html i img ins kbd li link mark menu ol output p pre q ruby rp rt s samp
         section small source span strike strong style sub sup table tbody td
-        tfoot th thead time title tr u ul var wbr nav summary`,
+        tfoot th thead time title tr u ul var wbr nav summary meta`,
       allowedAttributes: {
         html: qw`xmlns:epub`,
         img: qw`src width height alt`,
         a: qw`href name target`,
-        '*': qw`style id epub:type`
+        '*': qw`style id epub:type`,
+        meta: qw`charset`
       },
       allowedSchemes: qw`http https`,
       allowedSchemesByTag: {
