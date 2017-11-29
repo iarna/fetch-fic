@@ -55,6 +55,7 @@
     "yargs": "^6.6.0"
   },
   "files": [
+    "util/bbcode-to-html.js",
     "util/cache.js",
     "util/call-limit.js",
     "util/caller.js",
@@ -88,6 +89,7 @@
     "util/promisify.js",
     "site/local/rtf-to-html.js",
     "util/fetch.js",
+    "util/fetch-back-off.js",
     "site.js",
     "site/ao3.js",
     "site/deviantart.js",
@@ -107,7 +109,11 @@
     "util/rtf-to-html.js",
     "util/toml.js",
     "util/zlib-promises.js",
-    "util/chapter-content.js"
+    "util/chapter-content.js",
+    "util/for-each.js",
+    "util/map.js",
+    "util/stream-close.js",
+    "util/zlib-promises.js"
   ],
   "repository": {
     "type": "git",
