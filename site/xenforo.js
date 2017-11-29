@@ -140,7 +140,6 @@ class Xenforo extends Site {
         chapters.push({name, link: href})
       }
     })
-    const Chapter = use('fic').Chapter
     const fetchWithCache = fetch.withOpts({cacheBreak: false})
     if (!chapter.name) chapter.name = fic.title
     fic.addChapter(chapter)
