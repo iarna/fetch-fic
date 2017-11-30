@@ -96,7 +96,6 @@ function write (args) {
       process.emit('debug', `Fetching #${ficNum} for ${ficFile}: Complete`)
       tracker.finish()
       progress.hide()
-      return
     }
   })
 }
