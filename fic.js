@@ -106,7 +106,7 @@ class Fic {
     for (let prop of Object.keys(raw)) {
       if (props.indexOf(prop) !== -1) continue
       if (prop !== 'chapters' && prop !== 'fics' && prop !== 'externals' && prop !== 'spoilers') {
-        process.emit('warn', `Unknown property when importing fic: "${prop}"`)
+        process.emit('warn', `Unknown property when importing ${raw.title || 'fic'}: "${prop}"`)
       }
     }
     this.chapters.importFromJSON(this, raw)
