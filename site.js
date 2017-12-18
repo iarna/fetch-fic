@@ -14,7 +14,8 @@ class Site {
   static fromUrl (rawUrl) {
     if (this.registered.length === 0) {
       const sitesAvailable = qw`xenforo fanfictionnet deviantart ao3 ao3/series gravatar
-        wp-facebook wikipedia youtube worm worm2 generic-image scrivener local`
+        wp-facebook wikipedia youtube worm worm2 generic-image scrivener local
+        generic-html`
       for (const site of sitesAvailable) {
         Site.register(require(`./site/${site}`))
       }
