@@ -264,19 +264,22 @@ function getFic (fetch, fic) {
         showImageStatus()
       })
     })
-  }).then(() => {
+  }).then(async () => {
     process.emit('debug', `Considering cover`)
     if (fic.cover) {
       process.emit('debug', `Outputting cover image of ${fic.title}`)
       if (/:/.test(fic.cover)) {
         fetch.tracker.addWork(1)
         progress.show('Fetching cover…')
-        return fetch(fic.cover, {referer: fic.link}).spread((meta, imageData) => {
+        try {
+          const [meta, imageData] = await fetch(fic.cover, {referer: fic.link})
           return stream.queueChapter({
             outputType: 'cover',
             content: imageData
           })
-        }).catch(err => process.emit('error', `Error while fetching cover ${fic.cover}: ${err.message}`))
+        } catch (err) {
+          process.emit('error', `Error while fetching cover ${fic.cover}: ${err.message}`)
+        }
       } else {
         return stream.queueChapter({
           outputType: 'cover',
