@@ -32,7 +32,7 @@
     "concat-stream": "^1.5.2",
     "css-parse": "^2.0.0",
     "fs-write-stream-atomic": "^1.0.10",
-    "funstream": "^2.6.1",
+    "funstream": "^3.0.0",
     "gauge": "^2.7.4",
     "html-escape": "^2.0.0",
     "iconv-lite": "^0.4.19",
