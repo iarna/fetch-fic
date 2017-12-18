@@ -32,7 +32,7 @@ class OutputEpub extends Output {
     const statusRe = /^status:(stalled|abandoned|complete|one-shot)$/
     const fandomRe = /^fandom:/
     let tags = this.fic.tags && this.fic.tags.filter(tag => !fandomRe.test(tag) && !statusRe.test(tag))
-    let modified = moment(this.fic.modified || this.fic.started || this.fic.created)
+    let modified = moment(this.fic.modified || this.fic.started || this.fic.created || moment())
     let status = this.fic.tags && this.fic.tags.filter(tag => statusRe.test(tag))[0]
     if (status) status = status.replace(/^status:/, '')
     if (!status && modified) {
