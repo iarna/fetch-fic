@@ -275,7 +275,7 @@ class BBCodeParser extends Transform {
       this.emitOpenTag()
       this.parserState = this.parseText
     } else if (char !== ' ') {
-      this.emitError('invalid char after attribute in open tag')
+      this.emitError('invalid char after attribute in open tag char=' + char)
       this.parserState = this.parseText
     }
   }
