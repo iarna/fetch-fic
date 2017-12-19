@@ -148,11 +148,11 @@ class Parser {
         return '[/color]'
       },
       'xenforo-quote': (tag, name, value) => {
-        const bits = value.match(/^(?:(\d+) )?'(.*)'|true/)
-        if (bits[2]) {
-          this.addText(`[quote="${bits[2]}, post: ${bits[1]}"]`)
+        const bits = value.match(/^(?:(\d+) )?(')?(.*)\2|true/)
+        if (bits[1]) {
+          this.addText(`[quote="${bits[3]}, post: ${bits[1]}"]`)
         } else if (value !== 'true') {
-          this.addText(`[quote="${bits[2]}"]`)
+          this.addText(`[quote="${bits[3]}"]`)
         } else {
           this.addText('[quote]')
         }
