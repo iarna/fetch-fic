@@ -241,7 +241,7 @@ class Xenforo extends Site {
       $spoilers.each((ii, spoiler) => {
         const $spoiler = chapter.$(spoiler)
         const spoilerLabel = $spoiler.find('.bbCodeSpoilerButton').text().trim()
-        $spoiler.attr('style', `border: solid black 1px; xenforo-spoiler: '${spoilerLabel}';`)
+        $spoiler.attr('style', `xenforo-spoiler: '${spoilerLabel}'; border: solid black 1px;`)
         if (spoilerLabel === 'Spoiler') {
           $spoiler.find('.bbCodeSpoilerButton').remove()
         } else {

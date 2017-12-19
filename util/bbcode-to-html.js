@@ -44,7 +44,7 @@ const tags = {
         : `<div style="xenforo-quote: ${node.attr || 'true'}; text-indent: 0; border: solid black 1px; padding: 1em;">`
     },
     node => `</div>` ],
-  spoiler: [ node => `<div style="border: solid black 1px; padding: 1em; xenforo-spoiler: ${node.attr};">`, node => `</div>` ],
+  spoiler: [ node => `<div style="xenforo-spoiler: ${node.attr}; border: solid black 1px; padding: 1em;">`, node => `</div>` ],
   list: [ node => `<${node.attr == 1 ? 'ol' : 'ul'}>`, node => `</${node.attr == 1 ? 'ol' : 'ul'}>` ],
   '*': [ node => `<li>`, node => '' ],
   left: [ node => `<div style="text-align: left;">`, node => `</div>` ],
