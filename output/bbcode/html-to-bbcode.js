@@ -310,7 +310,11 @@ class Parser {
           for (let decl of css.stylesheet.rules[0].declarations) {
             let style = this.styles[decl.property]
             if (style) {
-              closeWith = style(tag, decl.property, decl.value) + closeWith
+              try {
+                closeWith = style(tag, decl.property, decl.value) + closeWith
+              } catch (ex) {
+                process.emit('error', 'style crashed', ex)
+              }
               if (/^xenforo-/.test(decl.property)) break
             } else {
               const util = require('util')
