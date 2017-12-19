@@ -167,6 +167,7 @@ class BBCodeParser extends Transform {
       } else {
         ++this.col
       }
+      this.text += text[ii]
       this.parserState(text[ii])
     }
     done()
@@ -177,11 +178,12 @@ class BBCodeParser extends Transform {
   }
   parseText (char) {
     if (char === '[') {
+      this.text = this.text.slice(0, -1)
+      this.emitText()
+      this.text = char
       this.tag = ''
       this.attr = ''
       this.parserState = this.parseTagStart
-    } else {
-      this.text += char
     }
   }
   parseTagStart (char) {
@@ -196,6 +198,7 @@ class BBCodeParser extends Transform {
     if (/^\w$/.test(char)) {
       this.tag += char
     } else if (char === ']') {
+      this.text = ''
       this.emitCloseTag()
       this.parserState = this.parseText
     } else {
@@ -207,6 +210,7 @@ class BBCodeParser extends Transform {
     if (/^[*\w]$/.test(char)) {
       this.tag += char
     } else if (char === ']') {
+      this.text = ''
       this.emitOpenTag()
       this.parserState = this.parseText
     } else if (char === '=') {
@@ -219,6 +223,7 @@ class BBCodeParser extends Transform {
     if (char === '=') {
       this.parserState = this.parsePostAttrStart
     } else if (char === ']') {
+      this.text = ''
       this.emitOpenTag()
       this.parserState = this.parseText
     } else if (char !== ' ') {
@@ -228,6 +233,7 @@ class BBCodeParser extends Transform {
   }
   parsePostAttrStart (char) {
     if (char === ']') {
+      this.text = ''
       this.emitOpenTag()
       this.parserState = this.parseText
     } else if (char === '"' || char === '“') {
@@ -242,6 +248,7 @@ class BBCodeParser extends Transform {
   parsePlainAttr (char) {
     if (char === ']') {
       this.attr = this.attr.trim()
+      this.text = ''
       this.emitOpenTag()
       this.parserState = this.parseText
     } else {
@@ -264,6 +271,7 @@ class BBCodeParser extends Transform {
   }
   parseAttrEnd (char) {
     if (char === ']') {
+      this.text = ''
       this.emitOpenTag()
       this.parserState = this.parseText
     } else if (char !== ' ') {
