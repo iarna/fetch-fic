@@ -100,12 +100,8 @@ class Scrivener extends Site {
     const ChapterContent = use('chapter-content')
     const rtfToHTML = use('rtf-to-html')
     const bbcodeToHTML = use('bbcode-to-html')
-    try {
-      const content = await bbcodeToHTML(rtfToHTML(fs.readFile(chapter.fetchWith(), 'ascii')))
-      return new ChapterContent(chapter, {site: this, content})
-    } catch (_) {
-      return new ChapterContent(chapter, {site: this, content: ''})
-    }
+    const html = bbcodeToHTML(rtfToHTML(fs.readFile(chapter.fetchWith(), 'ascii')))
+    return new ChapterContent(chapter, {site: this, content: await html.concat()})
   }
 }
 module.exports = Scrivener

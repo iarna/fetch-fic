@@ -7,8 +7,7 @@ function bbcodeToHTML (bbcode) {
   const fun = require('funstream')
   const parser = new BBCodeParser()
   const toHTML = new BBCodeToHTML({passThroughText: true})
-
-  return fun(bbcode).pipe(parser).pipe(toHTML).concat()
+  return fun(bbcode).pipe(parser).pipe(toHTML)
 }
 
 function passthrough (name) {
