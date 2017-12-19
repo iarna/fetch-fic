@@ -236,9 +236,9 @@ class BBCodeParser extends Transform {
       this.text = ''
       this.emitOpenTag()
       this.parserState = this.parseText
-    } else if (char === '"' || char === '“') {
+    } else if (char === '"' || char === '“' || char === '”') {
       this.parserState = this.parseQQAttr
-    } else if (char === "'" || char === '‘') {
+    } else if (char === "'" || char === '‘' || char === '’') {
       this.parserState = this.parseQAttr
     } else if (char !== ' ') {
       this.parserState = this.parsePlainAttr
@@ -256,14 +256,14 @@ class BBCodeParser extends Transform {
     }
   }
   parseQQAttr (char) {
-    if (char === '"' || char === '”') {
+    if (char === '"' || char === '”' || char === '“') {
       this.parserState = this.parseAttrEnd
     } else {
       this.attr += char
     }
   }
   parseQAttr (char) {
-    if (char === "'" || char === '’') {
+    if (char === "'" || char === '’' || char === '‘') {
       this.parserState = this.parseAttrEnd
     } else {
       this.attr += char
