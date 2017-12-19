@@ -101,6 +101,9 @@ class Scrivener extends Site {
     const rtfToHTML = use('rtf-to-html')
     const bbcodeToHTML = use('bbcode-to-html')
     const html = bbcodeToHTML(rtfToHTML(fs.readFile(chapter.fetchWith(), 'ascii')))
+    html.on('warning', err => {
+      process.emit('warn', 'bbcode', `Error in bbcode ${err.message} in chapter "${chapter.name}"`)
+    })
     return new ChapterContent(chapter, {site: this, content: await html.concat()})
   }
 }

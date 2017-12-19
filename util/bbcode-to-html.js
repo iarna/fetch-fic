@@ -111,7 +111,7 @@ class BBCodeToHTML extends Transform  {
         this.emit('error', new Error(`Unknown close tag "${node.value}" at line ${node.row}, column ${node.col}`))
       }
     } else if (node.type === 'error') {
-      this.emit('error', new Error(`${node.value} at row ${node.row}, column ${node.col}`))
+      this.emit('warning', new Error(`${node.value} at row ${node.row}, column ${node.col}`))
     }
   }
   parseContentTag (node) {
