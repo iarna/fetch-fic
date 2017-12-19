@@ -149,7 +149,7 @@ function getFic (fetch, fic) {
       if (chapterInfo.type !== 'chapter' && !/:/.test(chapter.name)) {
         chapter.name = `${chapterInfo.type}: ${chapterInfo.name}`
       }
-      if (fic.chapterHeadings || chapterInfo.headings) {
+      if ((fic.chapterHeadings && chapterInfo.headings !== false) || chapterInfo.headings) {
         const headerName = html`${chapterInfo.name}`
         const byline = !chapterInfo.author ? ''
           : (' by ' + (!chapterInfo.authorUrl ? chapterInfo.author
