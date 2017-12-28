@@ -199,10 +199,11 @@ class Fic {
     const result = {}
     for (let prop of qw`
          title _id link altlinks updateFrom author authorUrl created modified publisher cover
-         description notes tags words fics chapters chapterHeadings _includeTOC _numberTOC fetchMeta scrapeMeta
+         description notes tags words fics chapterHeadings _includeTOC _numberTOC fetchMeta scrapeMeta
        `) {
       if (this[prop] != null && (!Array.isArray(this[prop]) || this[prop].length)) result[prop.replace(/^_/,'')] = this[prop]
     }
+    if (this.chapters.length) result.chapters = this.chapters.toJSON(this)
     result.fics && result.fics.sort((a, b) => a.created > b.created ? 1 : a.created < b.created ? -1 : 0)
     if (!this.externals) result.externals = this.externals
     if (!this.spoilers) result.spoilers = this.spoilers
@@ -368,6 +369,9 @@ class ChapterList extends Array {
     }
     this.sort()
   }
+  toJSON (fic) {
+    return this.map(chap => chap.toJSON ? chap.toJSON(fic) : chap)
+  }
 }
 
 class Chapter {
@@ -399,7 +403,10 @@ class Chapter {
     this.headings = opts.headings
     this.words = opts.words || 0
   }
-  toJSON () {
+  toJSON (fic) {
+    const ficExternals = (fic && fic.externals) == null ? true : Boolean(fic.externals)
+    const ficSpoilers = (fic && fic.spoilers) == null ? true : Boolean(fic.spoilers)
+    const ficHeadings = (fic && fic.chapterHeadings) == null ? true : Boolean(fic.chapterHeadings)
     return {
       name: this.name,
       type: this.type !== 'chapter' ? this.type : undefined,
@@ -412,9 +419,9 @@ class Chapter {
       created: this.created === 'Invalid Date' ? null : this.created,
       modified: this.modified === 'Invalid Date' ? null : this.modified,
       tags: this.tags && this.tags.length > 0 ? this.tags : null,
-      externals: this.externals !== true ? this.externals : null,
-      spoilers: this.spoilers !== true ? this.spoilers: null,
-      headings: this.headings,
+      externals: this.externals !== ficExternals ? this.externals : null,
+      spoilers: this.spoilers !== ficSpoilers ? this.spoilers: null,
+      headings: this.headings !== ficHeadings ? this.headings: null,
       words: this.words
     }
   }
