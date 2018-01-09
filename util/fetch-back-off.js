@@ -8,7 +8,8 @@ const aliases = {
   "archiveofourown.org": "AO3",
   "fanfiction.net": "FFN",
   "questionablequesting.com": "QQ",
-  "forum.questionablequesting.com": "QQ"
+  "forum.questionablequesting.com": "QQ",
+  "www.alternatehistory.com": "AH"
 }
 const state = {
   hosts: {},

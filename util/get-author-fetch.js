@@ -45,6 +45,7 @@ function site (url) {
   if (/fanfiction.net/.test(url)) return 'ff'
   if (/questionable/.test(url)) return 'qq'
   if (/archiveofourown/.test(url)) return 'ao3'
+  if (/alternatehistory/.test(url)) return 'ah'
   return 'other'
 }
 
