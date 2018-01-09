@@ -8,13 +8,14 @@ const knownSites = {
   'forums.sufficientvelocity.com': 'Sufficient Velocity',
   'forums.spacebattles.com': 'Spacebattles',
   'forum.questionablequesting.com': 'Questionable Questing',
-  'questionablequesting.com': 'Questionable Questing'
+  'questionablequesting.com': 'Questionable Questing',
+  'www.alternatehistory.com': 'Alternate History'
 }
 
 class Xenforo extends Site {
   static matches (siteUrlStr) {
     const siteUrl = url.parse(siteUrlStr)
-    if (!/^[/](threads|posts)[/]|^[/]index[.]php[?]topic|^[/]goto[/]post[?]id/.test(siteUrl.path)) return false
+    if (!/^[/](forum[/])?(threads|posts)[/]|^[/]index[.]php[?]topic|^[/]goto[/]post[?]id/.test(siteUrl.path)) return false
     return true
   }
 
@@ -56,6 +57,7 @@ class Xenforo extends Site {
     const loadThreadmarks = (type, $) => {
       let chapters = $('li.threadmarkItem')
       if (chapters.length === 0) chapters = $('li.primaryContent') // qq
+      if (chapters.length === 0) chapters = $('li.threadmarkListItem') // ah
       chapters.each((ii, chapter) => {
         const $chapter = $(chapter)
         $chapter.find('li').remove() // remove child chapters so that $link.text() works right

@@ -59,6 +59,10 @@ async function _reallyRead (urls, args) {
     maxConcurrency: 6,
     requestsPerSecond: 10,
     perSite: {
+      "www.alternatehistory.com": {
+        maxConcurrency: 1,
+        requestsPerSecond: 1,
+      },
       "forums.spacebattles.com": {
         maxConcurrency: 1,
         requestsPerSecond: 1,
