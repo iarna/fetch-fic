@@ -60,7 +60,7 @@ async function _reallyRead (urls, args) {
     requestsPerSecond: 10,
     perSite: {
       "forums.spacebattles.com": {
-        maxConcurrency: 2,
+        maxConcurrency: 1,
         requestsPerSecond: 1,
       },
       "forums.sufficientvelocity.com": {
