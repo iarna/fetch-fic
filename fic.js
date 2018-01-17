@@ -213,11 +213,31 @@ class Fic {
       if (this[prop] != null && (!Array.isArray(this[prop]) || this[prop].length)) result[prop.replace(/^_/,'')] = this[prop]
     }
     if (this.chapters.length) result.chapters = this.chapters.toJSON(this)
-    result.fics && result.fics.sort((a, b) => a.created > b.created ? 1 : a.created < b.created ? -1 : 0)
+    if (result.fics) {
+      result.fics.sort(sortFics)
+    }
     if (!this.externals) result.externals = this.externals
     if (!this.spoilers) result.spoilers = this.spoilers
     return result
   }
+}
+
+function sortFics (a, b) {
+  const am = a.link.match(/fanfiction.net[/]s[/](\d+)[/](\d+)/)
+  const bm = b.link.match(/fanfiction.net[/]s[/](\d+)[/](\d+)/)
+  if (am && bm) {
+    const fico = Number(am[1]) - Number(bm[1])
+    if (fico) return fico
+    const cho = Number(am[2]) - Number(bm[2])
+    if (cho) return cho
+  }
+  if (a.created && b.created) {
+    const dto = a.created > b.created ? 1 : a.created < b.created ? -1 : 0
+    if (dto) return dto
+  }
+  const lo = a.link.localeCompare(b.link)
+  if (lo) return lo
+  return a.title.localeCompare(b.title)
 }
 
 class SubFic extends Fic {
