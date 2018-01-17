@@ -50,8 +50,8 @@ async function _generateInstead (files) {
 
 async function _reallyRead (urls, args) {
   const addAll = args['add-all']
-  const fromThreadmarks = !args.scrape
-  const fromScrape = args.scrape || args['and-scrape']
+  const fromThreadmarks = !args.scrape && !args['all-posts']
+  const fromScrape = args['all-posts'] ? 'posts' : (args.scrape || args['and-scrape']) && 'index'
 
   const fetchOpts = {
     cacheBreak: !args.cache,
@@ -86,11 +86,11 @@ async function _reallyRead (urls, args) {
     function fetchFic () {
       const Fic = use('fic')
       if (fromThreadmarks && fromScrape) {
-        return Fic.fromUrlAndScrape(fetchAndSpin, url)
+        return Fic.fromUrlAndScrape(fetchAndSpin, url, fromScrape)
       } else if (fromThreadmarks) {
         return Fic.fromUrl(fetchAndSpin, url)
       } else {
-        return Fic.scrapeFromUrl(fetchAndSpin, url)
+        return Fic.scrapeFromUrl(fetchAndSpin, url, fromScrape)
       }
     }
 

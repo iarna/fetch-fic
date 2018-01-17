@@ -163,24 +163,24 @@ class Fic {
     return fic
   }
 
-  static async fromUrlAndScrape (fetch, link) {
+  static async fromUrlAndScrape (fetch, link, scrapeType) {
     const fic = new this(fetch)
     fic.site = Site.fromUrl(link)
     fic.link = fic.site.link
     fic.fetchMeta = true
     await fic.site.getFicMetadata(fetch, fic)
     if (fic.site.canScrape) {
-      fic.scrapeMeta = true
+      fic.scrapeMeta = scrapeType
       await fic.site.scrapeFicMetadata(fetch, fic)
     }
     return fic
   }
 
-  static async scrapeFromUrl (fetch, link) {
+  static async scrapeFromUrl (fetch, link, scrapeType) {
     const fic = new this()
     fic.site = Site.fromUrl(link)
     fic.link = fic.site.link
-    fic.scrapeMeta = true
+    fic.scrapeMeta = scrapeType
     if (!fic.site.canScrape) {
       const err = new Error(`Site ${fic.site.publisherName || fic.site.publisher} does not support fetching via scraping for ${fic.title} @ ${fic.link}`)
       err.code = 'ENOSCRAPE'

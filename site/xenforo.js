@@ -113,36 +113,68 @@ class Xenforo extends Site {
 
     const firstPara = chapter.$content.text().trim().replace(/^([^\n]+)[\s\S]*?$/, '$1')
     if (!fic.description) fic.description = firstPara
+
     const chapters = []
-    const links = chapter.$content('a')
-    links.each((_, link) => {
-      const $link = chapter.$content(link)
-      const href = this.normalizeLink($link.attr('href'), chapter.base)
-      let name = $link.text().trim()
-      if (name === '↑') return // don't add links to quoted text as chapters
-      // if the name is a link, try to find one elsewhere
-      if (/^https?:[/][/]/.test(name) || / \| Page \d+$/.test(name)) {
-        let next = $link[0].prev
-        let nextText = chapter.$content(next).text().trim()
-        if (next.type === 'text' && nextText === '') {
-          next = next.prev
-          nextText = chapter.$content(next).text().trim()
-        }
-        if (next.type !== 'text') {
-          next = next.prev
-          nextText = chapter.$content(next).text().trim()
-        }
-        if (next.type === 'text') {
-          name = nextText
-        }
-      }
-      if (/^[/](?:threads|posts|s|art)[/]|^[/]index.php[?]topic/.test(url.parse(href).path)) {
-        chapters.push({name, link: href})
-      }
-    })
     const fetchWithCache = fetch.withOpts({cacheBreak: false})
-    if (!chapter.name) chapter.name = fic.title
-    fic.addChapter(chapter)
+    if (fic.scrapeMeta === 'posts') {
+      const cheerio = require('cheerio')
+      if (!chapter.name) chapter.name = 'Chapter 1'
+      let thispage = chapter.$
+      let thisUrl = chapter.fetchFrom || chapter.link
+      let num = 0
+      while (true) {
+        const msgs = thispage(`.message[data-author="${fic.author}"]`)
+        const base = thispage('base').attr('href') || thisUrl
+
+        msgs.each((_, msg) => {
+          const $msg = thispage(msg)
+          const perm = $msg.find('a.datePermalink').attr('href').trim()
+          let link
+          if (/posts\/(\d+)\/?$/.test(perm)) {
+            link = url.resolve(thisUrl, perm.replace(/posts\/(\d+)\/?$/, '#post-$1'))
+          } else {
+            link = url.resolve(base, perm)
+          }
+          const name = $msg.find('article').text().trim().replace(/^([^\n]+)[\s\S]*$/, '$1')
+          chapters.push({name: `Chapter ${++num}: ${name}`, link})
+        })
+        const $next = thispage('link[rel="next"]')
+        if ($next.length === 0) break
+        const next = url.resolve(base, $next.attr('href').trim())
+        const [meta, html] = await fetchWithCache(next)
+        thispage = cheerio.load(html)
+        thisUrl = meta.finalUrl || next
+      }
+    } else {
+      const links = chapter.$content('a')
+      links.each((_, link) => {
+        const $link = chapter.$content(link)
+        const href = this.normalizeLink($link.attr('href'), chapter.base)
+        let name = $link.text().trim()
+        if (name === '↑') return // don't add links to quoted text as chapters
+        // if the name is a link, try to find one elsewhere
+        if (/^https?:[/][/]/.test(name) || / \| Page \d+$/.test(name)) {
+          let next = $link[0].prev
+          let nextText = chapter.$content(next).text().trim()
+          if (next.type === 'text' && nextText === '') {
+            next = next.prev
+            nextText = chapter.$content(next).text().trim()
+          }
+          if (next.type !== 'text') {
+            next = next.prev
+            nextText = chapter.$content(next).text().trim()
+          }
+          if (next.type === 'text') {
+            name = nextText
+          }
+        }
+        if (/^[/](?:threads|posts|s|art)[/]|^[/]index.php[?]topic/.test(url.parse(href).path)) {
+          chapters.push({name, link: href})
+        }
+      })
+      if (!chapter.name) chapter.name = fic.title
+      fic.addChapter(chapter)
+    }
     const forEach = use('for-each')
     await forEach(chapters, async ch => {
       try {
@@ -151,7 +183,8 @@ class Xenforo extends Site {
         fic.addChapter(ch)
       } catch (_) {}
     })
-    if (fic.chapters.length > 1) {
+
+    if (fic.scrapeMeta !== 'posts' && fic.chapters.length > 1) {
       fic.chapters[0].name = 'Table of Contents'
       fic.includeTOC = false
     }

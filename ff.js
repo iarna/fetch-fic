@@ -60,6 +60,10 @@ const argv = yargs
         type: 'boolean',
         describe: 'pull chapters from BOTH the index AND the threadmarks'
       })
+      .option('all-posts', {
+        type: 'boolean',
+        describe: 'when scraping, assume no index, generate index from all posts to thread by OP'
+      })
       .demand(1, '<url> - The URL to fetch chapters for')
       networkOptions(yargs, false)
     },
