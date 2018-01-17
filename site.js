@@ -15,7 +15,7 @@ class Site {
     if (this.registered.length === 0) {
       const sitesAvailable = qw`
         xenforo fanfictionnet ao3 ao3/series seananmcguire worm worm2
-        deviantart gravatar wp-facebook wikipedia youtube
+        deviantart gravatar wp-facebook wikipedia youtube nanodesutranslations
         scrivener local
         generic-image generic-html`
       for (const site of sitesAvailable) {
