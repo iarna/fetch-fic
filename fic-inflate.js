@@ -33,6 +33,8 @@ function ficInflate (fic, fetch, tracker) {
             if (chapterInfo[prop] == null) chapterInfo[prop] = chapter[prop]
           }
           if (chapterInfo.author === fic.author || chapterInfo.authorUrl === fic.authorUrl) {
+            fic.author = chapterInfo.author
+            fic.authorUrl = chapterInfo.authorUrl
             chapterInfo.author = null
             chapterInfo.authorUrl = null
           }

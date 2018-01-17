@@ -345,6 +345,7 @@ class SubFic extends Fic {
          _description _notes _tags chapters _chapterHeadings words _includeTOC _numberTOC
          `) {
       const assignTo = prop[0] === '_' ? prop.slice(1) : prop
+      if ((assignTo === 'author' || assignTo === 'authorUrl') && this.parent[assignTo] === this[prop]) continue
       if (this[prop] && (this[prop].length == null || this[prop].length)) result[assignTo] = this[prop]
     }
     return result
