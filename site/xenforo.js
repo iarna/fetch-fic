@@ -245,9 +245,16 @@ class Xenforo extends Site {
     // at least on qq
     const $contentWarning = $content.find('dl.adv_accordion')
     if ($contentWarning.length) {
-      const label = $contentWarning.find('dt').html()
-      const value = $contentWarning.find('dd').html()
-      $contentWarning.replaceWith(`<div><h3>${label}</h3>${value}</div>`)
+      $contentWarning.each((ii, cw) => {
+        const $cw = chapter.$(cw)
+        const label = coll2arr($cw.find('dt')).map(v => chapter.$(v))
+        const value = coll2arr($cw.find('dd')).map(v => chapter.$(v))
+        let result = ''
+        for (let ii = 0; ii < label.length; ++ii) {
+          result += `<div><h3>${label[ii].html()}</h3>${value[ii].html()}</div>`
+        }
+        $cw.replaceWith(result)
+      })
     }
 
     $content.find('.quoteContainer < aside').each((ii, quote) => {
@@ -490,6 +497,12 @@ class Xenforo extends Site {
         return 'America/Los_Angeles'
     }
   }
+}
+
+function coll2arr (c) {
+  const a = []
+  c.each((ii, v) => a.push(v))
+  return a
 }
 
 module.exports = Xenforo
