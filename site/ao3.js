@@ -26,6 +26,7 @@ class ArchiveOfOurOwn extends Site {
   }
 
   normalizeLink (href, base) {
+    if (!href) return
     return super.normalizeLink(href, base).replace(/#.*$/, '')
   }
   chapterIndex () {
