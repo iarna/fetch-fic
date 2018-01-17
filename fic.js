@@ -9,7 +9,7 @@ class Fic {
     this._id = null
     this.fetch = fetch
     this.title = null
-    this.link = null
+    this._link = null
     this.altlinks = null
     this.updateFrom = null
     this.author = null
@@ -65,6 +65,15 @@ class Fic {
 
   set words (val) {
     return
+  }
+
+  get link () {
+    if (this._link) return this._link
+    return this.chapters[0].link
+  }
+
+  set link (val) {
+    this._link = val
   }
 
   updateWith () {
@@ -198,7 +207,7 @@ class Fic {
   toJSON () {
     const result = {}
     for (let prop of qw`
-         title _id link altlinks updateFrom author authorUrl created modified publisher cover
+         title _id _link altlinks updateFrom author authorUrl created modified publisher cover
          description notes tags words fics chapterHeadings _includeTOC _numberTOC fetchMeta scrapeMeta
        `) {
       if (this[prop] != null && (!Array.isArray(this[prop]) || this[prop].length)) result[prop.replace(/^_/,'')] = this[prop]
