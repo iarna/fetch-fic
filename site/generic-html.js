@@ -35,11 +35,12 @@ class GenericHTML extends Site {
   async getChapter (fetch, chapterInfo) {
     const [meta, html] = await fetch(chapterInfo.fetchWith())
     const ChapterContent = use('chapter-content')
+    const modified = meta.headers['last-modified'] ? moment(meta.headers['last-modified'][0]) : undefined
     return new ChapterContent(chapterInfo, {
       site: this,
       base: chapterInfo.link,
       content: html,
-      modified: moment(meta.headers['last-modified'][0])
+      modified: modified
     })
   }
 }
