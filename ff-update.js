@@ -3,7 +3,6 @@ module.exports = update
 
 const Bluebird = require('bluebird')
 const qw = require('qw')
-const syncTOML = require('@iarna/toml')
 
 const fetch = use('fetch')
 const Fic = use('fic')
@@ -51,7 +50,7 @@ function update (args) {
 }
 
 function readFic (fic) {
-  return fs.readFile(fic).then(toml => Fic.fromJSON(syncTOML.parse(toml)))
+  return fs.readFile(fic).then(toml => Fic.fromJSON(TOML.sync.parse(toml)))
 }
 
 function updateFic (fetch, args) {

@@ -49,6 +49,7 @@
     "sanitize-html": "^1.13.0",
     "signal-exit": "^3.0.2",
     "streampub": "^1.8.0",
+    "toml": "^2.3.3",
     "tough-cookie": "^2.3.3",
     "uuid": "^3.1.0",
     "wordcount": "^1.1.1",
