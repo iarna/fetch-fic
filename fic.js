@@ -60,7 +60,8 @@ class Fic {
   }
 
   get words () {
-    return this.chapters.filter(ch => ch.type === 'chapter').reduce((acc, ch) => acc + ch.words, 0)
+    return this.chapters.filter(ch => ch.type === 'chapter').reduce((acc, ch) => acc + ch.words, 0) ||
+           this.chapters.reduce((acc, ch) => acc + ch.words, 0)
   }
 
   set words (val) {
