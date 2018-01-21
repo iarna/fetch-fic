@@ -3,6 +3,8 @@ const url = require('url')
 const Site = use('site')
 const cache = use('cache')
 const moment = require('moment')
+const tagmap = use('tagmap')('ao3')
+const uniq = use('uniq')
 
 class ArchiveOfOurOwn extends Site {
   static matches (siteUrlStr) {
@@ -89,7 +91,7 @@ class ArchiveOfOurOwn extends Site {
     const characters = this.tagGroup(chapter.$, 'character', $meta.find('dd.character'))
     const freeform = this.tagGroup(chapter.$, 'freeform', $meta.find('dd.freeform'))
     const language = 'language:' + $meta.find('dd.language').text().trim()
-    fic.tags = [].concat(ratings, warnings, category, fandom, relationship, characters, freeform, language)
+    fic.tags = uniq(tagmap([].concat(ratings, warnings, category, fandom, relationship, characters, freeform, language)))
     const $stats = $meta.find('dl.stats')
     const chapterCounts = $stats.find('dd.chapters').text().trim().split('/')
     const written = chapterCounts[0]

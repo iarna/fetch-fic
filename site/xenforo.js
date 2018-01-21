@@ -3,6 +3,8 @@
 const url = require('url')
 const Site = use('site')
 const moment = require('moment-timezone')
+const tagmap = use('tagmap')('xenforo')
+const uniq = use('uniq')
 
 const knownSites = {
   'forums.sufficientvelocity.com': 'Sufficient Velocity',
@@ -48,7 +50,7 @@ class Xenforo extends Site {
     const base = $('base').attr('href') || this.threadmarkUrl()
     const tat = this.detagTitle(this.scrapeTitle($))
     fic.title = tat.title
-    fic.tags = fic.tags.concat(tat.tags.map(t => `title:${t}`))
+    fic.tags = fic.tags.concat(tagmap(tat.tags))
     const $sections = $('div.threadmarks ol.tabs li')
     let leastRecent
     let mostRecent
@@ -85,7 +87,7 @@ class Xenforo extends Site {
     fic.modified = mostRecent
     if (!fic.chapters.length) return
     const chapter = await fic.chapters[0].getContent(fetch.withOpts({cacheBreak: false}))
-    fic.tags = fic.tags.concat(chapter.tags)
+    fic.tags = uniq(fic.tags.concat(chapter.tags))
     fic.author = chapter.author
     fic.authorUrl = chapter.authorUrl
     fic.notes = chapter.$content.text().trim().replace(/^([^\n]+)[\s\S]*?$/, '$1')
@@ -103,11 +105,11 @@ class Xenforo extends Site {
     if (!fic.title || !fic.tags) {
       const tat = this.detagTitle(this.scrapeTitle(chapter.$))
       const ficTitle = tat.title
-      const ficTags = tat.tags.map(t => `title:${t}`)
+      const ficTags = tagmap(tat.tags)
       if (!fic.title) fic.title = ficTitle
       if (!fic.tags.length) fic.tags = ficTags
     }
-    fic.tags = fic.tags.concat(this.getTags(chapter.$))
+    fic.tags = uniq(fic.tags.concat(tagmap(this.getTags(chapter.$))))
     if (!fic.author) fic.author = chapter.author
     if (!fic.authorUrl) fic.authorUrl = chapter.authorUrl
 
@@ -347,10 +349,11 @@ class Xenforo extends Site {
       }
       chapter.$(vv).attr('style', ns)
     })
-    chapter.tags = this.getTags(chapter.$)
+    chapter.tags = tagmap(this.getTags(chapter.$))
     if (/Discussion in .*Quest(s|ing)/i.test(chapter.$('#pageDescription').text())) {
       chapter.tags.push('Quest')
     }
+    chapter.tags = uniq(chapter.tags)
     $content.find('div.messageTextEndMarker').remove()
     chapter.content =  $content.html().trim()
         // content is blockquoted, for some reason
@@ -429,23 +432,24 @@ class Xenforo extends Site {
   scrapeTitle ($) {
     try {
       const titleChunk = $('div.titleBar h1')
+      const tags = coll2arr(titleChunk.find('span')).map(t => $(t).text().trim().replace(/\[|\]/g, ''))
       titleChunk.find('span').remove()
-      return titleChunk.text().replace(/Threadmarks for: /i, '').trim()
+      return [titleChunk.text().replace(/Threadmarks for: /i, '').trim(), tags]
     } catch (_) {
       return
     }
   }
 
-  detagTitle (title) {
+  detagTitle (titleAndTags) {
+    let [title, tags] = titleAndTags || [undefined, []]
     const tagExp = /[(](.*?)[)]|[\[](.*?)[\]]/g
     const tagMatch = title.match(tagExp)
-    let tags = []
     if (tagMatch) {
       title = title.replace(tagExp, '').trim()
       tagMatch.map(t =>
         t.slice(1,-1)
          .split(/[/,|]/)
-         .map(st => st.trim())
+         .map(st => 'title:' + st.trim())
          .forEach(st => tags.push(st)))
     }
     return {title, tags}

@@ -3,6 +3,8 @@ const url = require('url')
 
 const Site = use('site')
 const moment = require('moment')
+const tagmap = use('tagmap')('ffnet')
+const uniq = use('uniq')
 
 class FanFictionNet extends Site {
   static matches (siteUrlStr) {
@@ -77,7 +79,6 @@ class FanFictionNet extends Site {
       for (let p of info.pairing) {
         for (let c of p) fic.tags.push('character:' + c)
       }
-      fic.tags.sort()
       fic.words = info.words
       fic.comments = fic.reviews = info.reviews
       fic.kudos = fic.favs = info.favs
@@ -88,6 +89,7 @@ class FanFictionNet extends Site {
     } else {
       process.emit('error', 'NOMATCH:', infoline)
     }
+    fic.tags = uniq(tagmap(fic.tags.sort()))
     if (fandom) {
       if (/ Crossover$/.test(fandom)) {
         const [name, xover] = fandom.replace(/ Crossover$/, '').split(/ [+] /)
