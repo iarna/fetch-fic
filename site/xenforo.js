@@ -368,7 +368,7 @@ class Xenforo extends Site {
     $('.tagList a.tag').each((ii, tag) => {
       tags.push($(tag).text().trim())
     })
-    return tags
+    return tags.map(t => `freeform:${t}`)
   }
 
   sanitizeHtmlConfig () {
@@ -449,7 +449,7 @@ class Xenforo extends Site {
       tagMatch.map(t =>
         t.slice(1,-1)
          .split(/[/,|]/)
-         .map(st => 'title:' + st.trim())
+         .map(st => 'freeform:' + st.trim())
          .forEach(st => tags.push(st)))
     }
     return {title, tags}
