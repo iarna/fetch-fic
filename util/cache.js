@@ -62,9 +62,19 @@ function clearFile (filename) {
   return ignoreHarmlessErrors(fs.unlink(cacheFile))
 }
 
-function readJSON (filename, onMiss) {
-  return readFile(filename, stringifyOnMiss).then(result => JSON.parse(result))
+async function readJSON (filename, onMiss) {
+  let didMiss = false
+  const result = await readFile(filename, stringifyOnMiss)
+  try {
+    return JSON.parse(result)
+  } catch (ex) {
+    if (didMiss) throw ex
+    await clearFile(filename)
+    return JSON.parse(await readFile(filename, stringifyOnMiss))
+  }
+
   function stringifyOnMiss () {
+    didMiss = true
     return resolveCall(onMiss).then(result => JSON.stringify(result, null, 2))
   }
 }
