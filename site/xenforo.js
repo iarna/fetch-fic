@@ -118,7 +118,9 @@ class Xenforo extends Site {
 
     const chapters = []
     const fetchWithCache = fetch.withOpts({cacheBreak: false})
-    if (fic.scrapeMeta === 'posts') {
+    if (fic.scrapeMeta === 'no-chapters') {
+      // nothing
+    } else if (fic.scrapeMeta === 'posts') {
       const cheerio = require('cheerio')
       if (!chapter.name) chapter.name = 'Chapter 1'
       let thispage = chapter.$
