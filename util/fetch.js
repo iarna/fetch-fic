@@ -50,7 +50,7 @@ function addCookieFuncs (fetch) {
     const ourCookieJar = fetch.options.cookieJar || cookieJar
     return ourCookieJar.setCookieSync.apply(ourCookieJar, arguments)
   }
-  fetch.setGlobalCookie = cookie => globalCookies.push(cookie)
+  fetch.setGlobalCookie = cookie => { globalCookies.push(cookie); return fetch }
   return fetch
 }
 
