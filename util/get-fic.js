@@ -271,7 +271,7 @@ function getFic (fetch, fic) {
       if (/:/.test(fic.cover)) {
         fetch.tracker.addWork(1)
         progress.show('Fetching cover…')
-        return fetch(fic.cover, {referer: fic.link}).spread((meta, imageData) => {
+        return Bluebird.resolve(fetch(fic.cover, {referer: fic.link})).spread((meta, imageData) => {
           return stream.queueChapter({
             outputType: 'cover',
             content: imageData
