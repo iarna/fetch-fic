@@ -79,12 +79,13 @@ function setCookieP (jar, cookie, link) {
 }
 
 async function fetchWithCache (fetch, toFetch, opts$) {
-  const opts = await opts$
+  const opts = Object.assign({}, await opts$)
   process.emit('debug', 'Fetching', toFetch, opts)
   if (opts.cacheBreak) await cache.invalidateUrl(toFetch)
   const [meta, content] = await cache.readUrl(toFetch, async (toFetch, meta) => {
     if (opts.noNetwork) throw NoNetwork(toFetch, opts)
     const cookies = await getCookieStringP(opts.cookieJar, toFetch)
+    delete opts.cookieJar
     if (!opts.headers) opts.headers = {}
     opts.headers.Cookie = cookies
     const domain = url.parse(toFetch).hostname.replace(/^forums?[.]/, '')
