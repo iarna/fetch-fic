@@ -512,6 +512,28 @@ class Xenforo extends Site {
         return 'America/Los_Angeles'
     }
   }
+
+  async getUserInfo (fetch, externalName, link) {
+    const cheerio = require('cheerio')
+    const authCookies = require(`${__dirname}/../.authors_cookies.json`)
+    link = link.replace(/forum.questionable/, 'questionable')
+               .replace(/[/]sufficient/, '/forums.sufficient')
+    const [res, auhtml] = await fetch(link)
+    const $ = cheerio.load(auhtml)
+    const name = $('meta[property="profile:username"]').attr('content') || $('h1[itemprop="name"]').first().text() || externalName
+    const gender = $('meta[property="profile:gender"]').attr('content') || $('dd[itemprop="gender"]').first().text() || undefined
+    const dob = $('dd span[itemprop="dob"]').first().text() || undefined
+    const location = $('dd a[itemprop="address"]').first().text() || undefined
+    const image_src = $('img[itemprop="photo"]').first().attr('src')
+    const image = (image_src && !qr`avatars/avatar`.test(image_src)) ? url.resolve(link, image_src) : undefined
+    const $info = $('#info')
+    const $about = $info.first()
+    const $sig = $info.last()
+    const aboutHtml = $about.find('div').first().find('.baseHtml').html() || ''
+    const sigHtml = $about.find('.signature').html() || ''
+    let profile = (aboutHtml + sigHtml).trim() || undefined
+    return {name, link, gender, dob, location, image, profile}
+  }
 }
 
 function coll2arr (c) {

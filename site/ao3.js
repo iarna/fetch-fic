@@ -183,6 +183,20 @@ class ArchiveOfOurOwn extends Site {
     chapter.content = content
     return chapter
   }
+  async getUserInfo (fetch, externalName, link) {
+    link = link.replace(qr`/pseuds/.*`, '/profile')
+    const cheerio = require('cheerio')
+    const authCookies = require(`${__dirname}/../.authors_cookies.json`)
+    const [res, auhtml] = await fetch(link)
+    const $ = cheerio.load(auhtml)
+    const name = $('div.user div.header h2').text().trim() || externalName
+    const location = $('dt.location ~ dd').first().text().trim() || undefined
+    const image_src = $('img.icon').first().attr('src')
+    const image = (image_src && !/xicon_user/.test(image_src)) ? url.resolve(link, image_src) : undefined
+
+    const profile = $('div.bio blockquote.userstuff').html() || undefined
+    return {name, link, location, image, profile}
+  }
 }
 
 module.exports = ArchiveOfOurOwn

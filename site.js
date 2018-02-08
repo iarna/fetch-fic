@@ -93,6 +93,9 @@ class Site {
     const wordcount = require('@iarna/word-count')
     return wordcount(chapter.$content.text().trim())
   }
+  async getUserInfo (fetch, name, link) {
+    return {name, link}
+  }
 }
 
 Site.registered = []

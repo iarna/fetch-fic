@@ -144,6 +144,18 @@ class FanFictionNet extends Site {
     })
     return chapter
   }
+  async getUserInfo (fetch, name, link) {
+    const [res, auhtml] = await fetch(link)
+    const cheerio = require('cheerio')
+    const $ = cheerio.load(auhtml)
+    const $bio = $('#bio')
+    $bio.find('div').remove()
+    const image_src = $bio.find('img').first().attr('data-original')
+    const image = image_src ? url.resolve(link, image_src).replace(qr`/150/`, '/180/') : undefined
+    $bio.find('img').remove()
+    const profile = $bio.html() || undefined
+    return {name, link, image, profile}
+  }
 }
 
 module.exports = FanFictionNet
