@@ -81,6 +81,17 @@ class OutputEpub extends Output {
   transformChapter (chapter, stream) {
     const Streampub = require('streampub')
     const result = []
+    if (chapter.outputType === 'image') {
+      return result.concat(Streampub.newFile(chapter.filename, chapter.content, chapter.mime))
+    }
+    if (chapter.outputType === 'cover') {
+      this.coverName = chapter.filename
+      return result.concat(Streampub.newCoverImage(chapter.content, chapter.mime))
+    }
+    if (chapter.outputType === 'art') {
+      this.artName = chapter.filename
+      return result.concat(Streampub.newFile(chapter.filename, chapter.content, chapter.mime))
+    }
     if (!this.seenAny) {
       this.seenAny = true
       let title = 'Title Page'
@@ -91,12 +102,6 @@ class OutputEpub extends Output {
         if (this.fic.numberTOC) toctitle = 'ⅱ. ' + toctitle
         result.push(Streampub.newChapter(toctitle, this.tableOfContentsHTML(), 1, 'toc.xhtml'))
       }
-    }
-    if (chapter.outputType === 'image') {
-      return result.concat(Streampub.newFile(chapter.filename, chapter.content))
-    }
-    if (chapter.outputType === 'cover') {
-      return result.concat(Streampub.newCoverImage(chapter.content))
     }
     const index = chapter.order != null && (1 + chapter.order)
     let name = chapter.name
@@ -145,8 +150,9 @@ class OutputEpub extends Output {
   }
 
   htmlCoverImage () {
-    if (!this.coverName) return ''
-    return `<p><img style="display: block; margin-left: auto; margin-right: auto;" src="images/cover.jpg"></p>\n`
+    const cover = this.coverName || this.artName
+    if (!cover) return ''
+    return `<p><img style="display: block; margin-left: auto; margin-right: auto;" src="${cover}"></p>\n`
   }
 
   htmlSummaryRow (key, value) {

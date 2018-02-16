@@ -4,38 +4,13 @@ module.exports = getFic
 const fs = require('fs')
 const url = require('url')
 
-const Bluebird = require('bluebird')
-
 const Chapter = use('fic').Chapter
 const FicStream = use('fic-stream')
 const html = use('html-template-tag')
 const progress = use('progress')
 const Site = use('site')
-
-function concurrently (_todo, concurrency, forEach) {
-  const todo = Object.assign([], _todo)
-  let run = 0
-  let active = 0
-  let aborted = false
-  return new Bluebird((resolve, reject) => {
-    function runNext () {
-      if (aborted) return
-      if (active === 0 && todo.length === 0) return resolve()
-      while (active < concurrency && todo.length) {
-        ++active
-        forEach(todo.shift(), run++).then(() => {
-          --active
-          runNext()
-          return null
-        }).catch(err => {
-          aborted = true
-          reject(err)
-        })
-      }
-    }
-    runNext()
-  })
-}
+const forEach = use('for-each')
+const map = use('map')
 
 function rewriteLinks (fic, chapter, handleLink) {
   chapter.$content.find('a').each((ii, a) => {
@@ -143,8 +118,48 @@ function getFic (fetch, fic) {
   }
   showChapterStatus()
   const finishedChapters = []
-  Bluebird.each(chapters, chapterInfo => {
-    return Bluebird.resolve(chapterInfo.getContent(fetch)).then(chapter => {
+
+  const identifyBuffer = require('buffer-signature').identify
+  async function addImage (src, type, filename) {
+    if (!src) return
+    process.emit('debug', `Outputting ${type} of ${fic.title}`)
+    if (/:/.test(src)) {
+      fetch.tracker.addWork(1)
+      progress.show('Fetching ${type}…')
+      try {
+        const [meta, imageData] = await fetch(src, {referer: fic.link})
+        const info = identifyBuffer(imageData)
+        if (filename && !/[.]\w+$/.test(filename) && info.extensions.length) {
+          filename += '.' + info.extensions[0]
+        }
+
+        const chapter = {
+          outputType: type,
+          content: imageData,
+          mime: info.mimeType
+        }
+        if (filename) chapter.filename = filename
+        await stream.queueChapter(chapter)
+      } catch (err) {
+        process.emit('error', `Error while fetching ${type} ${src}: ${err.message}`)
+      }
+    } else {
+      await stream.queueChapter({
+        outputType: type,
+        content: fs.createReadStream(src)
+      })
+    }
+  }
+
+  process.emit('debug', `Considering art`)
+
+  // we return `stream` and this feeds it, so it's intentionally allowed to
+  // go off async and not be captured
+  Promise.all([addImage(fic.cover, 'cover', 'cover'), addImage(fic.art, 'art', 'art')])
+  .then(() => forEach(chapters, async chapterInfo => {
+    try {
+      const chapter = await chapterInfo.getContent(fetch)
+
       chapterInfo.order = chapter.order = chapterInfo.type === 'chapter' ? headIndex++ : (8000 + tailIndex ++)
       if (chapterInfo.type !== 'chapter' && !/:/.test(chapter.name)) {
         chapter.name = `${chapterInfo.type}: ${chapterInfo.name}`
@@ -161,16 +176,16 @@ function getFic (fetch, fic) {
       rewriteIframes(fic, chapter)
       chapter.outputType = 'chapter'
       finishedChapters.push({info: chapterInfo, content: chapter})
-    }).catch((err) => {
+    } catch (err) {
       process.emit('error', 'Error while fetching chapter', chapterInfo, err.stack)
-    }).finally(() => {
+    } finally {
       ++completed
       showChapterStatus()
-    })
-  }).then(() => {
+    }
+  })).then(async () => {
     completed = 0
     showChapterStatus()
-    return Bluebird.each(finishedChapters, (chapter, ii) => {
+    await forEach(finishedChapters, async (chapter, ii) => {
       rewriteLinks(fic, chapter.content, (href, $a) => {
         return linklocalChapters(fic, externals)(href, $a, (href) => {
           if (!chapter.info.externals || !fic.externals) return
@@ -188,24 +203,24 @@ function getFic (fetch, fic) {
         })
       })
 
-      stream.queueChapter(chapter.content).then(() => {
-        ++completed
-        showChapterStatus()
-      })
+      await stream.queueChapter(chapter.content)
+      ++completed
+      showChapterStatus()
     })
-  }).then(() => {
+
     const externalCount = Object.keys(externals).length
     process.emit('debug', `Outputting ${externalCount} externals of ${fic.title}`)
     fetch.tracker.addWork(externalCount)
-    let completed = 0
+    completed = 0
     function showExternalStatus () {
       progress.show(`Fetching externals [${completed}/${externalCount}]`)
     }
     showExternalStatus()
     const pages = externalCount === 1 ? 'page' : 'pages'
-    return concurrently(Object.keys(externals), maxConcurrency, (href, exterNum) => {
+    await forEach(Object.keys(externals), maxConcurrency, async (href, exterNum) => {
       const externalInfo = externals[href]
-      return Bluebird.resolve(Chapter.getContent(fetch, href)).then(external => {
+      try {
+        const external = await Chapter.getContent(fetch, href)
         external.order = externalInfo.order
         external.num = externalInfo.num
         const name = external.name || external.ficTitle
@@ -229,69 +244,46 @@ function getFic (fetch, fic) {
         rewriteImages(fic, external, inlineImages(images))
         rewriteLinks(fic, external, linklocalChapters(fic, externals))
         rewriteIframes(fic, external)
-        return stream.queueChapter(external)
-      }).catch((err) => {
+        await stream.queueChapter(external)
+      } catch (err) {
         process.emit('error', `Warning, skipping external ${href}: ${err.message}`)
-        return stream.queueChapter({
+        await stream.queueChapter({
           order: 9000 + exterNum,
           name: exterNum ? null : `External References (${externalCount} ${pages})`,
           filename: externalName(externals[href]),
           outputType: 'external',
           content: html`<p>External link to <a href="${href}">${href}</a></p><pre>${err.stack}</pre>`
         })
-      }).finally(() => {
+      } finally {
         ++completed
         showExternalStatus()
-      })
+      }
     })
-  }).then(() => {
+
+
     const imageCount = Object.keys(images).length
     fetch.tracker.addWork(imageCount)
-    let completed = 0
+    completed = 0
     function showImageStatus () {
       progress.show(`Fetching images [${completed}/${imageCount}]`)
     }
     showImageStatus()
-    return concurrently(Object.keys(images), maxConcurrency, (src, imageNum) => {
-      return Bluebird.resolve(fetch(src)).spread((meta, imageData) => {
-        return stream.queueChapter({
-          outputType: 'image',
-          filename: images[src].filename,
-          content: imageData
-        })
-      }).catch(err => process.emit('error', `Error while fetching image ${src}: ${err.message}`)).finally(() => {
+    await forEach(Object.keys(images), maxConcurrency, async (src, imageNum) => {
+      try {
+        await addImage(src, 'image', images[src].filename)
+      } catch (err) {
+        process.emit('error', `Error while fetching image ${src}: ${err.message}`)
+      } finally {
         ++completed
         showImageStatus()
-      })
-    })
-  }).then(async () => {
-    process.emit('debug', `Considering cover`)
-    if (fic.cover) {
-      process.emit('debug', `Outputting cover image of ${fic.title}`)
-      if (/:/.test(fic.cover)) {
-        fetch.tracker.addWork(1)
-        progress.show('Fetching cover…')
-        try {
-          const [meta, imageData] = await fetch(fic.cover, {referer: fic.link})
-          return stream.queueChapter({
-            outputType: 'cover',
-            content: imageData
-          })
-        } catch (err) {
-          process.emit('error', `Error while fetching cover ${fic.cover}: ${err.message}`)
-        }
-      } else {
-        return stream.queueChapter({
-          outputType: 'cover',
-          content: fs.createReadStream(fic.cover)
-        })
       }
-    }
-  }).then(() => {
+    })
+
     process.emit('debug', `Outputting ${fic.title} complete`)
     return stream.queueChapter(null)
   }).catch(err => {
     process.emit('error', `Error in get fic ${err.stack}`)
   })
+
   return stream
 }

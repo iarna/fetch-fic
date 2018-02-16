@@ -20,6 +20,7 @@ class Fic {
     this.description = null
     this.notes = null
     this.cover = null
+    this.art = null
     this.chapterHeadings = null
     this.externals = null
     this.spoilers = null
@@ -105,7 +106,7 @@ class Fic {
 
   importFromJSON (raw) {
     const props = qw`id link altlinks title author authorUrl created modified
-     description notes tags publisher cover chapterHeadings words updateFrom
+     description notes tags publisher cover art chapterHeadings words updateFrom
      includeTOC numberTOC fetchMeta scrapeMeta`
 
     for (let prop of props) {
@@ -208,7 +209,7 @@ class Fic {
   toJSON () {
     const result = {}
     for (let prop of qw`
-         title _id _link altlinks updateFrom author authorUrl created modified publisher cover
+         title _id _link altlinks updateFrom author authorUrl created modified publisher cover art
          description notes tags words fics chapterHeadings _includeTOC _numberTOC fetchMeta scrapeMeta
        `) {
       if (this[prop] != null && (!Array.isArray(this[prop]) || this[prop].length)) result[prop.replace(/^_/,'')] = this[prop]
