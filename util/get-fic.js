@@ -246,7 +246,7 @@ function getFic (fetch, fic) {
         rewriteIframes(fic, external)
         await stream.queueChapter(external)
       } catch (err) {
-        process.emit('error', `Warning, skipping external ${href}: ${err.message}`)
+        process.emit('error', `Warning, skipping external ${href}: ${err.stack}`)
         await stream.queueChapter({
           order: 9000 + exterNum,
           name: exterNum ? null : `External References (${externalCount} ${pages})`,
