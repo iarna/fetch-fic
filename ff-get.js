@@ -103,6 +103,9 @@ async function _reallyRead (urls, args) {
     let deflatedFic
     try {
       deflatedFic = await progress.addWork(fetchFic(), fetchTracker)
+    } catch (ex) {
+      process.emit('error', 'ff-get', ex)
+      return
     } finally {
       enableCache()
     }
@@ -112,10 +115,8 @@ async function _reallyRead (urls, args) {
     // we shouldn't get here, but this acts as a final guard against an
     // empty fic getting written out to disk.
     if (fic.words === 0 && !fic.fics.length) {
-      const err = Error(`${url} could not be retrieved.`)
-      err.code = 404
-      err.url = url
-      throw err
+      process.emit('error', 'ff-get', `${url} could not be retrieved.`)
+      return
     }
     const filename = filenameize(fic.title) + '.fic.toml'
     const TOML = require('@iarna/toml')
