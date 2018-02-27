@@ -24,6 +24,8 @@ function rewriteLinks (fic, chapter, handleLink) {
     let src
     if (startAs.substr(0,4) !== 'http' && /^www[.]|[.]com$/.test(startAs)) {
       src = 'http://' + startAs
+    } else if (/^[\w.]+(com|org|net)[/]/.test(startAs)) {
+      src = 'http://' + startAs
     } else {
       src = chapter.base ? url.resolve(chapter.base, startAs) : startAs
     }
