@@ -82,7 +82,7 @@ async function _reallyRead (urls, args) {
   const fetchAndSpin = fetch.withOpts(fetchOpts).wrapWith(progress.spinWhileAnd)
   if (args.xf_user) fetchAndSpin.setGlobalCookie(`xf_user=${args.xf_user}`)
 
-  return map(urls, async url => {
+  return map(urls, 10, async url => {
     function fetchFic () {
       const Fic = use('fic')
       if (fromThreadmarks && fromScrape) {
