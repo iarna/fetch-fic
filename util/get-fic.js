@@ -129,9 +129,11 @@ function getFic (fetch, fic) {
       let referer = fic.link
       // if this is an image from fanfiction.net then it MUST have a fanfiction.net referrer
       if (/fictionpressllc/.test(src) && !/fanfiction[.]net/.test(referer)) {
-        referer = fic.altlinks.filter(l => /fanfiction[.]net/.test(l))[0]
+        const altlinks = fic.altlinks || []
+        const ffnetlinks = fic.altlinks.filter(l => /fanfiction[.]net/.test(l))
+        if (!ffnetlinks.length) throw new Error('Found fanfiction.net image without fanfiction.net link in: ' + fic.title)
+        referer = ffnetlinks[0]
       }
-      if (!referer) return
       fetch.tracker.addWork(1)
       progress.show(`Fetching ${type}…`)
       try {
