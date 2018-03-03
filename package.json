@@ -19,7 +19,7 @@
   "author": "Rebecca Turner <me@re-becca.org> (http://re-becca.org/)",
   "license": "ISC",
   "dependencies": {
-    "@iarna/lib": "^1.0.2",
+    "@iarna/lib": "^1.0.5",
     "@iarna/rtf-to-html": "^1.0.3",
     "@iarna/toml": "^1.4.0",
     "@iarna/word-count": "^1.0.2",
