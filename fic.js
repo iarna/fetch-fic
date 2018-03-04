@@ -411,6 +411,7 @@ class Chapter {
     this.order = opts.order
     this.name = opts.name
     this.link = opts.link
+    this.altlinks = opts.altlinks
     if (opts.type) {
       this.type = opts.type
     } else if (/^Omake:/.test(this.name)) {
@@ -445,6 +446,7 @@ class Chapter {
       description: this.description,
       notes: this.notes,
       link: this.link,
+      altlinks: this.altlinks,
       fetchFrom: this.fetchFrom,
       author: this.author,
       authorUrl: this.authorUrl,
