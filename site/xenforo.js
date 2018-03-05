@@ -354,6 +354,8 @@ class Xenforo extends Site {
     chapter.tags = tagmap(this.getTags(chapter.$))
     if (/Discussion in .*Quest(s|ing)/i.test(chapter.$('#pageDescription').text())) {
       chapter.tags.push('Quest')
+    } else if (/Discussion in .*Worm/i.test(chapter.$('#pageDescription').text())) {
+      chapter.tags.push('fandom:Worm')
     }
     chapter.tags = uniq(chapter.tags)
     $content.find('div.messageTextEndMarker').remove()
