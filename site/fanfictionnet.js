@@ -97,6 +97,7 @@ class FanFictionNet extends Site {
       } else {
         fic.tags.unshift(`fandom:${fandom}`)
       }
+      fic.tags = tagmap(fic.tags)
     }
 
     const $index = chapter.$(chapter.$('#chap_select')[0])
