@@ -20,7 +20,8 @@ function upperLetterCount (nn) {
 class OutputEpub extends Output {
   from (fic) {
     const filenameize = use('filenameize')
-    return super.from(fic).to(filenameize(fic.title) + '.epub')
+    const au = fic.author ? '-' + filenameize(fic.author) : ''
+    return super.from(fic).to(filenameize(fic.title) + au + '.epub')
   }
 
   chapterExt () {

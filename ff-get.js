@@ -118,7 +118,8 @@ async function _reallyRead (urls, args) {
       process.emit('error', 'ff-get', `${url} could not be retrieved.`)
       return
     }
-    const filename = filenameize(fic.title) + '.fic.toml'
+    const au = fic.author ? '-' + filenameize(fic.author) : ''
+    const filename = filenameize(fic.title) + au + '.fic.toml'
     const TOML = require('@iarna/toml')
     const fs = use('fs-promises')
     await fs.writeFile(filename, TOML.stringify(fic))
