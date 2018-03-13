@@ -160,15 +160,15 @@ class Xenforo extends Site {
         if (/^https?:[/][/]/.test(name) || / \| Page \d+$/.test(name)) {
           let next = $link[0].prev
           let nextText = chapter.$content(next).text().trim()
-          if (next.type === 'text' && nextText === '') {
+          if (next && next.type === 'text' && nextText === '') {
             next = next.prev
             nextText = chapter.$content(next).text().trim()
           }
-          if (next.type !== 'text') {
+          if (next && next.type !== 'text') {
             next = next.prev
             nextText = chapter.$content(next).text().trim()
           }
-          if (next.type === 'text') {
+          if (next && next.type === 'text') {
             name = nextText
           }
         }
