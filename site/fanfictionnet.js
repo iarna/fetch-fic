@@ -4,7 +4,6 @@ const url = require('url')
 const Site = use('site')
 const moment = require('moment')
 const tagmap = use('tagmap')('ffnet')
-const uniq = use('uniq')
 
 class FanFictionNet extends Site {
   static matches (siteUrlStr) {
@@ -89,7 +88,6 @@ class FanFictionNet extends Site {
     } else {
       process.emit('error', 'NOMATCH:', infoline)
     }
-    fic.tags = uniq(tagmap(fic.tags.sort()))
     if (fandom) {
       if (/ Crossover$/.test(fandom)) {
         const [name, xover] = fandom.replace(/ Crossover$/, '').split(/ [+] /)
@@ -97,7 +95,6 @@ class FanFictionNet extends Site {
       } else {
         fic.tags.unshift(`fandom:${fandom}`)
       }
-      fic.tags = tagmap(fic.tags)
     }
 
     const $index = chapter.$(chapter.$('#chap_select')[0])
@@ -112,6 +109,7 @@ class FanFictionNet extends Site {
         fic.tags.push('status:complete')
       }
     }
+    fic.tags = tagmap(fic.tags)
     if ($chapters.length) {
       $chapters.each((ii, vv) => {
         const chapterName = chapter.$(vv).text().match(/^\d+[.](?: (.*))?$/)

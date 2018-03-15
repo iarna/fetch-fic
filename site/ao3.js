@@ -4,7 +4,6 @@ const Site = use('site')
 const cache = use('cache')
 const moment = require('moment')
 const tagmap = use('tagmap')('ao3')
-const uniq = use('uniq')
 
 class ArchiveOfOurOwn extends Site {
   static matches (siteUrlStr) {
@@ -97,7 +96,7 @@ class ArchiveOfOurOwn extends Site {
     const freeform = this.tagGroup(chapter.$, 'freeform', $meta.find('dd.freeform'))
       .map(t => t.replace(/ - Freeform$/, ''))
     const language = 'language:' + $meta.find('dd.language').text().trim()
-    fic.tags = uniq(tagmap([].concat(ratings, warnings, category, fandom, relationship, characters, freeform, language)))
+    fic.tags = [].concat(ratings, warnings, category, fandom, relationship, characters, freeform, language)
     const $stats = $meta.find('dl.stats')
     const chapterCounts = $stats.find('dd.chapters').text().trim().split('/')
     const written = chapterCounts[0]
@@ -109,6 +108,7 @@ class ArchiveOfOurOwn extends Site {
         fic.tags.push('status:complete')
       }
     }
+    fic.tags = tagmap(fic.tags)
     fic.created = moment.utc($stats.find('dd.published').text().trim())
     const modified = $stats.find('dd.status').text().trim()
     fic.modified = modified && moment.utc(modified)

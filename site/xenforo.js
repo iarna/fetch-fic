@@ -4,7 +4,6 @@ const url = require('url')
 const Site = use('site')
 const moment = require('moment-timezone')
 const tagmap = use('tagmap')('xenforo')
-const uniq = use('uniq')
 
 const knownSites = {
   'forums.sufficientvelocity.com': 'Sufficient Velocity',
@@ -50,7 +49,7 @@ class Xenforo extends Site {
     const base = $('base').attr('href') || this.threadmarkUrl()
     const tat = this.detagTitle(this.scrapeTitle($))
     fic.title = tat.title
-    fic.tags = fic.tags.concat(tagmap(tat.tags))
+    fic.tags = fic.tags.concat(tat.tags)
     const $sections = $('div.threadmarks ol.tabs li')
     let leastRecent
     let mostRecent
@@ -87,7 +86,7 @@ class Xenforo extends Site {
     fic.modified = mostRecent
     if (!fic.chapters.length) return
     const chapter = await fic.chapters[0].getContent(fetch.withOpts({cacheBreak: false}))
-    fic.tags = uniq(fic.tags.concat(chapter.tags))
+    fic.tags = tagmap(fic.tags.concat(chapter.chapterTags))
     fic.author = chapter.author
     fic.authorUrl = chapter.authorUrl
     fic.notes = chapter.$content.text().trim().replace(/^([^\n]+)[\s\S]*?$/, '$1')
@@ -105,11 +104,11 @@ class Xenforo extends Site {
     if (!fic.title || !fic.tags) {
       const tat = this.detagTitle(this.scrapeTitle(chapter.$))
       const ficTitle = tat.title
-      const ficTags = tagmap(tat.tags)
+      const ficTags = tat.tags
       if (!fic.title) fic.title = ficTitle
       if (!fic.tags.length) fic.tags = ficTags
     }
-    fic.tags = uniq(fic.tags.concat(tagmap(this.getTags(chapter.$))))
+    fic.tags = tagmap(fic.tags.concat(this.getTags(chapter.$)))
     if (!fic.author) fic.author = chapter.author
     if (!fic.authorUrl) fic.authorUrl = chapter.authorUrl
 
@@ -184,6 +183,7 @@ class Xenforo extends Site {
       try {
         const inf = await this.getChapter(fetchWithCache, new Chapter(ch))
         fic.modified = inf.modified || inf.created
+        ch.tags = []
         fic.addChapter(ch)
       } catch (_) {}
     })
@@ -351,13 +351,13 @@ class Xenforo extends Site {
       }
       chapter.$(vv).attr('style', ns)
     })
-    chapter.tags = tagmap(this.getTags(chapter.$))
+    chapter.chapterTags = this.getTags(chapter.$)
     if (/Discussion in .*Quest(s|ing)/i.test(chapter.$('#pageDescription').text())) {
-      chapter.tags.push('Quest')
+      chapter.chapterTags.push('Quest')
     } else if (/Discussion in .*Worm/i.test(chapter.$('#pageDescription').text())) {
-      chapter.tags.push('fandom:Worm')
+      chapter.chapterTags.push('fandom:Worm')
     }
-    chapter.tags = uniq(chapter.tags)
+    chapter.chapterTags = tagmap(chapter.chapterTags)
     $content.find('div.messageTextEndMarker').remove()
     chapter.content =  $content.html().trim()
         // content is blockquoted, for some reason
