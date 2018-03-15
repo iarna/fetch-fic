@@ -61,15 +61,11 @@ class ArchiveOfOurOwn extends Site {
     const $author = heading.find('a[rel="author"]')
     fic.authorUrl = this.normalizeLink($author.attr('href'), base)
     fic.author = $author.text()
-    const chapterList = $('ol.index').find('li')
-    chapterList.each((ii, vv) => {
-      const $vv = $(vv)
-      const name = $vv.find('a').text().replace(/^\d+[.] /, '')
-      const link = this.normalizeLink($vv.find('a').attr('href'), base)
-      const created = moment.utc($vv.find('span.datetime').text(), '(YYYY-MM-DD)')
-      fic.addChapter({name, link, created})
-    })
-    const chapter = await fic.chapters[0].getContent(fetch)
+    const $metadata = $('ol.index').find('li').first()
+    const metadataLink = this.normalizeLink($metadata.find('a').attr('href'), base)
+    const Chapter = use('fic').Chapter
+    const chapter = await new Chapter({link: metadataLink}).getContent(fetch)
+
     if (chapter.$('.error-503-maintenance').length) {
       const err = new Error(chapter.$('#main').text().trim().split(/\n/).map(l => l.trim()).join('\n'))
       err.link = chapter.fetchWith()
@@ -119,6 +115,14 @@ class ArchiveOfOurOwn extends Site {
     fic.hits = Number($stats.find('dd.hits').text().trim())
     fic.title = chapter.$('h2.title').text().trim()
     fic.description = (chapter.$('.summary').find('.userstuff').html() || '').replace(/<p>/g, '\n<p>').replace(/^\s+|\s+$/g, '')
+    const chapterList = $('ol.index').find('li')
+    chapterList.each((ii, vv) => {
+      const $vv = $(vv)
+      const name = $vv.find('a').text().replace(/^\d+[.] /, '')
+      const link = this.normalizeLink($vv.find('a').attr('href'), base)
+      const created = moment.utc($vv.find('span.datetime').text(), '(YYYY-MM-DD)')
+      fic.addChapter({name, link, created})
+    })
   }
 
   async getChapter (fetch, chapterInfo) {
