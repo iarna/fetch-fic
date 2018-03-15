@@ -141,7 +141,7 @@ class Fic {
     try {
       await fic.site.getFicMetadata(fetch, fic)
     } catch (err) {
-      if (!fic.site.canScrape || !err.meta || err.meta.status !== 404) throw err
+      if (!fic.site.canScrape || (err.code !== 'ENETWORKDISABLED' && (!err.meta || err.meta.status !== 404))) throw err
     }
     if (fic.chapters.length === 0 && fic.fics.length === 0) {
       fic.scrapeMeta = true
