@@ -1,16 +1,17 @@
 'use strict'
 const Site = use('site')
+const qr = require('@perl/qr')
 
 class Youtube extends Site {
   static matches (siteUrlStr) {
-    return /youtube[.]com[/]watch[?]v=|youtu.be/.test(siteUrlStr)
+    return qr`youtube[.]com/watch[?]v=|youtu.be`.test(siteUrlStr)
   }
 
   constructor (siteUrlStr) {
     super(siteUrlStr)
     this.publisher = 'youtube.com'
     this.publisherName = 'You Tube'
-    const matches = siteUrlStr.match(/[/]watch[?]v=(.*)$/) || siteUrlStr.match(/youtu.be[/](.*)/)
+    const matches = siteUrlStr.match(qr`/watch[?]v=(.*)$`) || siteUrlStr.match(qr`youtu.be/(.*)`)
     this.id = matches[1]
   }
 

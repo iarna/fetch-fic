@@ -4,25 +4,26 @@ const Site = use('site')
 const cache = use('cache')
 const moment = require('moment')
 const tagmap = use('tagmap')('ao3')
+const qr = require('@perl/qr')
 
 class ArchiveOfOurOwn extends Site {
   static matches (siteUrlStr) {
     const siteUrl = url.parse(siteUrlStr)
     const hostname = siteUrl.hostname
-    if (!/(^|www[.])archiveofourown.org$/.test(hostname)) return false
+    if (!qr`(^|www[.])archiveofourown.org$`.test(hostname)) return false
     const path = siteUrl.pathname || siteUrl.path || ''
-    if (!/^[/]works[/]\d+/.test(path)) return false
+    if (!qr`^/works/\d+|^/users/`.test(path)) return false
     return true
   }
 
   constructor (siteUrlStr) {
     super(siteUrlStr)
-    this.link = this.link.replace(/[/]works[/](\d+).*?$/, '/works/$1')
+    this.link = this.link.replace(qr`/works/(\d+).*?$`, '/works/$1')
     this.publisher = 'archiveofourown.org'
     this.publisherName = 'Archive of Our Own'
     const siteUrl = url.parse(siteUrlStr)
     const path = siteUrl.pathname || siteUrl.path || ''
-    const ficMatch = path.match(/^[/]works[/](\d+)/)
+    const ficMatch = path.match(qr`^/works/(\d+)`)
     this.workId = ficMatch[1]
   }
 
@@ -83,9 +84,9 @@ class ArchiveOfOurOwn extends Site {
       .map(r => r.replace(/ - Fandom$/, ''))
     const relationship = this.tagGroup(chapter.$, '', $meta.find('dd.relationship'))
       .filter(r => r !== ':Friendship - Relationship')
-      .map(r => r.replace(/^:/, /[/]/.test(r) ? 'ship:' : 'friendship:'))
-      .map(r => r.replace(/\s*([/])\s*/g, '/'))
-      .map(r => r.replace(/\s*([&])\s*/g, ' & '))
+      .map(r => r.replace(/^:/, qr`/`.test(r) ? 'ship:' : 'friendship:'))
+      .map(r => r.replace(qr.g`\s*(/)\s*`, '/'))
+      .map(r => r.replace(qr.g`\s*([&])\s*`, ' & '))
       .map(r => r.replace(/ - Relationship$/, ''))
     const characters = this.tagGroup(chapter.$, 'character', $meta.find('dd.character'))
       .map(t => t.replace(/ - Character$/, ''))

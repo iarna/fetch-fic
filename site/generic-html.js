@@ -1,12 +1,12 @@
 'use strict'
 const url = require('url')
 const moment = require('moment')
-
 const Site = use('site')
+const qr = require('@perl/qr')
 
 class GenericHTML extends Site {
   static matches (siteUrlStr) {
-    return /[.](?:html)$/.test(siteUrlStr)
+    return qr`[.](?:html)$`.test(siteUrlStr)
   }
 
   constructor (siteUrlStr) {

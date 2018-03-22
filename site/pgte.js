@@ -1,6 +1,7 @@
 'use strict'
 const url = require('url')
 const Site = use('site')
+const qr = require('@perl/qr')
 
 class PGTE extends Site {
   static matches (siteUrlStr) {

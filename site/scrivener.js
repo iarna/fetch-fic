@@ -2,10 +2,11 @@
 const Site = use('site')
 const fs = use('fs-promises')
 const moment = require('moment')
+const qr = require('@perl/qr')
 
 class Scrivener extends Site {
   static matches (siteUrlStr) {
-    return /[.]scriv\/?/.test(siteUrlStr)
+    return qr`[.]scriv/?`.test(siteUrlStr)
   }
 
   constructor (siteUrlStr) {

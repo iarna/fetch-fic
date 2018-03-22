@@ -1,11 +1,12 @@
 'use strict'
 const url = require('url')
+const qr = require('@perl/qr')
 
 const Site = use('site')
 
 class GenericImage extends Site {
   static matches (siteUrlStr) {
-    return !/clear.png/.test(siteUrlStr) && /[.](?:jpg|jpeg|png|gif|svg)$/.test(siteUrlStr)
+    return !qr`clear[.]png`.test(siteUrlStr) && qr`[.](?:jpg|jpeg|png|gif|svg)$`.test(siteUrlStr)
   }
 
   constructor (siteUrlStr) {

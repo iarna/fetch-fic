@@ -1,9 +1,10 @@
 'use strict'
 const Site = use('site')
+const qr = require('@perl/qr')
 
 class WpFacebook extends Site {
   static matches (siteUrlStr) {
-    return /wp[.]com[/]graph[.]facebook[.]com/.test(siteUrlStr)
+    return qr`wp[.]com/graph[.]facebook[.]com`.test(siteUrlStr)
   }
   normalizeLink (link) {
     const url = require('url')

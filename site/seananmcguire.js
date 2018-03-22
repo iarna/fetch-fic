@@ -1,13 +1,12 @@
 'use strict'
 const url = require('url')
-
 const Bluebird = require('bluebird')
-
 const Site = use('site')
+const qr = require('@perl/qr')
 
 class SeananMcGuire extends Site {
   static matches (siteUrlStr) {
-    return /seananmcguire.com/.test(siteUrlStr)
+    return qr`seananmcguire[.]com`.test(siteUrlStr)
   }
 
   constructor (siteUrlStr) {

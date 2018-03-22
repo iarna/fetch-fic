@@ -4,14 +4,15 @@ const Site = use('site')
 const cache = use('cache')
 const moment = require('moment')
 const Fic = use('fic')
+const qr = require('@perl/qr')
 
 class ArchiveOfOurOwnSeries extends Site {
   static matches (siteUrlStr) {
     const siteUrl = url.parse(siteUrlStr)
     const hostname = siteUrl.hostname
-    if (!/(^|www[.])archiveofourown.org$/.test(hostname)) return false
+    if (!qr`(^|www[.])archiveofourown.org$`.test(hostname)) return false
     const path = siteUrl.pathname || siteUrl.path || ''
-    if (!/^[/]series[/]\d+/.test(path)) return false
+    if (!qr`^/series/\d+`.test(path)) return false
     return true
   }
 

@@ -1,9 +1,10 @@
 'use strict'
 const Site = use('site')
+const qr = require('@perl/qr')
 
 class Wikipedia extends Site {
   static matches (siteUrlStr) {
-    return /wikipedia[.]org[/]wiki[/]/.test(siteUrlStr)
+    return qr`wikipedia[.]org/wiki/`.test(siteUrlStr)
   }
 
   constructor (siteUrlStr) {

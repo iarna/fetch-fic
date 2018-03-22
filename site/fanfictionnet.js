@@ -1,17 +1,17 @@
 'use strict'
 const url = require('url')
-
 const Site = use('site')
 const moment = require('moment')
 const tagmap = use('tagmap')('ffnet')
+const qr = require('@perl/qr')
 
 class FanFictionNet extends Site {
   static matches (siteUrlStr) {
     const siteUrl = url.parse(siteUrlStr)
     const hostname = siteUrl.hostname
-    if (!/(^|www[.])fanfiction.net$/.test(hostname)) return false
+    if (!qr`(^|www[.])fanfiction.net$`.test(hostname)) return false
     const path = siteUrl.pathname || siteUrl.path || ''
-    if (!/^[/]s[/]\d+(?:[/]\d+)?/.test(path)) return false
+    if (!qr`^/u/\d+|^/s/\d+`.test(path)) return false
     return true
   }
 
@@ -21,14 +21,14 @@ class FanFictionNet extends Site {
     this.publisherName = 'FanFiction.net'
     const siteUrl = url.parse(siteUrlStr)
     const path = siteUrl.pathname || siteUrl.path || ''
-    const ficMatch = path.match(/^[/]s[/](\d+)(?:[/]\d+(?:[/](.*))?)?/)
+    const ficMatch = path.match(qr`^/s/(\d+)(?:/\d+(?:/(.*))?)?`)
     this.ficId = ficMatch[1]
     this.name = ficMatch[2]
   }
 
   normalizeLink (href, base) {
     const link = url.parse(super.normalizeLink(href, base))
-    link.pathname = link.pathname.replace(/^([/]s[/]\d+[/]\d+)[/].*$/, '$1')
+    link.pathname = link.pathname.replace(qr`^(/s/\d+/\d+)/.*$`, '$1')
     return url.format(link)
   }
 
@@ -134,7 +134,7 @@ class FanFictionNet extends Site {
     const links = chapter.$('a.xcontrast_txt')
     links.each(function (ii, vv) {
       const href = chapter.$(vv).attr('href')
-      if (/^[/]u[/]\d+[/]/.test(href)) {
+      if (qr`^/u/\d+/`.test(href)) {
         chapter.author = chapter.$(vv).text()
         chapter.authorUrl = url.resolve(chapter.base, href)
       }
@@ -146,8 +146,8 @@ class FanFictionNet extends Site {
 module.exports = FanFictionNet
 
 function ffp (status) {
-  let matched = status.match(/^Rated:\s+Fiction\s+(\S+)\s+-\s+([^-]+)(?:\s+-\s+((?:General|Romance|Humor|Drama|Poetry|Adventure|Mystery|Horror|Parody|Angst|Supernatural|Suspense|Sci-Fi|Fantasy|Spiritual|Tragedy|Western|Crime|Family|Hurt[/]Comfort|Friendship|[/])+))?(?:\s+-\s+(.+?))?\s+-\s+Chapters:\s+(\d+)\s+-\s+Words:\s+([\d,]+)(?:\s+-\s+Reviews:\s+([\d,]+))?(?:\s+-\s+Favs: ([\d,]+))?(?:\s+-\s+Follows:\s+([\d,]+))?(?:\s+-\s+Updated:\s+([^-]+))?\s+-\s+Published:\s+([^-]+)(?:\s+-\s+Status:\s+([^-]+))?\s+-\s+id:\s+(\d+)\s*$/)
-  if (!matched) matched = status.match(/^Rated:\s+Fiction\s+(\S+)\s+-\s+([^-]+)(?:\s+-\s+((?:General|Romance|Humor|Drama|Poetry|Adventure|Mystery|Horror|Parody|Angst|Supernatural|Suspense|Sci-Fi|Fantasy|Spiritual|Tragedy|Western|Crime|Family|Hurt[/]Comfort|Friendship|[/])+))?(?:\s+-\s+(.+?))?(?:\s+-\s+Chapters:\s+(\d+))?\s+-\s+Words:\s+([\d,]+)(?:\s+-\s+Reviews:\s+([\d,]+))?(?:\s+-\s+Favs: ([\d,]+))?(?:\s+-\s+Follows:\s+([\d,]+))?(?:\s+-\s+Updated:\s+([^-]+))?\s+-\s+Published:\s+([^-]+)(?:\s+-\s+Status:\s+([^-]+))?\s+-\s+id:\s+(\d+)\s*$/)
+  let matched = status.match(qr`^Rated:\s+Fiction\s+(\S+)\s+-\s+([^-]+)(?:\s+-\s+((?:General|Romance|Humor|Drama|Poetry|Adventure|Mystery|Horror|Parody|Angst|Supernatural|Suspense|Sci-Fi|Fantasy|Spiritual|Tragedy|Western|Crime|Family|Hurt/Comfort|Friendship|/)+))?(?:\s+-\s+(.+?))?\s+-\s+Chapters:\s+(\d+)\s+-\s+Words:\s+([\d,]+)(?:\s+-\s+Reviews:\s+([\d,]+))?(?:\s+-\s+Favs: ([\d,]+))?(?:\s+-\s+Follows:\s+([\d,]+))?(?:\s+-\s+Updated:\s+([^-]+))?\s+-\s+Published:\s+([^-]+)(?:\s+-\s+Status:\s+([^-]+))?\s+-\s+id:\s+(\d+)\s*$`)
+  if (!matched) matched = status.match(qr`^Rated:\s+Fiction\s+(\S+)\s+-\s+([^-]+)(?:\s+-\s+((?:General|Romance|Humor|Drama|Poetry|Adventure|Mystery|Horror|Parody|Angst|Supernatural|Suspense|Sci-Fi|Fantasy|Spiritual|Tragedy|Western|Crime|Family|Hurt/Comfort|Friendship|/)+))?(?:\s+-\s+(.+?))?(?:\s+-\s+Chapters:\s+(\d+))?\s+-\s+Words:\s+([\d,]+)(?:\s+-\s+Reviews:\s+([\d,]+))?(?:\s+-\s+Favs: ([\d,]+))?(?:\s+-\s+Follows:\s+([\d,]+))?(?:\s+-\s+Updated:\s+([^-]+))?\s+-\s+Published:\s+([^-]+)(?:\s+-\s+Status:\s+([^-]+))?\s+-\s+id:\s+(\d+)\s*$`)
   if (!matched) throw new Error('Unparseable: ' + status)
   let cp = matched[4] || ''
   let characters = []
@@ -162,7 +162,7 @@ function ffp (status) {
   return {
     rating: matched[1],
     language: matched[2],
-    genre: matched[3] ? matched[3].replace(/Hurt[/]Comfort/, 'HC').split(/[/]/).map(g => g === 'HC' ? 'Hurt/Comfort' : g) : [],
+    genre: matched[3] ? matched[3].replace(qr`Hurt/Comfort`, 'HC').split(qr`/`).map(g => g === 'HC' ? 'Hurt/Comfort' : g) : [],
     characters: characters || [],
     pairing: pairing || [],
     chapters: num(matched[5] || 0),
@@ -183,7 +183,7 @@ function num (n) {
 function date (d) {
   if (d==null) return d
   let m
-  if (/^(\w+ \d+(, \d+)?|\d+[/]\d+)$/.test(d)) {
+  if (qr`^(\w+ \d+(, \d+)?|\d+/\d+)$`.test(d)) {
     return moment.utc(d, ['MMM DD, YYYY', 'MMM DD', 'M/D'])
   } else if (m = d.match(/(\d+)h/)) {
     return moment().utc().subtract(2 + Number(m[1]), 'hour')

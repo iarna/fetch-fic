@@ -1,9 +1,10 @@
 'use strict'
 const Site = use('site')
+const qr = require('@perl/qr')
 
 class NanoDesu extends Site {
   static matches (siteUrlStr) {
-    return /nanodesutranslations[.]org[/]qualia/.test(siteUrlStr)
+    return qr`nanodesutranslations[.]org/qualia`.test(siteUrlStr)
   }
 
   constructor (siteUrlStr) {

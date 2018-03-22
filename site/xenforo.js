@@ -4,6 +4,7 @@ const url = require('url')
 const Site = use('site')
 const moment = require('moment-timezone')
 const tagmap = use('tagmap')('xenforo')
+const qr = require('@perl/qr')
 
 const knownSites = {
   'forums.sufficientvelocity.com': 'Sufficient Velocity',
@@ -15,7 +16,7 @@ const knownSites = {
 class Xenforo extends Site {
   static matches (siteUrlStr) {
     const siteUrl = url.parse(siteUrlStr)
-    if (!/^[/](threads|posts)[/]|^[/]index[.]php[?]topic|^[/]goto[/]post[?]id/.test(siteUrl.path)) return false
+    if (!qr`^/(members|threads|posts)/|^/index[.]php[?]topic|^/goto/post[?]id`.test(siteUrl.path)) return false
     return true
   }
 
@@ -30,7 +31,7 @@ class Xenforo extends Site {
     this.publisherName = knownSites[hostname] || hostname
     this.canScrape = true
     const path = siteUrl.pathname || siteUrl.path || ''
-    const nameMatch = path.match(/^[/]threads[/]([^.]+)/)
+    const nameMatch = path.match(qr`^/threads/([^.]+)`)
     this.name = nameMatch && nameMatch[1]
   }
 
@@ -156,7 +157,7 @@ class Xenforo extends Site {
         let name = $link.text().trim()
         if (name === '↑') return // don't add links to quoted text as chapters
         // if the name is a link, try to find one elsewhere
-        if (/^https?:[/][/]/.test(name) || / \| Page \d+$/.test(name)) {
+        if (qr`^https?://`.test(name) || / \| Page \d+$/.test(name)) {
           let next = $link[0].prev
           let nextText = chapter.$content(next).text().trim()
           if (next && next.type === 'text' && nextText === '') {
@@ -171,7 +172,7 @@ class Xenforo extends Site {
             name = nextText
           }
         }
-        if (/^[/](?:threads|posts|s|art)[/]|^[/]index.php[?]topic/.test(url.parse(href).path)) {
+        if (qr`^/(?:threads|posts|s|art)/|^/index.php[?]topic`.test(url.parse(href).path)) {
           chapters.push({name, link: href})
         }
       })
@@ -361,9 +362,9 @@ class Xenforo extends Site {
     $content.find('div.messageTextEndMarker').remove()
     chapter.content =  $content.html().trim()
         // content is blockquoted, for some reason
-        .replace(/^\s*<blockquote[^>]*>([\s\S]+)<[/]blockquote>\s*$/, '$1')
+        .replace(qr`^\s*<blockquote[^>]*>([\s\S]+)</blockquote>\s*$`, '$1')
         // bullshit sv holloween thingy
-        .replace(/^<p style="padding: 5px 0px; font-weight: bold; font-style: oblique; text-align: center; font-size: 12pt">.*?<[/]p>/g, '')
+        .replace(qr.g`^<p style="padding: 5px 0px; font-weight: bold; font-style: oblique; text-align: center; font-size: 12pt">.*?</p>`, '')
     return chapter
   }
 
@@ -423,7 +424,7 @@ class Xenforo extends Site {
   threadmarkUrl () {
     const threadUrl = url.parse(this.raw)
     const path = threadUrl.pathname || threadUrl.path
-    const threadMatch = /^([/]threads[/](?:[^/]+\.)?\d+)(?:[/].*)?$/
+    const threadMatch = qr`^(/threads/(?:[^/]+\.)?\d+)(?:/.*)?$`
     if (threadMatch.test(path)) {
       threadUrl.hash = ''
       threadUrl.pathname = threadUrl.pathname.replace(threadMatch, '$1/threadmarks')
@@ -465,9 +466,9 @@ class Xenforo extends Site {
     // resolve base url
     if (base) href = url.resolve(base, href)
     // normalize post urls
-    href = href.replace(/[/]threads[/][^/]+[/](?:page-\d+)?#post-(\d+)$/, '/posts/$1')
-               .replace(/([/]posts[/][^/]+)[/]$/, '$1')
-               .replace(/[/]goto[/]post[?]id=(\d+).*?$/, '/posts/$1')
+    href = href.replace(qr`/threads/[^/]+/(?:page-\d+)?#post-(\d+)$`, '/posts/$1')
+               .replace(qr`(/posts/[^/]+)/$`, '$1')
+               .replace(qr`/goto/post[?]id=(\d+).*?$`, '/posts/$1')
     return href
   }
 

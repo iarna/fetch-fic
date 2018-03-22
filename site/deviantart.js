@@ -1,16 +1,17 @@
 'use strict'
 const Site = use('site')
+const qr = require('@perl/qr')
 
 class DeviantArt extends Site {
   static matches (siteUrlStr) {
-    return /deviantart[.]com[/]art[/]/.test(siteUrlStr)
+    return qr`deviantart[.]com/art/`.test(siteUrlStr)
   }
 
   constructor (siteUrlStr) {
     super(siteUrlStr)
     this.publisher = 'deviantart.com'
     this.publisherName = 'Deviant Art'
-    const matches = siteUrlStr.match(/[/]art[/](?:(.*?)-)?\d+$/)
+    const matches = siteUrlStr.match(qr`/art/(?:(.*?)-)?\d+$`)
     this.name = matches[1]
   }
 

@@ -1,11 +1,12 @@
 'use strict'
 const url = require('url')
+const qr = require('@perl/qr')
 
 const Site = use('site')
 
 class Gravatar extends Site {
   static matches (siteUrlStr) {
-    return /gravatar/.test(siteUrlStr) && /[/]avatar[/]/.test(siteUrlStr)
+    return qr`gravatar`.test(siteUrlStr) && qr`/avatar/`.test(siteUrlStr)
   }
   normalizeLink (link) {
     const linkBits = url.parse(link)

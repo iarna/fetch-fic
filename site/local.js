@@ -1,10 +1,10 @@
 'use strict'
-
 const Site = use('site')
+const qr = require('@perl/qr')
 
 class Local extends Site {
   static matches (siteUrlStr) {
-    return !/:/.test(siteUrlStr)
+    return !qr`:`.test(siteUrlStr)
   }
 
   constructor (siteUrlStr) {
@@ -40,7 +40,7 @@ class Local extends Site {
       const info = await fs.stat(filename)
       if (info.isDirectory()) {
         return [filename]
-      } else if (/\.rtf$/.test(filename)) {
+      } else if (qr`[.]rtf$`.test(filename)) {
         const name = path.relative(fic.updateFrom, filename)
         fic.addChapter({name, fetchFrom: filename, created: info.birthtime, modified: info.mtime})
       }
