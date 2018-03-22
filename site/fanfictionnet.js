@@ -33,7 +33,7 @@ class FanFictionNet extends Site {
   }
 
   chapterUrl (num) {
-    return 'https://www.fanfiction.net/s/' + this.ficId + '/' + num + (this.name ? '/' + this.name : '')
+    return `https://www.fanfiction.net/s/${this.ficId}/${num}` + (this.name ? `/${this.name}` : '')
   }
 
   chapterListUrl () {
