@@ -24,7 +24,7 @@ class ArchiveOfOurOwn extends Site {
     const siteUrl = url.parse(siteUrlStr)
     const path = siteUrl.pathname || siteUrl.path || ''
     const ficMatch = path.match(qr`^/works/(\d+)`)
-    this.workId = ficMatch[1]
+    this.workId = ficMatch && ficMatch[1]
   }
 
   normalizeLink (href, base) {

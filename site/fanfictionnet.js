@@ -22,8 +22,8 @@ class FanFictionNet extends Site {
     const siteUrl = url.parse(siteUrlStr)
     const path = siteUrl.pathname || siteUrl.path || ''
     const ficMatch = path.match(qr`^/s/(\d+)(?:/\d+(?:/(.*))?)?`)
-    this.ficId = ficMatch[1]
-    this.name = ficMatch[2]
+    this.ficId = ficMatch && ficMatch[1]
+    this.name = ficMatch && ficMatch[2]
   }
 
   normalizeLink (href, base) {
