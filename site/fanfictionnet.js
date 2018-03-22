@@ -56,16 +56,16 @@ class FanFictionNet extends Site {
     const fandom = chapter.$('#pre_story_links a:last-child').text().trim()
     fic.title = $meta.find('b.xcontrast_txt').text()
     fic.link = this.normalizeLink(chapter.link)
-    fic.author = chapter.author
-    fic.authorUrl = chapter.authorUrl
+    const author = await this.getUserInfo(fetch, chapter.author, chapter.authorUrl)
+    fic.author = author.name || chapter.author
+    fic.authorUrl = author.link || chapter.authorUrl
     fic.created = moment.unix(chapter.$($dates[1]).attr('data-xutime'))
     fic.modified = moment.unix(chapter.$($dates[0]).attr('data-xutime'))
     fic.publisher = this.publisherName
     fic.description = $meta.find('div.xcontrast_txt').text()
-    const img = chapter.$('#img_large img').attr('data-original')
-    if (img) {
-      fic.cover = url.resolve(chapter.base, img)
-    }
+    const img_src = chapter.$('#img_large img').attr('data-original')
+    const img = img_src ? url.resolve(chapter.base, img_src).replace(qr`/150/`, '/180/') : undefined
+    if (img && img !== author.image) fic.cover = img
 
     const infoline = $meta.find('span.xgray').text()
     const info = ffp(infoline)
