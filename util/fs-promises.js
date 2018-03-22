@@ -10,3 +10,5 @@ exports.rename = promisify(fs.rename, fs)
 exports.unlink = promisify(fs.unlink)
 exports.stat = promisify(fs.stat)
 exports.createWriteStream = fs.createWriteStream
+const access = exports.access = promisify(fs.access)
+exports.exists = file => access(file, fs.constants.F_OK).then(() => true, () => false)
