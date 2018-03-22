@@ -114,7 +114,7 @@ async function _reallyRead (urls, args) {
     const filenameize = use('filenameize')
     // we shouldn't get here, but this acts as a final guard against an
     // empty fic getting written out to disk.
-    if (fic.words === 0 && !fic.fics.length) {
+    if (fic.words === 0 && !fic.fics.length && !fic.chapters.length) {
       process.emit('error', 'ff-get', `${url} could not be retrieved.`)
       return
     }
