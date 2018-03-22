@@ -60,7 +60,7 @@ class ArchiveOfOurOwn extends Site {
     const heading = $('h2.heading')
     fic.title = heading.find('a[rel!="author"]').text()
     const $author = heading.find('a[rel="author"]')
-    fic.authorUrl = this.normalizeLink($author.attr('href'), base).replace(qr`/pseuds/.*`, '/profile')
+    fic.authorUrl = (this.normalizeLink($author.attr('href'), base) || '').replace(qr`/pseuds/.*`, '/profile')
     fic.author = $author.text()
     const $metadata = $('ol.index').find('li').first()
     const metadataLink = this.normalizeLink($metadata.find('a').attr('href'), base)
