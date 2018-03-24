@@ -109,7 +109,14 @@ class Xenforo extends Site {
       if (!fic.title) fic.title = ficTitle
       if (!fic.tags.length) fic.tags = ficTags
     }
-    fic.tags = tagmap(fic.tags.concat(this.getTags(chapter.$)))
+    fic.tags = fic.tags.concat(this.getTags(chapter.$))
+    if (/Discussion in .*Quest(s|ing)/i.test(chapter.$('#pageDescription').text())) {
+      fic.tags.push('Quest')
+    } else if (/Discussion in .*Worm/i.test(chapter.$('#pageDescription').text())) {
+      fic.tags.push('fandom:Worm')
+    }
+    fic.tags = tagmap(fic.tags)
+
     if (!fic.author) fic.author = chapter.author
     if (!fic.authorUrl) fic.authorUrl = chapter.authorUrl
 
