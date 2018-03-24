@@ -305,7 +305,7 @@ class Xenforo extends Site {
     }
     chapter.base = chapter.$('base').attr('href') || finalUrl
     const $author = chapter.$($message.find('a.username')[0])
-    chapter.authorUrl = url.resolve(chapter.base, $author.attr('href'))
+    chapter.authorUrl = $author.attr('href') && url.resolve(chapter.base, $author.attr('href'))
     chapter.author = $author.text().trim()
     chapter.created = this.dateTime($message.find('a.datePermalink .DateTime'), tz)
     let baseLightness = 100
