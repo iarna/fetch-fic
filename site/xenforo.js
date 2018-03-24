@@ -102,7 +102,7 @@ class Xenforo extends Site {
     if (!fic.link) fic.link = this.normalizeLink(chapter.link)
     const tz = this.getTz(chapter.$)
     if (!fic.created) fic.created = this.dateTime(chapter.$('.DateTime'), tz)
-    if (!fic.title || !fic.tags) {
+    if (!fic.title || !fic.tags || !fic.tags.length) {
       const tat = this.detagTitle(this.scrapeTitle(chapter.$))
       const ficTitle = tat.title
       const ficTags = tat.tags
