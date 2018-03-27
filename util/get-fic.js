@@ -201,6 +201,7 @@ function getFic (fetch, fic) {
           if (!chapter.info.externals || !fic.externals) return
           try {
             Site.fromUrl(href)
+            if (/[/](?:user|members)[/]/.test(href)) return
           } catch (ex) {
             return
           }
