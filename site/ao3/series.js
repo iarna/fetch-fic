@@ -44,8 +44,10 @@ class ArchiveOfOurOwnSeries extends Site {
     fic.title = $('#main h2').text().trim()
     const $series = $('dl.series.meta')
     const $author = $series.find('dt:contains(Creator) + dd')
+
     fic.author = $author.text().trim()
-    fic.authorUrl = this.normalizeLink($author.find('a').attr('href'), base)
+    fic.authorUrl = this.normalizeLink($author.find('a').attr('href') || '', base).replace(qr`/pseuds/.*`, '/profile')
+    fic.authors.push({name: fic.author, link: fic.authorUrl})
     fic.created = moment($series.find('dt:contains(Series Begun) + dd').text().trim())
     fic.modified = moment($series.find('dt:contains(Series Updated) + dd').text().trim() || fic.created)
     fic.description = $series.find('dt:contains(Description) + dd blockquote').html()

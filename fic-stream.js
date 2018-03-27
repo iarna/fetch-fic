@@ -28,7 +28,7 @@ class FicStream extends Readable {
     }
     // ficstreams also proxy everything from their source fic
     for (let pp of qw`id fetch title link updateFrom author authorUrl
-                      created modified publisher description cover
+                      authors created modified publisher description cover
                       chapterHeadings externals words tags fics chapters
                       site includeTOC numberTOC fetchMeta scrapeMeta`) {
       proxy(fic, pp, this)

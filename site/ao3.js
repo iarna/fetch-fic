@@ -5,6 +5,7 @@ const cache = use('cache')
 const moment = require('moment')
 const tagmap = use('tagmap')('ao3')
 const qr = require('@perl/qr')
+const forEach = use('for-each')
 
 class ArchiveOfOurOwn extends Site {
   static matches (siteUrlStr) {
@@ -57,11 +58,26 @@ class ArchiveOfOurOwn extends Site {
       throw err
     }
     const base = $('base').attr('href') || this.chapterIndex()
-    const heading = $('h2.heading')
-    fic.title = heading.find('a[rel!="author"]').text()
-    const $author = heading.find('a[rel="author"]')
-    fic.authorUrl = (this.normalizeLink($author.attr('href'), base) || '').replace(qr`/pseuds/.*`, '/profile')
-    fic.author = $author.text()
+    const $heading = $('h2.heading')
+    fic.title = $heading.find('a[rel!="author"]').text()
+    if (/\[archived by/.test($heading.text())) {
+      $heading.find('a').remove()
+      const author = $heading.text().trim().replace(/.*by (.*) \[archived by.*/, '$1').trim()
+      fic.author = author
+    } else {
+      const $author = $heading.find('a[rel="author"]')
+      const aus = []
+      $author.each((ii, ac) => {
+        const $ac = $(ac)
+        const authorUrl = (this.normalizeLink($ac.attr('href'), base) || '').replace(qr`/pseuds/.*`, '/profile')
+        const authorName = $ac.text()
+        fic.authors.push({name: authorName, link: authorUrl})
+        if ((!fic.author && !fic.authorUrl) || ((!fic.author || !fic.authorUrl) && (authorUrl && authorName))) {
+          fic.author = authorName
+          fic.authorUrl = authorUrl
+        }
+      })
+    }
     const $metadata = $('ol.index').find('li').first()
     const metadataLink = this.normalizeLink($metadata.find('a').attr('href'), base)
     const Chapter = use('fic').Chapter

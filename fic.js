@@ -1,6 +1,7 @@
 'use strict'
 /* eslint-disable no-return-assign */
 const qw = require('qw')
+const qr = require('@perl/qr')
 
 let Site
 
@@ -14,6 +15,7 @@ class Fic {
     this.updateFrom = null
     this.author = null
     this.authorUrl = null
+    this.authors = []
     this.created = null
     this.modified = null
     this.publisher = null
@@ -112,11 +114,22 @@ class Fic {
     for (let prop of props) {
       if (prop in raw) this[prop] = raw[prop]
     }
+    if (raw.authors) {
+      this.authors = raw.authors.map(au => {
+        const [, name, link] = au.match(qr`^(.*?) <([^<]+)>$`)
+        return {name, link}
+      })
+    } else {
+      this.authors = []
+      if (this.author || this.authorUrl) {
+        this.authors.push({name: this.author, link: this.authorUrl})
+      }
+    }
     this.externals = raw.externals != null ? raw.externals : true
     this.spoilers = raw.spoilers != null ? raw.spoilers : true
     for (let prop of Object.keys(raw)) {
       if (props.indexOf(prop) !== -1) continue
-      if (prop !== 'chapters' && prop !== 'fics' && prop !== 'externals' && prop !== 'spoilers') {
+      if (prop !== 'authors' && prop !== 'chapters' && prop !== 'fics' && prop !== 'externals' && prop !== 'spoilers') {
         process.emit('warn', `Unknown property when importing ${raw.title || 'fic'}: "${prop}"`)
       }
     }
@@ -209,10 +222,14 @@ class Fic {
   toJSON () {
     const result = {}
     for (let prop of qw`
-         title _id _link altlinks updateFrom author authorUrl created modified publisher cover art
+         title _id _link altlinks updateFrom author authorUrl authors created modified publisher cover art
          description notes tags words fics chapterHeadings _includeTOC _numberTOC fetchMeta scrapeMeta
        `) {
       if (this[prop] != null && (!Array.isArray(this[prop]) || this[prop].length)) result[prop.replace(/^_/,'')] = this[prop]
+    }
+    if (result.authors) {
+      const au = result.authors.filter(_ => _.name !== this.author || _.link !== this.authorUrl).map(_ => `${_.name} <${_.link}>`)
+      result.authors = au.length ? au : undefined
     }
     if (this.chapters.length) result.chapters = this.chapters.toJSON(this)
     if (result.fics) {

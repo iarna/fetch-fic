@@ -51,8 +51,8 @@ class OutputEpub extends Output {
     const epub = new Streampub({
       id: this.fic.id,
       title: this.fic.title,
-      author: this.fic.author,
-      authorUrl: this.fic.authorUrl,
+      author: this.fic.authors.map(au => au.name).join(' & '),
+      authorUrl: this.fic.authors.map(au => au.link).join(' & '),
       description: this.fic.description || this.fic.notes,
       source: this.fic.link,
       subject: tags && tags.length && tags.join(','),
@@ -62,7 +62,7 @@ class OutputEpub extends Output {
       calibre: {
         'updated': modified && {'#value#': modified.toISOString().slice(0,10), 'datatype': 'text'},
         'words': {'#value#': this.fic.words, 'datatype': 'int'},
-        'authorurl': {'#value#': this.fic.authorUrl, 'datatype': 'text'},
+        'authorurl': {'#value#': this.fic.authors.map(au => au.link).join(' & '), 'datatype': 'text'},
         'status': status && {'#value#': status, 'datatype': 'enumeration'},
         'fandom': fandom && {'#value#': fandom, 'datatype': 'text'},
         'notes': this.fic.notes && {'#value#': this.fic.notes, 'datatype': 'text'}
@@ -147,7 +147,7 @@ class OutputEpub extends Output {
 
   htmlByline () {
     if (!this.fic.author) return ''
-    return `<h3 style="text-align: center;">by <span epub:type="credits">${this.htmlAuthor(this.fic.author, this.fic.authorUrl)}</span></h3>\n`
+    return `<h3 style="text-align: center;">by <span epub:type="credits">${this.fic.authors.map(au => this.htmlAuthor(au.name, au.link)).join(' &amp; ')}</span></h3>\n`
   }
 
   htmlCoverImage () {
