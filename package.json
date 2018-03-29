@@ -23,7 +23,7 @@
     "@iarna/rtf-to-html": "^1.0.3",
     "@iarna/toml": "^1.4.0",
     "@iarna/word-count": "^1.0.2",
-    "@perl/qr": "^1.1.1",
+    "@perl/qr": "^1.2.0",
     "are-we-there-yet": "^1.1.4",
     "bluebird": "^3.5.1",
     "buffer-signature": "^1.0.0",
