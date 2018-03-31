@@ -4,7 +4,7 @@ const util = require('util')
 const moment = require('moment')
 
 const pkg = require('../package.json')
-const USER_AGENT = `${pkg.name}/${pkg.version} (+${pkg.homepage})`
+const USER_AGENT = `Mozilla/5.0 (Macintosh; Intel Mac OS X 10.13; rv:59.0; ${pkg.name}/${pkg.version}; +${pkg.homepage}) Gecko/20100101 Firefox/59.0`
 
 const fetchBackOff = use('fetch-back-off')
 const rawFetch = require('make-fetch-happen').defaults({
