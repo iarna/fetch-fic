@@ -365,7 +365,6 @@ class Xenforo extends Site {
     } else if (/Discussion in .*Worm/i.test(chapter.$('#pageDescription').text())) {
       chapter.chapterTags.push('fandom:Worm')
     }
-    chapter.chapterTags = tagmap(chapter.chapterTags)
     $content.find('div.messageTextEndMarker').remove()
     chapter.content =  $content.html().trim()
         // content is blockquoted, for some reason
