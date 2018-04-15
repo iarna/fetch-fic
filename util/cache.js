@@ -109,7 +109,7 @@ function getUrlHash (toFetch) {
 }
 
 function cacheUrlBase (fetchUrl) {
-  return Bluebird.all([fetchUrl, getUrlHash(fetchUrl)]).spread((fetchUrl, urlHash) => {
+  return Bluebird.all([fetchUrl, getUrlHash(fetchUrl)]).then([fetchUrl, urlHash] => {
     const fetchP = url.parse(fetchUrl)
     return path.join('urls', fetchP.hostname, urlHash.slice(0, 1), urlHash.slice(1, 2), urlHash)
   })
@@ -174,14 +174,14 @@ function readUrl (fetchUrl, onMiss) {
   }
 
   function orFetchUrl () {
-    return resolveCall(onMiss, fetchUrl, existingMeta).spread((res, content) => {
+    return resolveCall(onMiss, fetchUrl, existingMeta).then([res, content] => {
       meta.finalUrl = res.url || meta.startUrl
       meta.status = res.status
       meta.statusText = res.statusText
       meta.headers = res.headers.raw()
       meta.fetchedAt = fetchedAt
       if (meta.status && meta.status === 304) {
-        return thenReadContent().spread((_, data) => data)
+        return thenReadContent().then([_, data] => data)
       } else if (meta.status && meta.status === 403) {
         const err403 = new Error('Got status: ' + meta.status + ' ' + meta.statusText + ' for ' + fetchUrl)
         err403.code = meta.status
@@ -195,6 +195,12 @@ function readUrl (fetchUrl, onMiss) {
         err429.meta = meta
         err429.retryAfter = res.headers['retry-after']
         return Bluebird.reject(err429)
+      } else if (meta.status && meta.status === 404) {
+        const non200 = new Error('Got status: ' + meta.status + ' ' + meta.statusText + ' for ' + fetchUrl)
+        non200.code = meta.status
+        non200.url = fetchUrl
+        non200.meta = meta
+        return JSON.stringify(non200)
       } else if (meta.status && meta.status !== 200) {
         const non200 = new Error('Got status: ' + meta.status + ' ' + meta.statusText + ' for ' + fetchUrl)
         non200.code = meta.status
@@ -207,7 +213,7 @@ function readUrl (fetchUrl, onMiss) {
   }
 
   function thenReadMetadata (result) {
-    return Bluebird.all([metafile, readJSON(metafile, () => meta)]).spread((metafile, meta) => {
+    return Bluebird.all([metafile, readJSON(metafile, () => meta)]).then([metafile, meta] => {
       meta.fromCache = meta.fetchedAt !== fetchedAt ? metafile : null
       if (meta.startURL) {
         meta.startUrl = meta.startURL
@@ -218,6 +224,13 @@ function readUrl (fetchUrl, onMiss) {
         delete meta.finalURL
       }
       if (!meta.finalUrl) meta.finalUrl = meta.startUrl
+      if (meta.status && meta.status !== 200) {
+        const non200 = new Error('Got status: ' + meta.status + ' ' + meta.statusText + ' for ' + fetchUrl)
+        non200.code = meta.status
+        non200.url = fetchUrl
+        non200.meta = meta
+        return Bluebird.reject(non200)
+      }
       return [meta, result]
     })
   }
