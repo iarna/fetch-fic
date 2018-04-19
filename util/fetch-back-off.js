@@ -62,13 +62,13 @@ async function tryFetch (fetch, uri, opts, tries) {
     const maxRetries = perSite.maxRetries || opts.maxRetries || 5
     ++ tries
     if (tries > maxRetries) throw err
-    const retryDelay = 1500 * (tries ** 2)
+    const retryDelay = 1500 + (500* (tries ** 2))
     if (err.code === 408 || err.type === 'body-timeout' || /timeout/i.test(err.message)) {
       process.emit('warn', `Timeout on ${uri} sleeping`, retryDelay / 1000, 'seconds')
       await backoff(uri, retryDelay)
       return tryFetch(fetch, uri, opts, tries)
     } else if (err.code === 429) {
-      let retryAfter = 3000 * (tries ** 2)
+      let retryAfter = 3000 + (500* (tries ** 2))
       if (err.retryAfter) {
         if (/^\d+$/.test(err.retryAfter)) {
           retryAfter = Number(err.retryAfter) * 1000
