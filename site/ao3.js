@@ -13,7 +13,7 @@ class ArchiveOfOurOwn extends Site {
     const hostname = siteUrl.hostname
     if (!qr`(^|www[.])archiveofourown.org$`.test(hostname)) return false
     const path = siteUrl.pathname || siteUrl.path || ''
-    if (!qr`^/works/\d+|^/users/`.test(path)) return false
+    if (!qr`^(/collections/[^/]+)?(/works/\d+|/users/)`.test(path)) return false
     return true
   }
 
