@@ -36,14 +36,21 @@ class Site {
   }
 
   normalizeLink (href, base) {
-    // force ssl
-    href = href.replace(/^http:/, 'https:')
     // resolve base url
     if (base) {
       const url = require('url')
       href = url.resolve(base, href)
     }
+    // force ssl
+    href = href.replace(/^http:/, 'https:')
+    href = href.replace(/[/]$/, '')
     return href
+  }
+  normalizeFicLink (href, base) {
+    return this.normalizeLink(href, base)
+  }
+  normalizeChapterLink (href, base) {
+    return this.normalizeLink(href, base)
   }
 
   sanitizeHtmlConfig () {
