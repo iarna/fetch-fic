@@ -8,3 +8,20 @@ module.exports = arr => {
     return true
   })
 }
+module.exports.anyCase = arr => {
+  const seen = {}
+  arr.forEach(v => {
+    const l = v.toLowerCase()
+    if (l in seen) {
+      if (v !== l) seen[l] = v
+    } else {
+      seen[l] = v
+    }
+  })
+  return Object.keys(seen).map(_ => seen[_])
+  return arr.filter(v => {
+    if (seen.has(v)) return false
+    seen.add(v.toLowerCase())
+    return true
+  })
+}
