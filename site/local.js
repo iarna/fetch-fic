@@ -4,7 +4,7 @@ const qr = require('@perl/qr')
 
 class Local extends Site {
   static matches (siteUrlStr) {
-    return !qr`:`.test(siteUrlStr)
+    return siteUrlStr && !qr`:`.test(siteUrlStr)
   }
 
   constructor (siteUrlStr) {
