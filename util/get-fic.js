@@ -126,10 +126,16 @@ function getFic (fetch, fic) {
     if (!src) return
     process.emit('debug', `Outputting ${type} of ${fic.title}`)
     if (/:/.test(src)) {
+      let referer = fic.link
+      // if this is an image from fanfiction.net then it MUST have a fanfiction.net referrer
+      if (/fictionpressllc/.test(src) && !/fanfiction[.]net/.test(referer)) {
+        referer = fic.altlinks.filter(l => /fanfiction[.]net/.test(l))[0]
+      }
+      if (!referer) return
       fetch.tracker.addWork(1)
-      progress.show('Fetching ${type}…')
+      progress.show(`Fetching ${type}…`)
       try {
-        const [meta, imageData] = await fetch(src, {referer: fic.link})
+        const [meta, imageData] = await fetch(src, {referer})
         const info = identifyBuffer(imageData)
         if (filename && !/[.]\w+$/.test(filename) && info.extensions.length) {
           filename += '.' + info.extensions[0]
