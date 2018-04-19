@@ -42,7 +42,7 @@ class Xenforo extends Site {
       return cheerio.load(html)
     }
 
-    fic.link = this.link
+    fic.link = this.normalizeFicLink(this.link)
     fic.publisher = this.publisherName
 
     const $ = await fetchWithCheerio(this.threadmarkUrl())
@@ -64,7 +64,7 @@ class Xenforo extends Site {
         if ($chapter.find('a.username').length) return
         const $link = $chapter.find('a')
         const name = $link.text().trim()
-        const link = this.normalizeLink($link.attr('href'), base)
+        const link = this.normalizeChapterLink($link.attr('href'), base)
         const created = this.dateTime($chapter.find('.DateTime'), tz)
         if (!leastRecent || created < leastRecent) leastRecent = created
         if (!mostRecent || created > mostRecent) mostRecent = created
@@ -99,7 +99,7 @@ class Xenforo extends Site {
     const chapter = await Chapter.getContent(fetch, this.link)
     // we guard all the fic metadata updates because we might be
     // acting in addition to the result from getFicMetadata
-    if (!fic.link) fic.link = this.normalizeLink(chapter.link)
+    if (!fic.link) fic.link = this.normalizeFicLink(chapter.link)
     const tz = this.getTz(chapter.$)
     if (!fic.created) fic.created = this.dateTime(chapter.$('.DateTime'), tz)
     if (!fic.title || !fic.tags || !fic.tags.length) {
@@ -160,7 +160,7 @@ class Xenforo extends Site {
       const links = chapter.$content('a')
       links.each((_, link) => {
         const $link = chapter.$content(link)
-        const href = this.normalizeLink($link.attr('href'), chapter.base)
+        const href = this.normalizeChapterLink($link.attr('href'), chapter.base)
         let name = $link.text().trim()
         if (name === '↑') return // don't add links to quoted text as chapters
         // if the name is a link, try to find one elsewhere

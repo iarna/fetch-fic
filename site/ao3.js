@@ -30,7 +30,13 @@ class ArchiveOfOurOwn extends Site {
 
   normalizeLink (href, base) {
     if (!href) return
-    return super.normalizeLink(href, base).replace(/#.*$/, '')
+    return super.normalizeLink(href, base)
+      .replace(/#.*$/, '')
+      .replace(/[/]collections[/][^/]+[/]?/, '/')
+  }
+  normalizeFicLink (href, base) {
+    return super.normalizeFicLink(href, base)
+      .replace(/[/]chapters[/]\d+/, '')
   }
   chapterIndex () {
     return 'https://archiveofourown.org/works/' + this.workId + '/navigate'
@@ -43,7 +49,7 @@ class ArchiveOfOurOwn extends Site {
     return tags
   }
   async getFicMetadata (fetch, fic) {
-    fic.link = this.link
+    fic.link = this.normalizeFicLink(this.link)
     fic.publisher = this.publisherName
     fic.chapterHeadings = true
     const [meta, html] = await fetch(this.chapterIndex())
@@ -69,7 +75,7 @@ class ArchiveOfOurOwn extends Site {
       const aus = []
       $author.each((ii, ac) => {
         const $ac = $(ac)
-        const authorUrl = (this.normalizeLink($ac.attr('href'), base) || '').replace(qr`/pseuds/.*`, '/profile')
+        const authorUrl = (this.normalizeChapterLink($ac.attr('href'), base) || '').replace(qr`/pseuds/.*`, '/profile')
         const authorName = $ac.text()
         fic.authors.push({name: authorName, link: authorUrl})
         if ((!fic.author && !fic.authorUrl) || ((!fic.author || !fic.authorUrl) && (authorUrl && authorName))) {
@@ -79,7 +85,7 @@ class ArchiveOfOurOwn extends Site {
       })
     }
     const $metadata = $('ol.index').find('li').first()
-    const metadataLink = this.normalizeLink($metadata.find('a').attr('href'), base)
+    const metadataLink = this.normalizeChapterLink($metadata.find('a').attr('href'), base)
     const Chapter = use('fic').Chapter
     const chapter = await new Chapter({link: metadataLink}).getContent(fetch)
 
@@ -136,7 +142,7 @@ class ArchiveOfOurOwn extends Site {
     chapterList.each((ii, vv) => {
       const $vv = $(vv)
       const name = $vv.find('a').text().replace(/^\d+[.] /, '')
-      const link = this.normalizeLink($vv.find('a').attr('href'), base)
+      const link = this.normalizeChapterLink($vv.find('a').attr('href'), base)
       const created = moment.utc($vv.find('span.datetime').text(), '(YYYY-MM-DD)')
       fic.addChapter({name, link, created})
     })

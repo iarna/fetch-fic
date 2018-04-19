@@ -26,10 +26,13 @@ class FanFictionNet extends Site {
     this.name = ficMatch && ficMatch[2]
   }
 
-  normalizeLink (href, base) {
-    const link = url.parse(super.normalizeLink(href, base))
-    link.pathname = link.pathname.replace(qr`^(/s/\d+/\d+)/.*$`, '$1')
-    return url.format(link)
+  normalizeFicLink (href, base) {
+    return super.normalizeFicLink(href, base)
+      .replace(/([/]s[/]\d+)[/]1([/].*|$)/, '$1')
+  }
+  normalizeChapterLink (href, base) {
+    return super.normalizeChapterLink(href, base)
+      .replace(/([/]s[/]\d+[/]\d+)[/].*$/, '$1')
   }
 
   chapterUrl (num) {
@@ -55,7 +58,7 @@ class FanFictionNet extends Site {
     const $dates = $meta.find('span[data-xutime]')
     const fandom = chapter.$('#pre_story_links a:last-child').text().trim()
     fic.title = $meta.find('b.xcontrast_txt').text()
-    fic.link = this.normalizeLink(chapter.link)
+    fic.link = this.normalizeFicLink(chapter.link)
     const author = await this.getUserInfo(fetch, chapter.author, chapter.authorUrl)
     fic.author = author.name || chapter.author
     fic.authorUrl = author.link || chapter.authorUrl
