@@ -23,37 +23,37 @@ exports.invalidateUrl = invalidateUrl
 
 const invalidated = {}
 
-function resolveCall () {
-  return Bluebird.all(arguments).then(args => {
-    const fn = args.shift()
-    return Bluebird.resolve(fn.apply(null, args))
-  })
+async function resolveCall (...promisedArgs) {
+  const [fn, ...args] = await Promise.all(promisedArgs)
+  return fn.apply(null, args)
 }
 
-function cacheFilename (filename) {
-  return Bluebird.resolve(filename).then(filename => {
-    return path.join(os.homedir(), '.fetch-fic', filename)
-  })
+async function cacheFilename (filename) {
+  return path.join(os.homedir(), '.fetch-fic', await filename)
 }
 
 function readFile (filename, onMiss) {
   const cacheFile = cacheFilename(filename)
   return inflight(['read:', filename], thenReadFile)
 
-  function thenReadFile () {
-    return fs.readFile(cacheFile).catch(elseHandleMiss)
-  }
-  function elseHandleMiss () {
-    return resolveCall(onMiss).then(content => writeFile(filename, Buffer.from(content)))
+  async function thenReadFile () {
+    try {
+      return await fs.readFile(cacheFile)
+    } catch (_) {
+      const content = await resolveCall(onMiss)
+      return writeFile(filename, Buffer.from(content))
+    }
   }
 }
 
-function writeFile (filename, content) {
+async function writeFile (filename, content) {
   const cacheFile = cacheFilename(filename)
-  return inflight(['write:', filename], thenWriteFile).then(() => content)
+  await inflight(['write:', filename], thenWriteFile)
+  return content
 
-  function thenWriteFile () {
-    return mkdirp(pathDirname(cacheFile)).then(() => fs.writeFile(cacheFile, content))
+  async function thenWriteFile () {
+    await mkdirp(pathDirname(cacheFile))
+    return fs.writeFile(cacheFile, content)
   }
 }
 
@@ -73,9 +73,10 @@ async function readJSON (filename, onMiss) {
     return JSON.parse(await readFile(filename, stringifyOnMiss))
   }
 
-  function stringifyOnMiss () {
+  async function stringifyOnMiss () {
     didMiss = true
-    return resolveCall(onMiss).then(result => JSON.stringify(result, null, 2))
+    const result = await resolveCall(onMiss)
+    return JSON.stringify(result, null, 2)
   }
 }
 
@@ -85,44 +86,47 @@ function writeJSON (filename, content) {
 }
 */
 
-function readGzipFile (filename, onMiss) {
-  return readFile(filename, gzipOnMiss).then(buf => zlib.gunzip(buf).catch(() => {
-    return clearFile(filename).then(() => readGzipFile(filename, onMiss))
-  }))
+async function readGzipFile (filename, onMiss) {
+  const buf = await readFile(filename, gzipOnMiss)
+  try {
+    return await zlib.gunzip(buf)
+  } catch (_) {
+    await clearFile(filename)
+    return readGzipFile(filename, onMiss)
+  }
 
-  function gzipOnMiss () {
-    return resolveCall(onMiss).then(result => zlib.gzip(result))
+  async function gzipOnMiss () {
+    const result = await resolveCall(onMiss)
+    return zlib.gzip(result)
   }
 }
 
-function writeGzipFile (filename, content) {
-  return writeFile(filename, zlib.gzip(content)).then(() => content)
+async function writeGzipFile (filename, content) {
+  await writeFile(filename, zlib.gzip(content))
+  return content
 }
 
-function getUrlHash (toFetch) {
-  return Bluebird.resolve(toFetch).then(toFetch => {
-    const parsed = url.parse(toFetch)
-    parsed.hash = null
-    const normalized = url.format(parsed)
-    return crypto.createHash('sha256').update(normalized).digest('hex')
-  })
+async function getUrlHash (toFetch) {
+  const parsed = url.parse(await toFetch)
+  parsed.hash = null
+  const normalized = url.format(parsed)
+  return crypto.createHash('sha256').update(normalized).digest('hex')
 }
 
-function cacheUrlBase (fetchUrl) {
-  return Bluebird.all([fetchUrl, getUrlHash(fetchUrl)]).then([fetchUrl, urlHash] => {
-    const fetchP = url.parse(fetchUrl)
-    return path.join('urls', fetchP.hostname, urlHash.slice(0, 1), urlHash.slice(1, 2), urlHash)
-  })
+async function cacheUrlBase (promisedFetchUrl) {
+  const [fetchUrl, urlHash] = await Promise.all([promisedFetchUrl, getUrlHash(promisedFetchUrl)])
+  const fetchP = url.parse(fetchUrl)
+  return path.join('urls', fetchP.hostname, urlHash.slice(0, 1), urlHash.slice(1, 2), urlHash)
 }
-function cacheUrlMetaName (fetchUrl) {
-  return cacheUrlBase(fetchUrl).then(cacheUrl => cacheUrl + '.json')
+async function cacheUrlMetaName (fetchUrl) {
+  const cacheUrl = await cacheUrlBase(fetchUrl)
+  return cacheUrl + '.json'
 }
-function cacheUrlContentName (fetchUrl) {
-  return Bluebird.resolve(fetchUrl).then((fetchUrl) => {
-    const fetchP = url.parse(fetchUrl)
-    const ext = path.parse(fetchP.pathname).ext || '.data'
-    return cacheUrlBase(fetchUrl).then(cacheUrl => cacheUrl + ext + '.gz')
-  })
+async function cacheUrlContentName (promisedFetchUrl) {
+  const fetchUrl = await promisedFetchUrl
+  const fetchP = url.parse(fetchUrl)
+  const ext = path.parse(fetchP.pathname).ext || '.data'
+  return cacheUrlBase(fetchUrl).then(cacheUrl => cacheUrl + ext + '.gz')
 }
 
 const noMetadata = new Error('NOMETADATA')
@@ -148,7 +152,7 @@ function readUrl (fetchUrl, onMiss) {
         existingMeta = meta
         return null
       }
-    }).catch(err => err.code !== 'NOMETADATA' && Bluebird.reject(err))
+    }).catch(err => err.code !== 'NOMETADATA' && Promise.reject(err))
       .then(() => thenReadContent())
   }
 
@@ -174,14 +178,14 @@ function readUrl (fetchUrl, onMiss) {
   }
 
   function orFetchUrl () {
-    return resolveCall(onMiss, fetchUrl, existingMeta).then([res, content] => {
+    return resolveCall(onMiss, fetchUrl, existingMeta).then(([res, content]) => {
       meta.finalUrl = res.url || meta.startUrl
       meta.status = res.status
       meta.statusText = res.statusText
       meta.headers = res.headers.raw()
       meta.fetchedAt = fetchedAt
       if (meta.status && meta.status === 304) {
-        return thenReadContent().then([_, data] => data)
+        return thenReadContent().then(([_, data]) => data)
       } else if (meta.status && meta.status === 403) {
         const err403 = new Error('Got status: ' + meta.status + ' ' + meta.statusText + ' for ' + fetchUrl)
         err403.code = meta.status
@@ -213,7 +217,7 @@ function readUrl (fetchUrl, onMiss) {
   }
 
   function thenReadMetadata (result) {
-    return Bluebird.all([metafile, readJSON(metafile, () => meta)]).then([metafile, meta] => {
+    return Bluebird.all([metafile, readJSON(metafile, () => meta)]).then(([metafile, meta]) => {
       meta.fromCache = meta.fetchedAt !== fetchedAt ? metafile : null
       if (meta.startURL) {
         meta.startUrl = meta.startURL
@@ -236,19 +240,21 @@ function readUrl (fetchUrl, onMiss) {
   }
 }
 
-function ignoreHarmlessErrors (p) {
-  return p.catch(er => {
+async function ignoreHarmlessErrors (p) {
+  try {
+    return await p
+  } catch (er) {
     if (er.code === 'ENOENT' || er.code === 'EINVAL') return
     throw er
-  })
+  }
 }
 
 function clearUrl (fetchUrl) {
   const metafile = cacheUrlMetaName(fetchUrl)
   const content = cacheUrlContentName(fetchUrl)
-  return Bluebird.all([clearFile(metafile), clearFile(content)])
+  return Promise.all([clearFile(metafile), clearFile(content)])
 }
 
-function invalidateUrl (fetchUrl) {
-  return Bluebird.resolve(fetchUrl).then(fetchUrl => { invalidated[fetchUrl] = true })
+async function invalidateUrl (fetchUrl) {
+  invalidated[await fetchUrl] = true
 }
