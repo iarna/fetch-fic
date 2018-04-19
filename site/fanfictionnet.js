@@ -73,10 +73,10 @@ class FanFictionNet extends Site {
       fic.language = info.language
       fic.tags = info.genre.map(g => 'genre:' + g)
         .concat(['rating:' + info.rating])
-        .concat(info.characters.filter(c => c).map(c => 'character:' + c))
-        .concat(info.pairing.map(p => 'ship:' + p.join('/')))
+        .concat(info.characters.filter(c => c).map(c => 'character:' + c.replace(qr.g`/`, '／')))
+        .concat(info.pairing.map(p => 'ship:' + p.map(_=>_.replace(qr.g`/`, '／')).join('/')))
       for (let p of info.pairing) {
-        for (let c of p) if (c) fic.tags.push('character:' + c)
+        for (let c of p) if (c) fic.tags.push('character:' + c.replace(qr.g`/`, '／'))
       }
       fic.words = info.words
       fic.comments = fic.reviews = info.reviews
