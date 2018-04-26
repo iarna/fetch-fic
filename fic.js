@@ -426,16 +426,15 @@ class ChapterList extends Array {
   }
   importFromJSON (fic, raw) {
     if (raw.fics && !raw.chapters) return
-    if (!raw.chapters) {
-      const err = new Error('Fic "' + raw.title + '" is missing any chapters.')
-      err.code = 'ENOCHAPTERS'
-      throw err
+    if (raw.chapters) {
+      for (let chapter of raw.chapters) {
+        if (chapter.spoilers == null) chapter.spoilers = fic.spoilers
+        this.push(Chapter.fromJSON(this.length, chapter))
+      }
+      this.sort()
+    } else {
+      process.emit('warn', 'Fic "' + raw.title + '" is missing any chapters.')
     }
-    for (let chapter of raw.chapters) {
-      if (chapter.spoilers == null) chapter.spoilers = fic.spoilers
-      this.push(Chapter.fromJSON(this.length, chapter))
-    }
-    this.sort()
   }
   toJSON (fic) {
     return this.map(chap => chap.toJSON ? chap.toJSON(fic) : chap)
