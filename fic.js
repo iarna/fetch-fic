@@ -134,7 +134,8 @@ class Fic {
     }
     if (raw.authors) {
       this.authors = raw.authors.map(au => {
-        const [, name, link] = au.match(qr`^(.*?) <([^<]+)>$`)
+        let [, name, link] = au.match(qr`^(.*?)(?: <([^<]+)>)?$`)
+        if (link === 'null') link = null
         return {name, link}
       })
     } else {
@@ -246,7 +247,7 @@ class Fic {
       if (this[prop] != null && (!Array.isArray(this[prop]) || this[prop].length)) result[prop.replace(/^_/,'')] = this[prop]
     }
     if (result.authors) {
-      const au = result.authors.filter(_ => _.name !== this.author || _.link !== this.authorUrl).map(_ => `${_.name} <${_.link}>`)
+      const au = result.authors.filter(_ => _.name !== this.author || _.link !== this.authorUrl).map(_ => _.name + (_.link ? ` <${_.link}>` : ''))
       result.authors = au.length ? au : undefined
     }
     if (this.chapters.length) result.chapters = this.chapters.toJSON(this)
