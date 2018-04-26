@@ -190,7 +190,11 @@ var mergeFic = promisify.args(function mergeFic (existingFic, newFic, add) {
   if (existingFic.tags.some(_ => _ === 'Snippets')) {
     toAdd.forEach(ch => {
       const subFic = new Fic.SubFic(existingFic)
-      subFic.title = existingFic.author + ' Snip: ' + ch.name
+      const [title, tags] = detagTitle(ch.name)
+      subFic.title = existingFic.author + ' Snip: ' + title
+      if (tags.length) {
+        subFic.tags = existingFic.tags.concat(tags)
+      }
       subFic.chapters.push(ch)
       existingFic.fics.push(subFic)
     })
@@ -288,4 +292,19 @@ function isDate (date) {
   if (date == null) return false
   if (isNaN(date)) return false
   return date instanceof Date || date instanceof moment
+}
+
+function detagTitle (title) {
+  const tags = []
+  const tagExp = /[(](.*?)[)]|[\[](.*?)[\]]/g
+  const tagMatch = title.match(tagExp)
+  if (tagMatch) {
+    title = title.replace(tagExp, '').trim()
+    tagMatch.map(t =>
+      t.slice(1,-1)
+       .split(/[/,|]/)
+       .map(st => 'freeform:' + st.trim())
+       .forEach(st => tags.push(st)))
+  }
+  return {title, tags}
 }
