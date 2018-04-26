@@ -113,8 +113,12 @@ async function getFicUserInfo (fic) {
     } catch (_) {
       try {
         const fic = await Fic.fromUrl(fetchFor(link), link, 'no-chapters')
-        sites[authorSite.publisherName] = fic.authorUrl
-        user = await authorSite.getUserInfo(fetchFor(link), fic.author, fic.authorUrl)
+        if (fic.authorUrl) {
+          sites[authorSite.publisherName] = fic.authorUrl
+          user = await authorSite.getUserInfo(fetchFor(link), fic.author, fic.authorUrl)
+        } else {
+          user = new Account({name: fic.author, link: fic.authorUrl})
+        }
       } catch (_) {
         console.error(_)
         user = new Account({name: fic.author, link: fic.authorUrl})
