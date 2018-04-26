@@ -100,6 +100,24 @@ class Fic {
     }
   }
 
+  normalizeChapterLink (link) {
+    try {
+      const site = Site.fromUrl(link)
+      return site.normalizeChapterLink(link)
+    } catch (_) {
+      return link
+    }
+  }
+
+  normalizeFicLink (link) {
+    try {
+      const site = Site.fromUrl(link)
+      return site.normalizeFicLink(link)
+    } catch (_) {
+      return link
+    }
+  }
+
   addChapter (opts) {
     if (this.chapterExists(opts.link) || this.chapterExists(opts.fetchFrom)) return
     if (opts.spoilers === null) opts.spoilers = this.spoilers
@@ -376,8 +394,8 @@ class ChapterList extends Array {
     if (link == null) {
       return
     } else if (fic) {
-      const normalizedLink = fic.normalizeLink(link)
-      return this.some(chap => fic.normalizeLink(chap.link) === normalizedLink || chap.fetchFrom === normalizedLink)
+      const normalizedLink = fic.normalizeChapterLink(link)
+      return this.some(chap => fic.normalizeChapterLink(chap.link) === normalizedLink || chap.fetchFrom === normalizedLink)
     } else {
       return this.some(chap => chap.link === link || chap.fetchFrom === link)
     }
