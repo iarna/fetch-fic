@@ -187,8 +187,17 @@ var mergeFic = promisify.args(function mergeFic (existingFic, newFic, add) {
     }
   }
 
-  existingFic.chapters.push.apply(existingFic.chapters, toAdd)
-  existingFic.chapters.sort()
+  if (existingFic.tags.some(_ => _ === 'Snippets')) {
+    toAdd.forEach(ch => {
+      const subFic = new Fic.SubFic(existingFic)
+      subFic.title = existingFic.author + ' Snip: ' + ch.name
+      subFic.chapters.push(ch)
+      existingFic.fics.push(subFic)
+    })
+  } else {
+    existingFic.chapters.push.apply(existingFic.chapters, toAdd)
+    existingFic.chapters.sort()
+  }
 
   if (toAdd.length) {
     changes.push(`${existingFic.title}: Added ${toAdd.length} new chapters`)
