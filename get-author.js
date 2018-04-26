@@ -73,7 +73,7 @@ async function main (fics) {
 }
 
 function hasAuthor (name, link) {
-  return (link && link !== 'unknown:' && link !== 'unknown:Anonymous') || (name && name !== 'Anonymous')
+  return !((link && (link === 'unknown:' || link === 'unknown:Anonymous')) || (name && (name === 'Anonymous' || name === 'HPFandom_archivist' || name === 'The Midnight Archive')))
 }
 
 async function getFicUserInfo (fic) {
