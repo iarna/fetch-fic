@@ -117,7 +117,7 @@ module.exports = function mapTags (site, tags, perFandom) {
   } else {
     let fandoms = tags.filter(_=>/^(fandom|xover|fusion):/.test(_))
                       .map(_ => _.replace(/^(fandom|xover|fusion):/, ''))
-    return uniq([fandom(tags)].concat(fandoms).reduce((tags, fd) => mapTags(fd, tags, true), tags))
+    return uniq([fandom(tags)].concat(fandoms).reduce((tags, fd) => mapTags(fd, tags, true), tags).map(ucfreeformfirst))
   }
 }
 
@@ -218,6 +218,11 @@ function catify (vv) {
   cat += /^xover:/.test(vv) ? '0' : '1'
   cat += /^status:/.test(vv) ? '1' : '0'
   return cat + vv.toLowerCase().replace(/[^:A-Za-z0-9]+/g, ' ').replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '')
+}
+
+function ucfreeformfirst (tag) {
+  if (!/^freeform:/.test(tag)) return tag
+  return 'freeform:' + tag[9].toUpperCase() + tag.slice(10)
 }
 
 function fandom (tags) {
