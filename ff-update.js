@@ -14,6 +14,22 @@ const promisify = use('promisify')
 const TOML = use('toml')
 const moment = require('moment')
 const uniq = require('lodash.uniq')
+const tagmap = use('tagmap')
+
+function detagTitle (title) {
+  const tags = []
+  const tagExp = /[(](.*?)[)]|[\[](.*?)[\]]|[{](.*?)[}]/g
+  const tagMatch = title.match(tagExp)
+  if (tagMatch) {
+    title = title.replace(tagExp, '').trim()
+    tagMatch.map(t =>
+      t.slice(1,-1)
+       .split(/[/,|]/)
+       .map(st => 'freeform:' + st.trim())
+       .forEach(st => tags.push(st)))
+  }
+  return {title, tags}
+}
 
 function update (args) {
   const fetchOpts = {
@@ -190,10 +206,10 @@ var mergeFic = promisify.args(function mergeFic (existingFic, newFic, add) {
   if (existingFic.tags.some(_ => _ === 'Snippets')) {
     toAdd.forEach(ch => {
       const subFic = new Fic.SubFic(existingFic)
-      const [title, tags] = detagTitle(ch.name)
+      const {title, tags} = detagTitle(ch.name)
       subFic.title = existingFic.author + ' Snip: ' + title
       if (tags.length) {
-        subFic.tags = existingFic.tags.concat(tags)
+        subFic.tags = tagmap(existingFic.site.type)(existingFic.tags.concat(tags))
       }
       subFic.chapters.push(ch)
       existingFic.fics.push(subFic)
@@ -294,17 +310,3 @@ function isDate (date) {
   return date instanceof Date || date instanceof moment
 }
 
-function detagTitle (title) {
-  const tags = []
-  const tagExp = /[(](.*?)[)]|[\[](.*?)[\]]/g
-  const tagMatch = title.match(tagExp)
-  if (tagMatch) {
-    title = title.replace(tagExp, '').trim()
-    tagMatch.map(t =>
-      t.slice(1,-1)
-       .split(/[/,|]/)
-       .map(st => 'freeform:' + st.trim())
-       .forEach(st => tags.push(st)))
-  }
-  return {title, tags}
-}
