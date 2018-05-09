@@ -13,6 +13,8 @@ class Scrivener extends Site {
     super(siteUrlStr)
     this.publisher = 'scrivener'
     this.publisherName = 'Scrivener'
+    this.shortName = 'scriv'
+    this.type = 'scriv'
   }
 
   normalizeLink (href, base) {

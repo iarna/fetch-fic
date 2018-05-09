@@ -12,7 +12,9 @@ class GenericImage extends Site {
   constructor (siteUrlStr) {
     super(siteUrlStr)
     this.publisher = url.parse(siteUrlStr).hostname
+    this.shortName = this.publisher.replace(/^www[.]|[.](com|org|net|io)$/g, '')
     this.publisherName = this.publisher
+    this.type = 'generic-image'
   }
 
   normalizeLink (href, base) {

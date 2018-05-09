@@ -5,6 +5,10 @@ const qr = require('@perl/qr')
 const Site = use('site')
 
 class Gravatar extends Site {
+  constructor (siteUrlStr) {
+    super(siteUrlStr)
+    this.type = 'gravatar'
+  }
   static matches (siteUrlStr) {
     return qr`gravatar`.test(siteUrlStr) && qr`/avatar/`.test(siteUrlStr)
   }

@@ -24,6 +24,7 @@ class Worm extends Site {
     super(siteUrlStr)
     this.publisher = 'parahumans.wordpress.com'
     this.publisherName = 'wildbow'
+    this.type = 'worm'
   }
 
   normalizeLink (link) {

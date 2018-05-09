@@ -14,6 +14,8 @@ class PGTE extends Site {
     super(siteUrlStr)
     this.publisher = 'practicalguidetoevil.wordpress.com'
     this.publisherName = 'erraticerrata'
+    this.shortName = 'pgte'
+    this.type = 'pgte'
   }
 
   normalizeLink (link) {

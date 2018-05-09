@@ -13,6 +13,7 @@ class SeananMcGuire extends Site {
     super(siteUrlStr)
     this.publisher = 'seananmcquire.com'
     this.publisherName = 'Seanan McGuire'
+    this.type = 'seananmcquire'
   }
 
   normalizeLink (href, base) {

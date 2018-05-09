@@ -22,6 +22,8 @@ class ArchiveOfOurOwn extends Site {
     this.link = this.link.replace(qr`/works/(\d+).*?$`, '/works/$1')
     this.publisher = 'archiveofourown.org'
     this.publisherName = 'Archive of Our Own'
+    this.type = 'ao3'
+    this.shortName = 'ao3'
     const siteUrl = url.parse(siteUrlStr)
     const path = siteUrl.pathname || siteUrl.path || ''
     const ficMatch = path.match(qr`^/works/(\d+)`)

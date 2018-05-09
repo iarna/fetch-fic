@@ -11,6 +11,8 @@ class DeviantArt extends Site {
     super(siteUrlStr)
     this.publisher = 'deviantart.com'
     this.publisherName = 'Deviant Art'
+    this.type = 'da'
+    this.shortName = 'da'
     const matches = siteUrlStr.match(qr`/art/(?:(.*?)-)?\d+$`)
     this.name = matches[1]
   }

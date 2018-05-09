@@ -11,6 +11,7 @@ class Youtube extends Site {
     super(siteUrlStr)
     this.publisher = 'youtube.com'
     this.publisherName = 'You Tube'
+    this.type = 'youtube'
     const matches = siteUrlStr.match(qr`/watch[?]v=(.*)$`) || siteUrlStr.match(qr`youtu.be/(.*)`)
     this.id = matches[1]
   }

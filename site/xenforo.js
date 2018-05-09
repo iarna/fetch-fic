@@ -14,6 +14,15 @@ const knownSites = {
   'www.alternatehistory.com': 'Alternate History'
 }
 
+function getShortName (url) {
+  if (/spacebattles/.test(url)) return 'sb'
+  if (/sufficientvelocity/.test(url)) return 'sv'
+  if (/fanfiction.net/.test(url)) return 'ff'
+  if (/questionable/.test(url)) return 'qq'
+  if (/archiveofourown/.test(url)) return 'ao3'
+  if (/alternatehistory/.test(url)) return 'ah'
+}
+
 class Xenforo extends Site {
   static matches (siteUrlStr) {
     const siteUrl = url.parse(siteUrlStr)
@@ -30,7 +39,9 @@ class Xenforo extends Site {
     }
     this.publisher = hostname
     this.publisherName = knownSites[hostname] || hostname
+    this.shortName = getShortName(hostname)
     this.canScrape = true
+    this.type = 'xenforo'
     const path = siteUrl.pathname || siteUrl.path || ''
     const nameMatch = path.match(qr`^/threads/([^.]+)`)
     this.name = nameMatch && nameMatch[1]

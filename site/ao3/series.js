@@ -20,6 +20,7 @@ class ArchiveOfOurOwnSeries extends Site {
     super(siteUrlStr)
     this.publisher = 'archiveofourown.org'
     this.publisherName = 'Archive of Our Own'
+    this.type = 'ao3'
     const siteUrl = url.parse(siteUrlStr)
     const path = siteUrl.pathname || siteUrl.path || ''
     const ficMatch = path.match(/^[/]series[/](\d+)/)

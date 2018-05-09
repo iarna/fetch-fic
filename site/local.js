@@ -11,6 +11,8 @@ class Local extends Site {
     super(siteUrlStr)
     this.publisher = 'local'
     this.publisherName = 'Local'
+    this.shortName = 'local'
+    this.type = 'local'
   }
 
   normalizeLink (href, base) {

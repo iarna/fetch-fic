@@ -19,6 +19,8 @@ class FanFictionNet extends Site {
     super(siteUrlStr)
     this.publisher = 'www.fanfiction.net'
     this.publisherName = 'FanFiction.net'
+    this.type = 'ffnet'
+    this.shortName = 'ffnet'
     const siteUrl = url.parse(siteUrlStr)
     const path = siteUrl.pathname || siteUrl.path || ''
     const ficMatch = path.match(qr`^/s/(\d+)(?:/\d+(?:/(.*))?)?`)

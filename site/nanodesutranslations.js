@@ -11,6 +11,8 @@ class NanoDesu extends Site {
     super(siteUrlStr)
     this.publisher = 'nanodesutranslations.org'
     this.publisherName = 'NanoDesu Translations Project'
+    this.shortName = 'nanodesu'
+    this.type = 'nanodesu'
   }
 
   async getFicMetadata (fetch, fic) {
