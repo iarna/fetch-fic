@@ -123,7 +123,8 @@ async function _reallyRead (urls, args) {
       return
     }
     const au = fic.author ? '-' + filenameize(fic.author) : ''
-    const filename = filenameize(fic.title) + au + '.fic.toml'
+    const short = fic.site.shortName ? '-' + filenameize(fic.site.shortName) : ''
+    const filename = filenameize(fic.title) + au + short + '.fic.toml'
     const TOML = require('@iarna/toml')
     const fs = use('fs-promises')
     await fs.writeFile(filename, TOML.stringify(fic))
