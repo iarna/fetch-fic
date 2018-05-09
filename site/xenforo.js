@@ -466,7 +466,7 @@ class Xenforo extends Site {
 
   detagTitle (titleAndTags) {
     let [title, tags] = titleAndTags || [undefined, []]
-    const tagExp = /[(](.*?)[)]|[\[](.*?)[\]]/g
+    const tagExp = /[(](.*?)[)]|[\[](.*?)[\]]|[{](.*?)[}]/g
     const tagMatch = title.match(tagExp)
     if (tagMatch) {
       title = title.replace(tagExp, '').trim()
