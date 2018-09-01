@@ -54,8 +54,8 @@ function update (args) {
         requestsPerSecond: 1,
       },
       "forums.sufficientvelocity.com": {
-        maxConcurrency: 6,
-        requestsPerSecond: 4,
+        maxConcurrency: 2,
+        requestsPerSecond: 1,
       },
       "forum.questionablequesting.com": {
         maxConcurrency: 6,
@@ -66,7 +66,7 @@ function update (args) {
         requestsPerSecond: 4,
       },
     },
-    timeout: 3500
+    timeout: 35000
   }
   const fetchAndSpin = fetch.withOpts(fetchOpts).wrapWith(progress.spinWhileAnd)
   if (args.xf_user) fetchAndSpin.setGlobalCookie(`xf_user=${args.xf_user}`)
