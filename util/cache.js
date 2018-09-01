@@ -79,11 +79,9 @@ async function readJSON (filename, onMiss) {
   }
 }
 
-/*
 function writeJSON (filename, content) {
   return writeFile(filename, JSON.stringify(content, null, 2))
 }
-*/
 
 async function readGzipFile (filename, onMiss) {
   const buf = await readFile(filename, gzipOnMiss)
