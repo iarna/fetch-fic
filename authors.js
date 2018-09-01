@@ -1,5 +1,6 @@
 'use strict'
 const qw = require('qw')
+const Site = require('./site.js')
 
 class Authors extends Array {
   constructor (authors) {
@@ -9,6 +10,30 @@ class Authors extends Array {
     if (authors) authors.forEach(author => {
       this.add(new Author(author))
     })
+  }
+  has (au) {
+    if (this.byLink.has(au)) return true
+    if (this.byName.has(au)) return true
+    try {
+      const authorSite = Site.fromUrl(au)
+      const nlink = authorSite.normalizeAuthorLink(au)
+      if (this.byLink.has(nlink)) return true
+      return false
+    } catch (_) {
+      return false
+    }
+  }
+  get (au) {
+    if (this.byLink.has(au)) return this[this.byLink.get(au)]
+    if (this.byName.has(au)) return this[this.byName.get(au)]
+    try {
+      const authorSite = Site.fromUrl(au)
+      const nlink = authorSite.normalizeAuthorLink(au)
+      if (this.byLink.has(nlink)) return this[this.byLink.get(nlink)]
+      return false
+    } catch (_) {
+      return false
+    }
   }
   add (author) {
     if (!author.name) throw new Error()
