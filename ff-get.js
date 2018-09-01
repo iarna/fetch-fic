@@ -9,7 +9,7 @@ async function read (args) {
   const fics = await map(args.fic, async fic => {
     try {
       const file = await fs.stat(fic)
-      return file.isDirectory() ? {type: 'url', fic} : {type: 'file', fic}
+      return (/[.]epub$/.test(fic) || file.isDirectory()) ? {type: 'url', fic} : {type: 'file', fic}
     } catch (_) {
       return {type: 'url', fic}
     }
