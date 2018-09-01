@@ -97,7 +97,7 @@ async function fetchWithCache (fetch, toFetch, opts$) {
     process.emit('debug', 'Downloading', toFetch, opts)
     return fetch(toFetch, opts)
   })
-  if (meta.headers && meta.headers['set-cookie']) {
+  if (meta.headers && meta.headers['set-cookie'] && /questionablequest/.test(toFetch)) {
     for (let rawCookie of meta.headers['set-cookie']) {
       try {
         await setCookieP(opts.cookieJar, rawCookie, meta.finalUrl || toFetch)
