@@ -197,10 +197,27 @@ var mergeFic = promisify.args(function mergeFic (existingFic, newFic, add) {
   if (existingFic.tags.some(_ => _ === 'Snippets')) {
     toAdd.forEach(ch => {
       const subFic = new Fic.SubFic(existingFic)
-      const {title, tags} = detagTitle(ch.name)
-      subFic.title = existingFic.author + ' Snip: ' + title
-      if (tags.length) {
-        subFic.tags = tagmap(existingFic.site.type)(existingFic.tags.concat(tags))
+      if (ch.tags) {
+        if (ch.tags.some(_ => /^status:/.test(_))) {
+          subFic.tags = ch.tags
+        } else {
+          subFic.tags = ch.tags.concat('status:one-shot')
+        }
+        ch.tags = []
+        subFic.title = existingFic.author + ' Snip: ' + ch.name
+      } else {
+        const {title, tags} = detagTitle([ch.name, []])
+        subFic.title = existingFic.author + ' Snip: ' + title
+        if (tags.length) {
+          subFic.tags = tagmap(existingFic.site.type)(existingFic.tags.concat(tags))
+        }
+      }
+      const authorRe = / by (.*)$/
+      if (authorRe.test(subFic.title)) {
+        const [, author] = subFic.title.match(authorRe)
+        ch.author = subFic.author = author
+        ch.authorUrl = subFic.authorUrl = null
+        subFic.title = subFic.title.replace(authorRe, '')
       }
       subFic.chapters.push(ch)
       existingFic.fics.push(subFic)
