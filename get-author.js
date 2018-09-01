@@ -128,26 +128,24 @@ async function getFicUserInfo (fic) {
     let user
     if (sites[authorSite.publisherName]) return
     try {
-      const fic = await Fic.scrapeFromUrl(fetchFor(link), link, 'no-chapters')
-      sites[authorSite.publisherName] = fic.authorUrl
-      user = await authorSite.getUserInfo(fetchFor(link), fic.author, fic.authorUrl)
-    } catch (_) {
-      try {
-        const fic = await Fic.fromUrl(fetchFor(link), link, 'no-chapters')
-        if (fic.authorUrl) {
-          sites[authorSite.publisherName] = fic.authorUrl
-          user = await authorSite.getUserInfo(fetchFor(link), fic.author, fic.authorUrl)
-        } else {
-          user = new Account({name: fic.author, link: fic.authorUrl})
-        }
-      } catch (_) {
-        console.error(_)
+      let fic
+      if (authorSite.canScrape) {
+        fic = await Fic.scrapeFromUrl(fetchFor(link), link, 'no-chapters')
+      } else {
+        fic = await Fic.fromUrl(fetchFor(link), link, 'no-chapters')
+      }
+      if (fic.authorUrl) {
+        sites[authorSite.publisherName] = fic.authorUrl
+        user = await authorSite.getUserInfo(fetchFor(link), fic.author, fic.authorUrl)
+      } else {
         user = new Account({name: fic.author, link: fic.authorUrl})
       }
+    } catch (_) {
+      user = new Account({name: fic.author, link: fic.authorUrl})
     }
     if (hasAuthor(user.name, user.link)) {
       author.account.push(user)
     }
   })
-  return author
+  return authors
 }
