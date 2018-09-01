@@ -52,6 +52,9 @@ class Site {
   normalizeChapterLink (href, base) {
     return this.normalizeLink(href, base)
   }
+  normalizeAuthorLink (href, base) {
+    return this.normalizeLink(href, base)
+  }
 
   sanitizeHtmlConfig () {
     return {

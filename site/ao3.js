@@ -40,6 +40,10 @@ class ArchiveOfOurOwn extends Site {
     return super.normalizeFicLink(href, base)
       .replace(/[/]chapters[/]\d+/, '')
   }
+  normalizeAuthorLink (href, base) {
+    return super.normalizeAuthorLink(href, base)
+      .replace(qr`/pseuds/.*`, '/profile')
+  }
   chapterIndex () {
     return 'https://archiveofourown.org/works/' + this.workId + '/navigate'
   }

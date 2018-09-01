@@ -147,6 +147,7 @@ class FanFictionNet extends Site {
     return chapter
   }
   async getUserInfo (fetch, name, link) {
+    link = this.normalizeAuthorLink(link)
     const [res, auhtml] = await fetch(link)
     const cheerio = require('cheerio')
     const $ = cheerio.load(auhtml)

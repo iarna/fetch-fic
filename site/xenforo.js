@@ -490,6 +490,10 @@ class Xenforo extends Site {
                .replace(qr`/goto/post[?]id=(\d+).*?$`, '/posts/$1')
     return href
   }
+  normalizeAuthorLink (href, base) {
+    return this.normalizeLink(href, base)
+      .replace(qr`/members/[^.]+[.](\d+)/?$`, '/members/$1')
+  }
 
   dateTime (elem, tz) {
     if (elem.attr('data-time')) {
@@ -546,7 +550,7 @@ class Xenforo extends Site {
     const aboutHtml = $about.find('div').first().find('.baseHtml').html() || ''
     const sigHtml = $about.find('.signature').html() || ''
     let profile = (aboutHtml + sigHtml).trim() || undefined
-    return {name, link, gender, dob, location, image, profile}
+    return {name, link:this.normalizeAuthorLink(link), gender, dob, location, image, profile}
   }
 }
 
