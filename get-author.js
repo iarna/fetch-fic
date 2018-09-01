@@ -44,6 +44,7 @@ async function main (fics) {
       console.error(file, err)
       return
     }
+    if (fic.author === 'Multi Author') return
     progress.show('Loading author ' + file)
     const ficAuthors = await getFicUserInfo(fic)
     if (!ficAuthors.length) return
@@ -115,6 +116,9 @@ async function getFicUserInfo (fic) {
     }
     author.fandoms = fic.tags.filter(t => /^fandom:/.test(t)).map(t => t.slice(7))
   }
+
+  if (authors.length > 1) return authors
+  let author = authors[0] || new Author()
 
   let links = (fic.authorUrl ? [fic.link] : [])
   if (fic.authors.length === 1) links = links.concat(fic.altlinks || [])
