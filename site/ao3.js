@@ -69,6 +69,17 @@ class ArchiveOfOurOwn extends Site {
       await cache.clearUrl(err.link)
       throw err
     }
+    if (html.length < 1500) {
+      try {
+        const j = JSON.parse(html)
+        const err = new Error(j.meta.statusText)
+        err.link = j.url
+        err.code = j.code
+        err.site = this.publisherName
+        await cache.clearUrl(j.url)
+        throw err
+      } catch (_) {}
+    }
     const base = $('base').attr('href') || this.chapterIndex()
     const $heading = $('h2.heading')
     fic.title = $heading.find('a[rel!="author"]').text()
