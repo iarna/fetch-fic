@@ -44,7 +44,6 @@ async function main (fics) {
       console.error(file, err)
       return
     }
-    if (fic.author === 'Multi Author') return
     progress.show('Loading author ' + file)
     const ficAuthors = await getFicUserInfo(fic)
     if (!ficAuthors.length) return
@@ -86,7 +85,7 @@ async function main (fics) {
 function hasAuthor (name, link) {
   return link && !(
      (link === 'unknown:' || link === 'unknown:Anonymous')
-  || (name && (name === 'Anonymous' || name === 'HPFandom_archivist' || name === 'orphan_account' || name === 'DragoLord19D' || name === 'PassnPlay'))
+  || (name && (name === 'Multi Author' || name === 'Anonymous' || name === 'HPFandom_archivist' || name === 'orphan_account' || name === 'DragoLord19D' || name === 'PassnPlay'))
   )
 }
 
