@@ -462,8 +462,8 @@ class SubFic extends Fic {
       this._authors = null
     }
     for (let prop of qw`
-         _title _id _link altlinks _authors _created _modified _publisher
-         _description _notes _tags chapters _chapterHeadings words _includeTOC _numberTOC
+         _title _id _link altlinks updateFrom _authors _created _modified _publisher
+         _description _notes cover art _tags chapters _chapterHeadings words _includeTOC _numberTOC
          `) {
       const assignTo = prop[0] === '_' ? prop.slice(1) : prop
       if (this[prop] && (this[prop].length == null || this[prop].length)) result[assignTo] = this[prop]
@@ -545,6 +545,8 @@ class Chapter {
     }
     this.description = opts.description
     this.notes = opts.notes
+    this.cover = opts.cover
+    this.art = opts.art
     this.fetchFrom = opts.fetchFrom
     this.created = opts.created
     this.modified = opts.modified
@@ -577,6 +579,8 @@ class Chapter {
       type: this.type !== 'chapter' ? this.type : undefined,
       description: this.description,
       notes: this.notes,
+      cover: this.cover,
+      art: this.art,
       link: this.link,
       altlinks: this.altlinks,
       fetchFrom: this.fetchFrom,
