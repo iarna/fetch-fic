@@ -2,6 +2,8 @@
 /* eslint-disable no-return-assign */
 const qw = require('qw')
 const qr = require('@perl/qr')
+const uniq = use('uniq')
+const deepEqual = require('fast-deep-equal')
 
 let Site
 
@@ -13,8 +15,6 @@ class Fic {
     this._link = null
     this.altlinks = null
     this.updateFrom = null
-    this.author = null
-    this.authorUrl = null
     this.authors = []
     this.created = null
     this.modified = null
@@ -35,6 +35,25 @@ class Fic {
     this._numberTOC = null
     this.fetchMeta = null
     this.scrapeMeta = null
+    this.filename = null
+    this.extra = {}
+  }
+
+  get author () {
+    return this.authors.length && this.authors[0].name
+  }
+  set author (name) {
+    if (!this.authors.length) this.authors.push({})
+    this.authors[0].name = name
+    if (!this.authors[0].name && !this.authors[0].link) this.authors.shift()
+  }
+  get authorUrl () {
+    return this.authors.length && this.authors[0].link
+  }
+  set authorUrl (link) {
+    if (!this.authors.length) this.authors.push({})
+    this.authors[0].link = link
+    if (!this.authors[0].name && !this.authors[0].link) this.authors.shift()
   }
 
   get id () {
@@ -125,7 +144,7 @@ class Fic {
   }
 
   importFromJSON (raw) {
-    const props = qw`id link altlinks title author authorUrl created modified
+    const props = qw`id link altlinks title created modified
      description notes tags publisher cover art chapterHeadings words updateFrom
      includeTOC numberTOC fetchMeta scrapeMeta`
 
@@ -134,14 +153,22 @@ class Fic {
     }
     if (raw.authors) {
       this.authors = raw.authors.map(au => {
-        let [, name, link] = au.match(qr`^(.*?)(?: <([^<]+)>)?$`)
-        if (link === 'null') link = null
-        return {name, link}
+        if (typeof au === 'string') {
+          let [, name, link] = au.match(qr`^(.*?)(?: <([^<]+)>)?$`)
+          if (link === 'null') link = null
+          return {name, link}
+        } else {
+          return au
+        }
       })
     } else {
       this.authors = []
-      if (this.author || this.authorUrl) {
-        this.authors.push({name: this.author, link: this.authorUrl})
+    }
+    if (raw.author || raw.authorUrl) {
+      if (raw.authorUrl && !this.authors.some(_ => _.link === raw.authorUrl)) {
+        this.authors.unshift({name: raw.author, link: raw.authorUrl})
+      } else if (raw.author && !this.authors.some(_ => _.name === raw.author)) {
+        this.authors.unshift({name: raw.author, link: raw.authorUrl})
       }
     }
     this.externals = raw.externals != null ? raw.externals : true
@@ -241,14 +268,15 @@ class Fic {
   toJSON () {
     const result = {}
     for (let prop of qw`
-         title _id _link altlinks updateFrom author authorUrl authors created modified publisher cover art
+         title _id _link altlinks updateFrom authors created modified publisher cover art
          description notes tags words fics chapterHeadings _includeTOC _numberTOC fetchMeta scrapeMeta
        `) {
       if (this[prop] != null && (!Array.isArray(this[prop]) || this[prop].length)) result[prop.replace(/^_/,'')] = this[prop]
     }
-    if (result.authors) {
-      const au = result.authors.filter(_ => _.name !== this.author || _.link !== this.authorUrl).map(_ => _.name + (_.link ? ` <${_.link}>` : ''))
-      result.authors = au.length ? au : undefined
+    if (result.authors && result.authors.length === 0) delete result.authors
+    if (result.authors) result.authors = result.authors.map(({name, link}) => name + (link ? ` <${link}>` : ''))
+    for (let prop in this.extra) {
+      result[prop] = this.extra[prop]
     }
     if (this.chapters.length) result.chapters = this.chapters.toJSON(this)
     if (result.fics) {
@@ -283,7 +311,7 @@ class SubFic extends Fic {
     super()
     this.parent = parentFic
     delete this.fics
-    for (let prop of qw`_title _created _modified _description _notes _link _author _authorUrl _tags _chapterHeadings`) {
+    for (let prop of qw`_title _created _modified _description _notes _link _authors _tags _chapterHeadings`) {
       this[prop] = null
     }
   }
@@ -295,24 +323,50 @@ class SubFic extends Fic {
     fic.importFromJSON(raw)
     return fic
   }
-  get author () {
-    return this._author || (this.chapters.length && this.chapters[0].author)|| this.parent.author
-  }
-  set author (value) {
-    return this._author = value
-  }
-  get authorUrl () {
-    return this._authorUrl || (this.chapters.length && this.chapters[0].authorurl)|| this.parent.authorUrl
-  }
-  set authorUrl (value) {
-    return this._authorUrl = value
-  }
+  // inherit from the main fic
   get publisher () {
     return this._publisher || this.parent.publisher
   }
   set publisher (value) {
     return this._publisher = value
   }
+
+  // inherit from the first chapter OR the main fic
+  get authors () {
+    if (!this._authors) {
+      const chap = this.chapters[0]
+      if (chap && (chap.author || chap.authorUrl)) {
+        this._authors = [{name: chap.author, link: chap.authorUrl}]
+      } else {
+        this._authors = [...this.parent.authors.map(_ => ({..._}))]
+      }
+    }
+    return this._authors
+  }
+  set authors (authors) {
+    this._authors = authors
+  }
+  get author () {
+    const author = this._authors && this._authors[0]
+    if (author) return author.name
+    if (this.chapters.length && this.chapters[0].author) return this.chapters[0].author
+    return this.parent.author
+  }
+  set author (value) {
+    if (!this.authors.length) this.authors.push({})
+    this.authors[0].name = value
+  }
+  get authorUrl () {
+    const author = this._authors && this._authors[0]
+    if (author) return author.link
+    if (this.chapters.length && this.chapters[0].authorUrl) return this.chapters[0].authorUrl
+    return this.parent.authorUrl
+  }
+  set authorUrl (value) {
+    if (!this.authors.length) this.authors.push({})
+    this.authors[0].link = value
+  }
+  // inherit from the first chapter
   get title () {
     return this._title || (this.chapters.length && this.chapters[0].name)
   }
@@ -343,6 +397,7 @@ class SubFic extends Fic {
   set created (value) {
     return this._created = value
   }
+  // inherit from the _last_ chapter
   get modified () {
     const lastChapter = this.chapters.length && this.chapters[this.chapters.length-1]
     return this._modified || (lastChapter && (lastChapter.modified || lastChapter.created))
@@ -378,12 +433,14 @@ class SubFic extends Fic {
   }
   toJSON () {
     const result = {}
+    if (deepEqual(this._authors, this.parent.authors)) {
+      this._authors = null
+    }
     for (let prop of qw`
-         _title _id _link altlinks _author _authorUrl _created _modified _publisher
+         _title _id _link altlinks _authors _created _modified _publisher
          _description _notes _tags chapters _chapterHeadings words _includeTOC _numberTOC
          `) {
       const assignTo = prop[0] === '_' ? prop.slice(1) : prop
-      if ((assignTo === 'author' || assignTo === 'authorUrl') && this.parent[assignTo] === this[prop]) continue
       if (this[prop] && (this[prop].length == null || this[prop].length)) result[assignTo] = this[prop]
     }
     return result
