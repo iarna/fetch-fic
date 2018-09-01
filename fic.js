@@ -178,7 +178,7 @@ class Fic {
     for (let prop of Object.keys(raw)) {
       if (props.indexOf(prop) !== -1) continue
       if (prop !== 'authors' && prop !== 'chapters' && prop !== 'fics' && prop !== 'externals' && prop !== 'spoilers') {
-        process.emit('warn', `Unknown property when importing ${raw.title || 'fic'}: "${prop}"`)
+        this.extra[prop] = raw[prop]
       }
     }
     this.chapters.importFromJSON(this, raw)
@@ -468,6 +468,10 @@ class SubFic extends Fic {
       const assignTo = prop[0] === '_' ? prop.slice(1) : prop
       if (this[prop] && (this[prop].length == null || this[prop].length)) result[assignTo] = this[prop]
     }
+    for (let prop in this.extra) {
+      result[prop] = this.extra[prop]
+    }
+
     return result
   }
 }
