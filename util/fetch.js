@@ -62,6 +62,7 @@ function NoNetwork (toFetch, opts) {
 
 function getCookieStringP (jar, url) {
   return new Promise((resolve, reject) => {
+    if (!jar) return resolve()
     return jar.getCookieString(url, (err, cookies) => {
       return err ? reject(err) : resolve(cookies)
     })
