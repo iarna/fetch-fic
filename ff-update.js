@@ -250,13 +250,11 @@ var mergeFic = promisify.args(function mergeFic (existingFic, newFic, add) {
           changes.push(`${fic.title}: Updated modification date for chapter "${newChapter.name}" from ${chapter.modified} to ${newChapter.modified}`)
           chapter.modified = newChapter.modified
         }
-        for (let prop of qw`name link fetchFrom author authorUrl tags words`) {
-          if (chapter[prop] == null && newChapter[prop] != null) {
-            if (newChapter[prop] != fic[prop]) {
-              chapter[prop] = newChapter[prop]
-              changes.push(`${fic.title}: Set ${prop} for chapter "${newChapter.name}" to ${chapter[prop]}`)
-            }
-          }
+        for (let prop of qw`name link fetchFrom author authorUrl words`) {
+          if (chapter[prop] != null || newChapter[prop] == null) continue
+          if (deepEqual(newChapter[prop], fic[prop])) continue
+          chapter[prop] = newChapter[prop]
+          changes.push(`${fic.title}: Set ${prop} for chapter "${newChapter.name}" to ${chapter[prop]}`)
         }
       }
     }
