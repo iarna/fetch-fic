@@ -1,9 +1,12 @@
 'use strict'
-const TOML = require('@iarna/toml')
+const tomlParse = require('@iarna/toml/parse-string')
 const fs = require('fs')
 const path = require('path')
 const uniq = use('uniq')
+const qr = require('@perl/qr')
+const flatMap = use('flat-map')
 
+let loaded = false
 let tagmap = {}
 let replacers = {}
 let nextdir = process.cwd()
@@ -12,24 +15,30 @@ while (!checkdir || checkdir !== nextdir) {
   checkdir = nextdir
   try {
     const tagmapsrc = fs.readFileSync(`${checkdir}/.tagmap.toml`)
-    tagmap = TOML.parse(tagmapsrc)
+    tagmap = tomlParse(tagmapsrc)
     for (let site in tagmap) {
       replacers[site] = []
       for (let pattern in tagmap[site]) {
         if (/^[/].*[/]$/.test(pattern)) {
           replacers[site].push({search: new RegExp(pattern.slice(1,-1), 'g'), replace: tagmap[site][pattern]})
           delete tagmap[site][pattern]
+        } else {
+          if (pattern !== pattern.toLowerCase()) {
+            tagmap[site][pattern.toLowerCase()] = tagmap[site][pattern]
+            delete tagmap[site][pattern]
+          }
         }
       }
     }
+    loaded = true
     break
   } catch (ex) {
-    if (ex instanceof SyntaxError) {
-      const er = new SyntaxError(`${ex.message} at line ${ex.line}, column ${ex.column}, offset ${ex.offset}`)
-      throw er
-    }
+    if (ex.line) throw ex
   }
   nextdir = path.resolve(checkdir, '..')
+}
+if (!loaded) {
+  console.error('Warning: Unable to find tagmap file in path')
 }
 
 function filterTag (tags, fw) {
@@ -38,19 +47,26 @@ function filterTag (tags, fw) {
   return tags.filter(fw)
 }
 
+const charMatcher = /^(character:.*) [(](.+)[)]$|^(character:.+)[(](.{2,})[)]$/
 module.exports = function mapTags (site, tags, perFandom) {
   if (!tags) return tags => mapTags(site, tags)
   tags = tags.map(_ => _.trim())
   let fandoms = []
   if (tagmap[site]) {
+    if (!perFandom && tagmap[`pre:${site}`]) tags = mapTags(`pre:${site}`, tags, true)
     let newTags = []
+    for (let ii = 0; ii < tags.length; ++ii) {
+      const tag = tags[ii]
+      if (tagmap[site][tag.toLowerCase()]) continue
+      if (!charMatcher.test(tag)) continue
+      tagmap[site][tag.toLowerCase()] = tag.replace(charMatcher, '$1$3 - $2$4')
+    }
     for (let ii = 0; ii < tags.length; ++ii) {
       let tag = tags[ii]
       for (let r of replacers[site]) {
         if (!r.search.test(tag)) continue
         tag = tag.replace(r.search, r.replace)
       }
-      tag = resortShipTag(tag, site)
       const mapTo = filterTag(remapTag(tag, site), _ => _ === tag || tags.indexOf(_) === -1)
       if (mapTo) {
         newTags.push.apply(newTags, mapTo)
@@ -60,29 +76,17 @@ module.exports = function mapTags (site, tags, perFandom) {
     }
     tags = newTags
 
-    fandoms = tags.filter(t => /^fandom:/.test(t))
-    // unfandom multi-fandoms
-    if (fandoms.length > 1) {
-      const baseFandom = `fandom:${fandom(tags)}`
-      // we do this lookup to catch fandoms that split into multiple parts,
-      // all the parts should stay `fandom:`
-      const primary = tagmap[site][baseFandom] || [baseFandom]
-      // Only do remapping if the detected fandom is tagged a `fandom:`
-      if (tags.some(_ => primary.indexOf(_) !== -1)) {
-        tags = tags.map(_ =>  primary.indexOf(_) !== -1 ? _ : _.replace(/^fandom:/, 'xover:'))
-      }
-    }
   } else {
     fandoms = tags.filter(t => /^fandom:/.test(t))
   }
-  tags.filter(_ => /^(character|(friend)?ship):.*([(]O[FM]?C[)]|-\s*O[FM]?C$)/.test(_)).forEach(_ => {
-    let oc = _.match(/[(](O[FM]?C)[)]|-\s*(O[FM]?C)$/)
+  tags.filter(_ => /^(character|(friend)?ship):.*(-\s*O[FM]?C$)/.test(_)).forEach(_ => {
+    let oc = _.match(/-\s*(O[FM]?C)$/)
     tags.push(oc[1] || oc[2])
   })
   if (tags.some(_ => /^character:Original .*Character[(]s[)]/.test(_))) {
     tags.push('OC')
   }
-  if (tags.some(_ => /[(]SI[)]|-\s*SI$/.test(_))) {
+  if (tags.some(_ => /-\s*SI$/.test(_))) {
     tags.push('SI')
   }
   const isFusion = tags.some(t => t === 'Fusion')
@@ -90,72 +94,160 @@ module.exports = function mapTags (site, tags, perFandom) {
     tags = tags.map(t => t.replace(/^xover:/, 'fusion:')).filter(t => t !== 'Fusion')
   }
   tags = uniq.anyCase(tags)
-  let xovers = tags.filter(t => /^xover:/.test(t))
-  const overfused = tags.filter(t => /^fusion:/.test(t) && fandoms.some(f => f.slice(7) === t.slice(7)))
-  // when we're tagged as fusion with a the same fandom as our fandom, make the first xover a fandom
-  if (xovers.length && overfused.length) {
-    const old = xovers[0]
-    tags = tags.filter(t => t !== old).concat(['fandom:' + old.slice(6)])
-               .filter(t => !/^fandom:/.test(t) || !overfused.some(f => f.slice(7) === t.slice(7)))
-  }
-  fandoms = tags.filter(t => /^fandom:/.test(t))
-  xovers = tags.filter(t => /^xover:/.test(t))
-  if (fandoms.length === 0 && xovers.length) { // then make an xover a fandom, most often from a suppressed ffnet xover
-    const xover = xovers[0]
-    tags = tags.filter(t => t !== xover)
-    tags.push('fandom:' + xover.slice(6))
-  }
-  let fusions = tags.filter(t => /^fusion:/.test(t))
-  if (fandoms.length === 0 && fusions.length) { // then make an fusion a fandom, most often from a suppressed ffnet fusion
-    const fusion = fusions[0]
-    tags = tags.filter(t => t !== fusion)
-    tags.push('fandom:' + fusion.slice(7))
-  }
 
   if (perFandom) {
     return tags.sort(sortTags)
   } else {
-    let fandoms = tags.filter(_=>/^(fandom|xover|fusion):/.test(_))
-                      .map(_ => _.replace(/^(fandom|xover|fusion):/, ''))
-    return uniq([fandom(tags)].concat(fandoms).reduce((tags, fd) => mapTags(fd, tags, true), tags).map(ucfreeformfirst))
+    let fxf = uniq(flatMap(tags.filter(_=>/^(fandom|xover|fusion):/.test(_)), fandomsFromTag))
+    tags = uniqFandom(uniq([fandom(tags)].concat(fxf)).filter(fd => tagmap[fd]).reduce((tags, fd) => mapTags(fd, tags, true), tags))
+
+    let fandoms = tags.filter(t => /^fandom:/.test(t))
+    // unfandom multi-fandoms
+    if (fandoms.length > 1) {
+      const baseFandom = `fandom:${fandom(tags)}`
+      // we do this lookup to catch fandoms that split into multiple parts,
+      // all the parts should stay `fandom:`
+      const primary = (tagmap[site] && tagmap[site][baseFandom.toLowerCase()]) || [baseFandom]
+      // Only do remapping if the detected fandom is tagged a `fandom:`
+      if (tags.some(_ => primary.indexOf(_) !== -1)) {
+        tags = tags.map(_ =>  primary.indexOf(_) !== -1 ? _ : _.replace(/^fandom:/, 'xover:'))
+      }
+    }
+
+    const primaryFandom = tags.filter(_=>/^fandom:/)[0]
+    if (primaryFandom) {
+      const primaries = fandomsFromTag(primaryFandom)
+      const tagsToMatch = primaries.length > 1 ? /fandom|xover|fusion/ : /xover|fusion/
+      primaries.forEach(fandom => {
+        const sameAsPrimary = qr`^${tagsToMatch}:${fandom}($|\s*[|])`
+        tags = tags.filter(_ => _ === primaryFandom || !sameAsPrimary.test(_))
+      })
+      if (primaries.length > 1) {
+        tags.unshift('fandom:' + fandom(primaries.map(_ => `fandom:${_}`)))
+      }
+    }
+    let xovers = tags.filter(t => /^xover:/.test(t))
+    const overfused = tags.filter(t => /^fusion:/.test(t) && fandoms.some(f => f.slice(7) === t.slice(7)))
+    // when we're tagged as fusion with a the same fandom as our fandom, make the first xover a fandom
+    if (xovers.length && overfused.length) {
+      const old = xovers[0]
+      tags = tags.filter(t => t !== old).concat(['fandom:' + old.slice(6)])
+                 .filter(t => !/^fandom:/.test(t) || !overfused.some(f => f.slice(7) === t.slice(7)))
+    }
+    fandoms = tags.filter(t => /^fandom:/.test(t))
+    xovers = tags.filter(t => /^xover:/.test(t))
+    if (fandoms.length === 0 && xovers.length) { // then make an xover a fandom, most often from a suppressed ffnet xover
+      const xover = xovers[0]
+      tags = tags.filter(t => t !== xover)
+      tags.push('fandom:' + xover.slice(6))
+      fandoms = tags.filter(t => /^fandom:/.test(t))
+    }
+    let fusions = tags.filter(t => /^fusion:/.test(t))
+    if (fandoms.length === 0 && fusions.length) { // then make an fusion a fandom, most often from a suppressed ffnet fusion
+      const fusion = fusions[0]
+      tags = tags.filter(t => t !== fusion)
+      tags.push('fandom:' + fusion.slice(7))
+      fandoms = tags.filter(t => /^fandom:/.test(t))
+    }
+
+    if (tagmap[`post:${site}`]) tags = mapTags(`post:${site}`, tags, true)
+
+    tags = flatMap(tags, tag => remapShipTag(tag, [site, ...fxf]))
+    tags = uniqFandom(flatMap(tags, tag => resortShipTag(tag, [site, ...fxf])))
+    fandoms = tags.filter(t => /^fandom:/.test(t))
+   if (fandoms.length) {
+      const pf = fandoms[0]
+      const pfMatch = pf.match(/^(fandom:[^|]+)/)
+      if (pf.indexOf('|') !== -1 && pfMatch) {
+        tags.unshift(pfMatch[1])
+      }
+    }
+    return tags.sort(sortTags)
   }
+}
+
+// Allow pipe delimited fandoms, most specific to least, eg, "Batman: The Animated Series|Batman|DC"
+function fandomsFromTag (tag) {
+  return tag.replace(/^(fandom|xover|fusion):/, '').split('|').map(_ => _.trim())
 }
 
 function remapTag (tag, site) {
   const fmatch = tag.match(/^(fandom|xover|fusion):(.*)/)
-  if (!fmatch) return tagmap[site][tag]
+  if (!fmatch) return tagmap[site][tag.toLowerCase()]
   const [, kind, fandom] = fmatch
-  let replaceWith = tagmap[site][`fandom:${fandom}`]
-  if (!replaceWith) return tagmap[site][tag]
+  let replaceWith = tagmap[site][`fandom:${fandom.toLowerCase()}`]
+  if (!replaceWith) return tagmap[site][tag.toLowerCase()]
   if (!Array.isArray(replaceWith)) replaceWith = [replaceWith]
   return replaceWith.map(_ => _.replace(/^fandom:/, `${kind}:`))
 }
 
-function resortShipTag (tag, site) {
+function remapShipTag (tag, sites) {
   function remapPeople (person) {
-    const mapped = tagmap[site][`character:${person}`]
-    return typeof mapped === 'string' ? mapped.replace(/^character:/, '') : person
+    return sites.reduce((people, site) => {
+      if (!tagmap[site]) return people
+      return flatMap(people, person => {
+        let char = `character:${person.toLowerCase()}`
+        let charSuffix = ''
+        if (!tagmap[site][char]) {
+          const matchComment = person.match(/ [(]([^()]+)[)]$/)
+          if (!matchComment) return person
+          char = char.replace(/ [(][^()]+[)]$/, '')
+          if (!tagmap[site][char]) return person
+          charSuffix = matchComment[1]
+        }
+        const mapped = [].concat(tagmap[site][char])
+        return mapped.map(_ => _.replace(/^character:(.*)/, `$1${charSuffix}`))
+      })
+    }, [person])
   }
+  // we split and remap _twice_, once before extracting the parenthetical
+  // bit, once after this lets us normalize names that have parenthetical
+  // bits separately from _ships_ that have parenthetical bits
   if (/^ship:/.test(tag)) {
     let ship = tag.slice(5)
-    const commentMatch = /( [(]\w{3,}[)])$/
-    const match = ship.match(commentMatch)
-    let comment = ''
-    if (match) {
-      comment = match[1]
-      ship = ship.replace(commentMatch, '')
-    }
-    tag = 'ship:' + splitPeople(ship).map(remapPeople).sort(sortShip).join('/') + comment
+    tag = 'ship:' + flatMap(splitPeople(tag.slice(5)), remapPeople).join('/')
   } else if (/^friendship:/.test(tag)) {
-    let ship = tag.slice(11)
-    const commentMatch = /( [(]\w{3,}[)])$/
-    const match = ship.match(commentMatch)
-    let comment = ''
-    if (match) {
-      comment = match[1]
-      ship = ship.replace(commentMatch, '')
-    }
-    tag = 'friendship:' + splitPeople(ship).map(remapPeople).sort(sortShip).join(' & ') + comment
+    tag = 'friendship:' + flatMap(splitPeople(tag.slice(11)), remapPeople).join(' & ')
+  }
+  return tag
+}
+
+function resortShipTag (tag, sites) {
+  function remapPeople (person) {
+    const char = `character:${person.toLowerCase()}`
+    return uniq(flatMap(sites, site => {
+      if (!tagmap[site] || !tagmap[site][char]) return person
+      const mapped = [].concat(tagmap[site][char])
+      return mapped.map(_ => _.replace(/^character:/, ''))
+    }))
+  }
+  let prefix
+  let length
+  let joinWith
+  if (/^ship:/.test(tag)) {
+    prefix = 'ship:'
+    length = 5
+    joinWith = '/'
+  } else if (/^friendship:/.test(tag)) {
+    prefix = 'friendship:'
+    length = 11
+    joinWith = ' & '
+  } else {
+    return tag
+  }
+
+  let ship = tag.slice(length)
+  const personCommentMatch = /( [(][^()]+[)]|[(][^()]{3,}[)])/g
+  const commentMatch = /( [(][^()]+[)]|[(][^()]{3,}[)])$/
+  const match = ship.match(commentMatch)
+  const personMatch = ship.match(personCommentMatch)
+  let comment = ''
+  if (match && personMatch && personMatch.length < 2) {
+    comment = ' ' + match[1].trim()
+    ship = ship.replace(commentMatch, '')
+    tag = prefix + flatMap(splitPeople(ship), remapPeople).sort(sortShip).join(joinWith) + comment
+  } else {
+    tag = prefix + splitPeople(ship).sort(sortShip).join(joinWith)
   }
   return tag
 }
@@ -163,7 +255,12 @@ function resortShipTag (tag, site) {
 function splitPeople (ship) {
   const result = []
   let current = null
-  ship.split(/([&/]| (?:and|[Xx]) )/).forEach(chunk => {
+  let splitWith
+  if (/&/.test(ship)) splitWith = /&/
+  else if (/[/]/.test(ship)) splitWith = /[/]/
+  else if (/ and /.test(ship)) splitWith = / and /
+  else if (/ [Xx] /.test(ship)) splitWith = / [Xx] /
+  ship.split(splitWith).forEach(chunk => {
     if (chunk == null) return
     if (!current && (chunk === '&' || chunk === '/' || chunk === ' and ' || chunk === ' x ' || chunk === ' X ')) {
       return
@@ -193,8 +290,9 @@ function sortShip (aa, bb) {
 
 function isForEnd (aa) {
   return aa === 'OFC' || aa === 'OMC' || aa === 'OC'
-      || aa === 'Reader' || aa === 'You'
-      || aa == 'Other(s)'  || aa === '?'
+      || aa === 'Reader' || aa === 'You' || aa === 'Harem'
+      || aa == 'Other(s)'  || aa === '?' || aa === '*'
+      || / - OC$| [(]OC[)]$/.test(aa)
 }
 
 function sortTags (aa, bb) {
@@ -220,18 +318,13 @@ function catify (vv) {
   return cat + vv.toLowerCase().replace(/[^:A-Za-z0-9]+/g, ' ').replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '')
 }
 
-function ucfreeformfirst (tag) {
-  if (!/^freeform:/.test(tag)) return tag
-  return 'freeform:' + tag[9].toUpperCase() + tag.slice(10)
-}
-
 function fandom (tags) {
-  if (tags.some(_ => /^(fandom|xover|fusion):Worm/.test(_))) return 'Worm'
-  if (tags.some(_ => /^(fandom|xover|fusion):Ward/.test(_))) return 'Worm'
-  if (tags.some(_ => /^(fandom|xover|fusion):Twilight/.test(_))) return 'Twilight'
-  if (tags.some(_ => /^(fandom|xover|fusion):Harry Potter/.test(_))) return 'Harry Potter'
-  if (tags.some(_ => /^(fandom|xover|fusion):Life is Strange/.test(_))) return 'Life is Strange'
-  if (tags.some(_ => /^(fandom|xover|fusion):The Good Place/.test(_))) return 'The Good Place'
+  if (tags.some(_ => /^(fandom|xover|fusion):(?:.*[|]\s*)?Worm(\s*[|]|$)/.test(_))) return 'Worm'
+  if (tags.some(_ => /^(fandom|xover|fusion):(?:.*[|]\s*)?Ward(\s*[|]|$)/.test(_))) return 'Worm'
+  if (tags.some(_ => /^(fandom|xover|fusion):(?:.*[|]\s*)?Twilight(\s*[|]|$)/.test(_))) return 'Twilight'
+  if (tags.some(_ => /^(fandom|xover|fusion):(?:.*[|]\s*)?Harry Potter(\s*[|]|$)/.test(_))) return 'Harry Potter'
+  if (tags.some(_ => /^(fandom|xover|fusion):(?:.*[|]\s*)?Life is Strange(\s*[|]|$)/.test(_))) return 'Life is Strange'
+  if (tags.some(_ => /^(fandom|xover|fusion):(?:.*[|]\s*)?The Good Place(\s*[|]|$)/.test(_))) return 'The Good Place'
   let fandoms = tags.filter(_ => /^fandom:/.test(_))[0]
   if (fandoms) return fandoms.slice(7)
   let fusions = tags.filter(_ => /^fusion:/.test(_))[0]
@@ -239,4 +332,29 @@ function fandom (tags) {
   let xovers = tags.filter(_ => /^xover:/.test(_))[0]
   if (xovers) return xovers.slice(6)
   return 'Other'
+}
+
+function uniqFandom (arr) {
+  const seen = {}
+  const fandoms = {}
+  arr.forEach(v => {
+    const l = v.toLowerCase()
+    if (/^(fandom|fusion|xover):/.test(l)) {
+     const lf = l.replace(/^[^:]+:/, '')
+     if (lf in fandoms) return
+     const fn = Object.keys(fandoms)
+     const shorter = fn.some(_ => qr`^${lf}[|]`.test(_))
+     if (shorter) return
+     const longer = fn.filter(_ => qr`(?:^|[|])${_}(?:[|]|$)`.test(lf))
+     longer.forEach(_ => {
+       delete seen[fandoms[_]]
+       delete fandoms[_]
+     })
+     fandoms[lf] = l
+   }
+   if (!(l in seen)) {
+     seen[l] = v
+   }
+ })
+ return Object.keys(seen).map(_ => seen[_])
 }
