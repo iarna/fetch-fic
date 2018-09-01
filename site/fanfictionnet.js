@@ -114,6 +114,7 @@ class FanFictionNet extends Site {
         fic.tags.push('status:complete')
       }
     }
+    fic.rawTags = fic.tags.slice()
     fic.tags = tagmap(fic.tags)
     if ($chapters.length) {
       $chapters.each((ii, vv) => {

@@ -9,7 +9,8 @@ const USER_AGENT = `Mozilla/5.0 (Macintosh; Intel Mac OS X 10.13; rv:59.0; ${pkg
 const fetchBackOff = use('fetch-back-off')
 const rawFetch = require('make-fetch-happen').defaults({
   cache: 'no-store',
-  retry: 0
+  retry: 0,
+  redirect: 'manual'
 })
 const tough = require('tough-cookie')
 

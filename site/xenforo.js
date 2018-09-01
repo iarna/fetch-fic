@@ -4,7 +4,9 @@ const url = require('url')
 const Site = use('site')
 const moment = require('moment-timezone')
 const tagmap = use('tagmap')('xenforo')
+const uniqTags = use('tagmap')('raw')
 const qr = require('@perl/qr')
+const cache = use('cache')
 
 const knownSites = {
   'forums.sufficientvelocity.com': 'Sufficient Velocity',
@@ -50,7 +52,8 @@ class Xenforo extends Site {
   async getFicMetadata (fetch, fic) {
     async function fetchWithCheerio (url) {
       const cheerio = require('cheerio')
-      const [meta, html] = await fetch(url)
+      const result = await fetch(url)
+      const [meta, html] = result
       return cheerio.load(html)
     }
 
@@ -84,22 +87,28 @@ class Xenforo extends Site {
         fic.chapters.addChapter({name, type, link, created})
       })
     }
-    loadThreadmarks('chapter', $)
     if ($sections.length > 1) {
       const sections = []
       $sections.each((ii, section) => {
-        if (ii === 0) return
         const $section = $(section)
-        sections.push({type: $section.text().trim(), link: url.resolve(base, $section.find('a').attr('href'))})
+        let type = $section.text().trim()
+        if (type === 'Threadmarks') type = 'chapter'
+        const link = url.resolve(base, $section.find('a').attr('href'))
+        sections.push({type, link})
       })
       for (let section of sections) {
         loadThreadmarks(section.type, await fetchWithCheerio(section.link))
       }
+    } else {
+      loadThreadmarks('chapter', $)
     }
     fic.created = leastRecent
     fic.modified = mostRecent
     if (!fic.chapters.length) return
-    const chapter = await fic.chapters[0].getContent(fetch.withOpts({cacheBreak: false}))
+    let findFirst = fic.chapters.filter(_ => _.type === 'chapter')
+    if (findFirst.length === 0) findFirst = fic.chapters
+    const chapter = await findFirst[0].getContent(fetch.withOpts({cacheBreak: false}))
+    fic.rawTags = fic.tags.concat(chapter.chapterTags)
     fic.tags = tagmap(fic.tags.concat(chapter.chapterTags))
     fic.author = chapter.author
     fic.authorUrl = chapter.authorUrl
@@ -122,12 +131,8 @@ class Xenforo extends Site {
       if (!fic.title) fic.title = ficTitle
       if (!fic.tags.length) fic.tags = ficTags
     }
-    fic.tags = fic.tags.concat(this.getTags(chapter.$))
-    if (/Discussion in .*Quest(s|ing)/i.test(chapter.$('#pageDescription').text())) {
-      fic.tags.push('Quest')
-    } else if (/Discussion in .*Worm/i.test(chapter.$('#pageDescription').text())) {
-      fic.tags.push('fandom:Worm')
-    }
+    fic.tags = fic.tags.concat(chapter.chapterTags)
+    fic.rawTags = fic.tags.slice()
     fic.tags = tagmap(fic.tags)
 
     if (!fic.author) fic.author = chapter.author
@@ -216,20 +221,35 @@ class Xenforo extends Site {
   }
 
   async getChapter (fetch, chapterInfo, retried) {
+    if (!chapterInfo.hash) chapterInfo.hash = url.parse(chapterInfo.fetchWith()).hash
     let meta, html
     try {
-      [meta, html] = await fetch(chapterInfo.fetchWith())
-    } catch (err) {
-      if (err.meta && err.meta.status === 404) {
-        throw new Error('No chapter found at ' + chapterInfo.fetchWith())
-      } else {
-        throw err
+      ;[meta, html] = await fetch(chapterInfo.fetchWith(), {redirect: 'manual'})
+      if (meta.status >= 300 && meta.status < 400) {
+        let [ location ] = meta.headers.location
+        if (location.indexOf('two-step?redirect') !== -1) {
+          if (retried) {
+            throw new Error('Got two-factor author redirect for ' + chapterInfo.fetchWith())
+          } else {
+            process.emit('debug', `No content found, retrying ${chapterInfo.name}: ${chapterInfo.fetchWith()}`)
+            await cache.clearUrl(chapterInfo.fetchWith())
+            return this.getChapter(fetch, chapterInfo, true)
+          }
+        } else {
+          chapterInfo.hash = url.parse(location).hash
+          chapterInfo.fetchFrom = location
+          return this.getChapter(fetch, chapterInfo)
+        }
       }
+    } catch (err) {
+      if (err.code === 404) {
+        throw new Error('No chapter found (404) at ' + chapterInfo.fetchWith())
+      }
+      throw err
     }
-    process.emit('debug', `Fetched ${chapterInfo.name}: ${chapterInfo.fetchWith()}`)
     const ChapterContent = use('chapter-content')
     const chapter = new ChapterContent(chapterInfo, {site: this, html})
-    const chapterHash = url.parse(chapter.link).hash
+    const chapterHash = chapterInfo.hash
     const parsed = url.parse(meta.finalUrl)
     let id
     if (/^#post/.test(chapterHash)) {
@@ -248,7 +268,7 @@ class Xenforo extends Site {
     const tz = this.getTz(chapter.$)
     let $message
     if (id.length > 1) {
-      $message = chapter.$('li.message#' + id.slice(1).replace(/[)]$/, ''))
+      $message = chapter.$('li.message#' + id.slice(1).replace(/([)']|%27)$/, ''))
     } else {
       $message = chapter.$(chapter.$('li.message')[0])
     }
@@ -257,10 +277,11 @@ class Xenforo extends Site {
       const $error = chapter.$('div.errorPanel')
       if ($error.length === 0) {
         if (!meta.fromCache || retried) {
-          throw new Error('No chapter found at ' + chapter.link)
+          throw new Error('No chapter found at (empty list) ' + chapter.link)
         } else {
           process.emit('debug', `No content found, retrying ${chapterInfo.name}: ${chapterInfo.fetchWith()}`)
-          return this.getChapter(fetch.withOpts({cacheBreak: true}), chapter, true)
+          await cache.clearUrl(chapterInfo.fetchWith())
+          return this.getChapter(fetch, chapterInfo, true)
         }
       } else {
         throw new Error('Error fetching ' + chapter + ': ' + $error.text().trim())
@@ -456,7 +477,7 @@ class Xenforo extends Site {
   scrapeTitle ($) {
     try {
       const titleChunk = $('div.titleBar h1')
-      const tags = coll2arr(titleChunk.find('span')).map(t => $(t).text().trim().replace(/\[|\]/g, ''))
+      const tags = coll2arr(titleChunk.find('span')).map(t => $(t).text().trim().replace(/\[|\]/g, '')).map(_ => `section:${_}`)
       titleChunk.find('span').remove()
       return [titleChunk.text().replace(/Threadmarks for: /i, '').trim(), tags]
     } catch (_) {
@@ -466,15 +487,27 @@ class Xenforo extends Site {
 
   detagTitle (titleAndTags) {
     let [title, tags] = titleAndTags || [undefined, []]
-    const tagExp = /[(](.*?)[)]|[\[](.*?)[\]]|[{](.*?)[}]/g
-    const tagMatch = title.match(tagExp)
-    if (tagMatch) {
-      title = title.replace(tagExp, '').trim()
-      tagMatch.map(t =>
-        t.slice(1,-1)
-         .split(/[/,|]/)
-         .map(st => 'freeform:' + st.trim())
-         .forEach(st => tags.push(st)))
+    const tagMatchers = [ qr`[{](?:.{2,})[}]`, qr`(?!^)[\[](?:.{2,})[\]]`, qr`[(](?:[^)]{2,})[)](?: |$)` ]
+    const rawTags = []
+    for (let tagExp of tagMatchers) {
+      if (tagExp.test(title)) {
+        let tagBit
+        while (tagBit = tagExp.exec(title)) {
+          title = title.replace(qr`${tagBit[0]}`, '').trim()
+          tagBit[0].split(/[;{}\[\](),|/]| x /)
+           .map(_ => _.trim())
+           .filter(_ => _)
+           .forEach(_ => rawTags.push(_))
+        }
+	break
+      }
+    }
+    while (rawTags.length) {
+      let tag = rawTags.shift()
+      if (tag.toLowerCase() === 'fate' && rawTags.length) {
+        tag += '/' + rawTags.shift()
+      }
+      tags.push(`freeform:title:${tag}`)
     }
     return {title, tags}
   }
@@ -488,6 +521,8 @@ class Xenforo extends Site {
     href = href.replace(qr`/threads/[^/]+/(?:page-\d+)?#post-(\d+)$`, '/posts/$1')
                .replace(qr`(/posts/[^/]+)/$`, '$1')
                .replace(qr`/goto/post[?]id=(\d+).*?$`, '/posts/$1')
+               .replace(/forum.questionable/, 'questionable')
+               .replace(/[/]sufficient/, '/forums.sufficient')
     return href
   }
   normalizeAuthorLink (href, base) {
@@ -531,12 +566,35 @@ class Xenforo extends Site {
     }
   }
 
-  async getUserInfo (fetch, externalName, link) {
+  async getUserInfo (fetch, externalName, link, try2) {
     const cheerio = require('cheerio')
     const authCookies = require(`${__dirname}/../.authors_cookies.json`)
-    link = link.replace(/forum.questionable/, 'questionable')
-               .replace(/[/]sufficient/, '/forums.sufficient')
-    const [res, auhtml] = await fetch(link)
+    let res
+    let auhtml
+    try {
+      const result = await fetch(link)
+      res = result[0]
+      auhtml = result[1]
+      if (res.headers.location) {
+        let [ location ] = res.headers.location
+        if (location.indexOf('two-step?redirect') !== -1) {
+          if (try2) {
+            throw new Error('Got two-factor author redirect for ' + link)
+          } else {
+            const cache = use('cache')
+            await cache.clearUrl(link)
+            return this.getUserInfo(fetch, externalName, link, true)
+          }
+        } else {
+          if (location !== link) return this.getUserInfo(fetch, externalName, location)
+        }
+     }
+    } catch (err) {
+      if (err.code === 404) {
+        throw new Error('No user found at ' + link)
+      }
+      throw err
+    }
     const $ = cheerio.load(auhtml)
     const name = $('meta[property="profile:username"]').attr('content') || $('h1[itemprop="name"]').first().text() || externalName
     const gender = $('meta[property="profile:gender"]').attr('content') || $('dd[itemprop="gender"]').first().text() || undefined

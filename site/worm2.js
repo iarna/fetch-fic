@@ -49,7 +49,7 @@ class Worm2 extends Site {
     const firstChapter = chapterUrl.path === '/2017/11/11/daybreak-1-1/'
     const annotate = chapterUrl.hash === '#annotate'
     const useComments = chapterUrl.hash === '#comments'
-    const [meta, html] = await fetch(chapterInfo.fetchWith())
+    const [meta, html] = await fetch(chapterInfo.fetchWith(), {redirect: 'follow', follow: 5})
     const ChapterContent = use('chapter-content')
     const chapter = new ChapterContent(chapterInfo, {site: this, html})
     chapter.base = chapter.$('base').attr('href') || meta.finalUrl

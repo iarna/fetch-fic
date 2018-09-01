@@ -110,34 +110,8 @@ class ArchiveOfOurOwn extends Site {
     const Chapter = use('fic').Chapter
     const chapter = await new Chapter({link: metadataLink}).getContent(fetch)
 
-    if (chapter.$('.error-503-maintenance').length) {
-      const err = new Error(chapter.$('#main').text().trim().split(/\n/).map(l => l.trim()).join('\n'))
-      err.link = chapter.fetchWith()
-      err.code = 503
-      err.site = this.publisherName
-      await cache.clearUrl(err.link)
-      throw err
-    }
-    const $meta = chapter.$('dl.meta')
-    const ratings = this.tagGroup(chapter.$, 'rating', $meta.find('dd.rating'))
-    const warnings = this.tagGroup(chapter.$, 'warning', $meta.find('dd.warnings'))
-      .filter(warn => !/No Archive Warnings Apply/.test(warn))
-    const category = this.tagGroup(chapter.$, 'category', $meta.find('dd.category'))
-    const fandom = this.tagGroup(chapter.$, 'fandom', $meta.find('dd.fandom'))
-      .map(r => r.replace(/ - Fandom$/, ''))
-    const relationship = this.tagGroup(chapter.$, '', $meta.find('dd.relationship'))
-      .filter(r => r !== ':Friendship - Relationship')
-      .map(r => r.replace(/^:/, qr`/`.test(r) ? 'ship:' : 'friendship:'))
-      .map(r => r.replace(qr.g`\s*(/)\s*`, '/'))
-      .map(r => r.replace(qr.g`\s*([&])\s*`, ' & '))
-      .map(r => r.replace(/ - Relationship$/, ''))
-    const characters = this.tagGroup(chapter.$, 'character', $meta.find('dd.character'))
-      .map(t => t.replace(/ - Character$/, ''))
-    const freeform = this.tagGroup(chapter.$, 'freeform', $meta.find('dd.freeform'))
-      .map(t => t.replace(/ - Freeform$/, ''))
-    const language = 'language:' + $meta.find('dd.language').text().trim()
-    fic.tags = [].concat(ratings, warnings, category, fandom, relationship, characters, freeform, language)
-    const $stats = $meta.find('dl.stats')
+    fic.tags = this.getTags(chapter.$, 'dl.meta')
+    const $stats = chapter.$('dl.meta dl.stats')
     const chapterCounts = $stats.find('dd.chapters').text().trim().split('/')
     const written = chapterCounts[0]
     const planned = chapterCounts[1]
@@ -148,6 +122,7 @@ class ArchiveOfOurOwn extends Site {
         fic.tags.push('status:complete')
       }
     }
+    fic.rawTags = fic.tags.slice()
     fic.tags = tagmap(fic.tags)
     fic.created = moment.utc($stats.find('dd.published').text().trim())
     const modified = $stats.find('dd.status').text().trim()
@@ -168,9 +143,93 @@ class ArchiveOfOurOwn extends Site {
       fic.addChapter({name, link, created})
     })
   }
+  getTags ($, selector) {
+    const $meta = $(selector)
+    if ($meta.length === 0) return []
+    const ratings = this.tagGroup($, 'rating', $meta.find('dd.rating'))
+    const warnings = this.tagGroup($, 'cn', $meta.find('dd.warning'))
+      .filter(warn => !/No Archive Warnings Apply/.test(warn))
+    const category = this.tagGroup($, 'category', $meta.find('dd.category'))
+    const fandom = this.tagGroup($, 'fandom', $meta.find('dd.fandom'))
+      .map(r => r.replace(/ - Fandom$/, ''))
+    const relationship = this.tagGroup($, '', $meta.find('dd.relationship'))
+      .filter(r => r !== ':Friendship - Relationship')
+      .map(r => r.replace(/^:/, qr`/`.test(r) ? 'ship:' : 'friendship:'))
+      .map(r => r.replace(qr.g`\s*(/)\s*`, '/'))
+      .map(r => r.replace(qr.g`\s*([&])\s*`, ' & '))
+      .map(r => r.replace(/ - Relationship$/, ''))
+    const characters = this.tagGroup($, 'character', $meta.find('dd.character'))
+      .map(t => t.replace(/ - Character$/, ''))
+    const freeform = this.tagGroup($, 'freeform', $meta.find('dd.freeform'))
+      .map(t => t.replace(/ - Freeform$/, ''))
+    const lang = $meta.find('dd.language').text().trim()
+    const language = lang ? [`language:${lang}`] : []
+    const collections = []
+    $meta.find('dd.collections a').each((ii, aa) => {
+      collections.push(`collection:` + $(aa).text().trim())
+    })
+    const $series = $meta.find('dd.series')
+    const series = []
+    const seriesMatch = qr`Part (\d+) of the (.*?) series(?: Next Work|,|\s*$)`
+    if ($series.length) {
+      $series.text().match(seriesMatch.with('g')).forEach(sr => {
+        const match = sr.match(seriesMatch)
+        if (match) series.push(`series:${match[2]}[${match[1]}]`)
+      })
+    }
+    return [].concat(ratings, warnings, category, fandom, relationship, characters, freeform, language, collections, series)
+  }
+  getTextTags ($) {
+    const $meta = $('div[role="article"]')
+    if ($meta.length === 0) return []
+    const meta = {}
+    $meta.find('p').each((ii, p) => {
+      const $p = $(p)
+      let header = $p.find('strong').first().text().trim()
+      if (!/:$/.test(header)) return
+      const values = $p.find('a')
+      let value
+      if (values.length === 0) {
+        value = $p.text().trim().replace(qr`^${header}`, '').replace(/^[\s]+|\s]+$/g, '').split(/,[\s]+/)
+      } else {
+        value = []
+        values.each((ii, a) => {
+          const $a = $(a)
+          value.push($a.text().trim())
+        })
+      }
+      header = header.slice(0, -1).toLowerCase()
+      meta[header] = value
+    })
+    const ratings = meta.rating ? meta.rating.map(_ => `rating:${_}`) : []
+    const warnings = meta['archive warning'] ? meta['archive warning'].map(_ => `cn:${_}`) : []
+    const category = meta.category ? meta.category.map(_ => `category:${_}`) : []
+    const fandom = meta.fandom ? meta.fandom.map(_ => `fandom:${_}`) : []
+    const relationship = meta.relationships ? meta.relationships.map(_ => (qr`/`.test(_) ? 'ship:' : 'friendship:') + _) : []
+    const characters = meta.characters ? meta.characters.map(_ => `character:${_}`) : []
+    const freeform = meta['additional tags'] ? meta['additional tags'].map(_ => `freeform:${_}`) : []
+    const language = meta.language ? meta.language.map(_ => `language:${_}`) : []
+    return [].concat(ratings, warnings, category, fandom, relationship, characters, freeform, language)
+  }
 
   async getChapter (fetch, chapterInfo) {
-    const [meta, html] = await fetch(chapterInfo.fetchWith())
+    let meta, html
+    try {
+      [meta, html] = await fetch(chapterInfo.fetchWith(), {redirect: 'manual'})
+    } catch (err) {
+      if (err.code >= 300 && err.code < 400 && err.meta && err.meta.headers && err.meta.headers.location) {
+        let [ location ] = err.meta.headers.location
+        const hasViewAdult = /[?]view_adult=true$/
+        const viewAdult = hasViewAdult.test(chapterInfo.fetchWith())
+        const baseLink = chapterInfo.fetchWith().replace(hasViewAdult, '')
+        if (location.indexOf(baseLink) !== -1) {
+          if (viewAdult) location += '?view_adult=true'
+          chapterInfo.fetchFrom = location
+          return this.getChapter(fetch, chapterInfo)
+        }
+      }
+      throw err
+    }
     const ChapterContent = use('chapter-content')
     const chapter = new ChapterContent(chapterInfo, {html, site: this})
     if (chapter.$('.error-503-maintenance').length) {
@@ -190,6 +249,12 @@ class ArchiveOfOurOwn extends Site {
       chapter.fetchFrom = chapter.link
       chapter.link = meta.finalUrl
     }
+    let tags = this.getTags(chapter.$, 'div[role="article"] dl.meta')
+    if (tags.length === 0) {
+      tags = this.getTextTags(chapter.$)
+    }
+    chapter.rawTags = tags.slice()
+    chapter.tags = tagmap(tags)
     const $content = chapter.$('div[role="article"]')
     $content.find('h3.landmark').remove()
 
@@ -205,7 +270,11 @@ class ArchiveOfOurOwn extends Site {
     return chapter
   }
   async getUserInfo (fetch, externalName, link) {
-    link = link.replace(qr`/pseuds/.*`, '/profile')
+    if (!link) return {externalName, link}
+    link = this.normalizeAuthorLink(link)
+    if (link === 'https://archiveofourown.org/users/orphan_account/profile') {
+      return {name: externalName.replace(/ [(]orphan_account[)]$/, '')}
+    }
     const cheerio = require('cheerio')
     const authCookies = require(`${__dirname}/../.authors_cookies.json`)
     const [res, auhtml] = await fetch(link)

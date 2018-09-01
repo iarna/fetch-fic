@@ -6,7 +6,7 @@ const qr = require('@perl/qr')
 
 class GenericHTML extends Site {
   static matches (siteUrlStr) {
-    return qr`[.](?:html)$`.test(siteUrlStr)
+    return qr`[.](?:s?html?)$`.test(siteUrlStr)
   }
 
   constructor (siteUrlStr) {
