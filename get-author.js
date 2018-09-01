@@ -45,65 +45,76 @@ async function main (fics) {
       return
     }
     progress.show('Loading author ' + file)
-    const author = await getFicUserInfo(fic)
-    if (!author) return
+    const ficAuthors = await getFicUserInfo(fic)
+    if (!ficAuthors.length) return
     progress.show('Recording ' + file)
-    let matching = {}
-    for (let au of author.account) {
-      if (authors.byLink.has(au.link)) matching[authors.byLink.get(au.link)] = true
-    }
-    let matches = Object.keys(matching)
-    if (matches.length === 0) {
-      if (author.link) {
-        authors.add(author)
+    for (let author of ficAuthors) {
+      if (!author.account.length) continue
+      let matching = {}
+      for (let au of author.account) {
+        if (authors.byLink.has(au.link)) matching[authors.byLink.get(au.link)] = true
+      }
+      let matches = Object.keys(matching)
+      if (matches.length === 0) {
+        if (author.link) {
+          authors.add(author)
+        } else {
+          process.emit('warn', 'No author link found for', file)
+        }
+      } else if (matches.length === 1) {
+  //      process.emit('warn', 'Merging', author, 'into', authors[matches[0]])
+        authors.merge(author, matches[0])
       } else {
-        process.emit('warn', 'No author link found for', file)
+        process.emit('warn', 'Multiple author matches for', file, matches.map(n => authors[n].name))
+        const top = matches.shift()
+        for (let au of matches) {
+          authors.merge(au, top)
+        }
+        authors.merge(author, top)
       }
-    } else if (matches.length === 1) {
-//      process.emit('warn', 'Merging', author, 'into', authors[matches[0]])
-      authors.merge(author, matches[0])
-    } else {
-      process.emit('warn', 'Multiple author matches for', file, matches.map(n => authors[n].name))
-      const top = matches.shift()
-      for (let au of matches) {
-        authors.merge(au, top)
-      }
-      authors.merge(author, top)
     }
     work.completeWork(1)
     progress.show('Finished ' + file)
   })
   clearInterval(int)
+//  progress.output('Final save\n')
   await fs.writeFile(authorFile + '.new', JSON.stringify(authors, null, 2))
   await fs.rename(authorFile + '.new', authorFile)
 }
 
 function hasAuthor (name, link) {
-  return !((link && (link === 'unknown:' || link === 'unknown:Anonymous')) || (name && (name === 'Anonymous' || name === 'HPFandom_archivist' || name === 'The Midnight Archive')))
+  return link && !(
+     (link === 'unknown:' || link === 'unknown:Anonymous')
+  || (name && (name === 'Anonymous' || name === 'HPFandom_archivist' || name === 'orphan_account' || name === 'DragoLord19D' || name === 'PassnPlay'))
+  )
 }
 
 async function getFicUserInfo (fic) {
+  const authors = []
   const sites = {}
-  const author = new Author()
-  await forEach(fic.authors, async au => {
-    if (hasAuthor(au.name, au.link)) {
+  for (let au of fic.authors) {
+    const author = new Author()
+    if (!hasAuthor(au.name, au.link)) continue
+    authors.push(author)
+    try {
+      const authorSite = Site.fromUrl(au.link)
+      sites[authorSite.publisherName] = au.link
+      progress.show('Loading author ' + au.link)
       try {
-        const authorSite = Site.fromUrl(au.link)
-        sites[authorSite.publisherName] = au.link
-        try {
-          const user = await authorSite.getUserInfo(fetchFor(au.link), au.name, au.link)
+        const user = await authorSite.getUserInfo(fetchFor(au.link), au.name, au.link)
+        if (hasAuthor(user.name, user.link)) {
           author.account.push(new Account(user))
-        } catch (_) {
-          console.error(_)
-          author.account.push(new Account({name: au.name, link: au.link}))
         }
       } catch (_) {
-        console.error(_)
-        return
+        if (hasAuthor(au.name, au.link)) {
+          author.account.push(new Account({name: au.name, link: au.link}))
+        }
       }
+    } catch (_) {
+      continue
     }
-  })
-  author.fandoms = fic.tags.filter(t => /^fandom:/.test(t)).map(t => t.slice(7))
+    author.fandoms = fic.tags.filter(t => /^fandom:/.test(t)).map(t => t.slice(7))
+  }
 
   let links = (fic.authorUrl ? [fic.link] : [])
   if (fic.authors.length === 1) links = links.concat(fic.altlinks || [])
