@@ -92,10 +92,6 @@ const argv = yargs
         type: 'boolean',
         describe: 'pull chapters from BOTH the index AND the threadmarks'
       })
-      .option('fast', {
-        type: 'boolean',
-        describe: "Don't do any updates if the chapter count hasn't changed"
-      })
       .option('refresh', {
         type: 'boolean',
         describe: "Write a fresh copy of the fic.toml file even if there were not updates"

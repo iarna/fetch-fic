@@ -87,29 +87,15 @@ function updateFic (fetch, args) {
   let fromThreadmarks = !args.scrape || args['and-fetch']
   let fromScrape = args.scrape || args['and-scrape']
   const refresh = args['refresh']
-  let fast = args.fast
 
   return ficFile => {
     return Bluebird.try(() => {
       const existingFic = readFic(ficFile)
-      let newFic = fetchLatestVersionWithoutInflate(fetch, existingFic, fromThreadmarks, fromScrape)
-      if (fast) {
-        return Bluebird.join(existingFic, newFic, (existingFic, newFic) => {
-          const lastExisting = existingFic.chapters.slice(-1)[0] || existingFic
-          const lastNew = newFic.chapters.slice(-1)[0] || newFic
-          if (lastExisting === lastNew || (lastExisting && lastNew && createdDate(lastExisting).isAfter(createdDate(lastNew)))) return
-          newFic = ficInflate(newFic, fetch.withOpts({cacheBreak: false}))
-          return doMerge()
-        })
-      } else {
-        return doMerge()
-      }
-      function doMerge () {
-        return mergeFic(existingFic, newFic, add).then(changes => {
-          const inflatedFic = ficInflate(existingFic, fetch.withOpts({cacheBreak: false}))
-          return writeUpdatedFic(ficFile, inflatedFic, refreshMetadata(inflatedFic, changes), refresh)
-        })
-      }
+      let newFic = fetchLatestVersion(fetch, existingFic, fromThreadmarks, fromScrape)
+      return mergeFic(existingFic, newFic, add).then(changes => {
+        const inflatedFic = ficInflate(existingFic, fetch.withOpts({cacheBreak: false}))
+        return writeUpdatedFic(ficFile, inflatedFic, refreshMetadata(inflatedFic, changes), refresh)
+      })
     }).catch(ex => {
       process.emit('warn', `Skipping ${ficFile}:`, ex)
     })
