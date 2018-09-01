@@ -355,6 +355,32 @@ class SubFic extends Fic {
   set publisher (value) {
     return this._publisher = value
   }
+  get chapterHeadings () {
+    return this._chapterHeadings || this.parent.chapterHeadings
+  }
+  set chapterHeadings (value) {
+    return this._chapterHeadings = value
+  }
+  get externals () {
+    return this._externals || this.parent.externals
+  }
+  set externals (value) {
+    return this._externals = value
+  }
+  get spoilers () {
+    return this._spoilers || this.parent.spoilers
+  }
+  set spoilers (value) {
+    return this._spoilers = value
+  }
+  get tags () {
+    if (!this._tags) return Object.assign([], this.parent.tags)
+    return this._tags
+  }
+  set tags (value) {
+    if (value.length === 0) value = null
+    return this._tags = value
+  }
 
   // inherit from the first chapter OR the main fic
   get authors () {
@@ -429,32 +455,6 @@ class SubFic extends Fic {
   }
   set modified (value) {
     return this._modified = value
-  }
-  get chapterHeadings () {
-    return this._chapterHeadings || this.parent.chapterHeadings
-  }
-  set chapterHeadings (value) {
-    return this._chapterHeadings = value
-  }
-  get externals () {
-    return this._externals || this.parent.externals
-  }
-  set externals (value) {
-    return this._externals = value
-  }
-  get spoilers () {
-    return this._spoilers || this.parent.spoilers
-  }
-  set spoilers (value) {
-    return this._spoilers = value
-  }
-  get tags () {
-    if (!this._tags) return Object.assign([], this.parent.tags)
-    return this._tags
-  }
-  set tags (value) {
-    if (value.length === 0) value = null
-    return this._tags = value
   }
   toJSON () {
     const result = {}
@@ -551,10 +551,22 @@ class Chapter {
     this.author = opts.author
     this.authorUrl = opts.authorUrl
     this.tags = opts.tags
-    this.externals = opts.externals != null ? opts.externals : true
-    this.spoilers = opts.spoilers != null ? opts.spoilers : true
+    this._externals = opts.externals
+    this._spoilers = opts.spoilers
     this.headings = opts.headings
     this.words = opts.words || 0
+  }
+  get externals () {
+    return this._externals == null ? true : this._externals
+  }
+  set externals (value) {
+    this._externals = value
+  }
+  get spoilers () {
+    return this._spoilers == null ? true : this._spoilers
+  }
+  set spoilers (value) {
+    this._spoilers = value
   }
   toJSON (fic) {
     const ficExternals = (fic && fic.externals) == null ? true : Boolean(fic.externals)
@@ -572,9 +584,8 @@ class Chapter {
       authorUrl: this.authorUrl,
       created: this.created === 'Invalid Date' ? null : this.created,
       modified: this.modified === 'Invalid Date' ? null : this.modified,
-      tags: this.tags && this.tags.length > 0 ? this.tags : null,
-      externals: this.externals !== ficExternals ? this.externals : null,
-      spoilers: this.spoilers !== ficSpoilers ? this.spoilers: null,
+      externals: this._externals && this._externals !== ficExternals ? this._externals : null,
+      spoilers: this._spoilers && this._spoilers !== ficSpoilers ? this._spoilers: null,
       headings: this.headings !== ficHeadings ? this.headings: null,
       words: this.words
     }
