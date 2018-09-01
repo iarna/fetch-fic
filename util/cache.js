@@ -1,5 +1,4 @@
 'use strict'
-const Bluebird = require('bluebird')
 const Buffer = require('safe-buffer').Buffer
 const crypto = require('crypto')
 const mkdirpCB = require('mkdirp')
@@ -126,7 +125,8 @@ async function cacheUrlContentName (promisedFetchUrl) {
   const fetchUrl = await promisedFetchUrl
   const fetchP = url.parse(fetchUrl)
   const ext = path.parse(fetchP.pathname).ext || '.data'
-  return cacheUrlBase(fetchUrl).then(cacheUrl => cacheUrl + ext + '.gz')
+  const cacheUrl = await cacheUrlBase(fetchUrl)
+  return cacheUrl + ext + '.gz'
 }
 
 const noMetadata = new Error('NOMETADATA')
@@ -140,104 +140,117 @@ function readUrl (fetchUrl, onMiss) {
     startUrl: fetchUrl,
     finalUrl: null
   }
+  const err = new Error()
   let existingMeta = {}
   return inflight(['readUrl:', fetchUrl], thenReadExistingMetadata)
 
-  function thenReadExistingMetadata () {
-    return readJSON(metafile, () => Bluebird.reject(noMetadata)).then(meta => {
+  async function thenReadExistingMetadata () {
+    try {
+      const meta = await readJSON(metafile, () => Promise.reject(noMetadata))
       // corrupt JSON, clear the entry
       if (!meta || typeof meta !== 'object' || !meta.finalUrl) {
-        return clearUrl(fetchUrl)
+        await clearUrl(fetchUrl)
       } else {
         existingMeta = meta
-        return null
       }
-    }).catch(err => err.code !== 'NOMETADATA' && Promise.reject(err))
-      .then(() => thenReadContent())
+    } catch (err) {
+      if (err.code !== 'NOMETADATA') { throw err }
+    }
+    return thenReadContent()
   }
 
-  function thenReadContent () {
+  async function thenReadContent () {
     let result
     let allow304 = false
     if (invalidated[fetchUrl]) {
       delete invalidated[fetchUrl]
       allow304 = true
-      return writeGzipFile(content, orFetchUrl()).then(thenReadMetadata).catch(err => {
-        if (err.code !== 304) throw err
-        return thenReadContent()
-      })
-    } else {
-      return readGzipFile(content, orFetchUrl).catch(err => {
-        // corrupted gzips we retry, anything else explode
-        if (err.code !== 'Z_DATA_ERROR') throw err
-        return clearUrl(fetchUrl).then(() => {
-          return readGzipFile(content, orFetchUrl)
-        })
-      }).then(thenReadMetadata)
-    }
-  }
-
-  function orFetchUrl () {
-    return resolveCall(onMiss, fetchUrl, existingMeta).then(([res, content]) => {
+      const [res, data] = await resolveCall(onMiss, fetchUrl, existingMeta)
       meta.finalUrl = res.url || meta.startUrl
       meta.status = res.status
       meta.statusText = res.statusText
       meta.headers = res.headers.raw()
       meta.fetchedAt = fetchedAt
+      await writeJSON(metafile, meta)
       if (meta.status && meta.status === 304) {
-        return thenReadContent().then(([_, data]) => data)
-      } else if (meta.status && meta.status === 403) {
-        const err403 = new Error('Got status: ' + meta.status + ' ' + meta.statusText + ' for ' + fetchUrl)
-        err403.code = meta.status
-        err403.url = fetchUrl
-        err403.meta = meta
-        return Bluebird.reject(err403)
-      } else if (meta.status && meta.status === 429) {
-        const err429 = new Error('Got status: ' + meta.status + ' ' + meta.statusText + ' for ' + fetchUrl)
-        err429.code = meta.status
-        err429.url = fetchUrl
-        err429.meta = meta
-        err429.retryAfter = res.headers['retry-after']
-        return Bluebird.reject(err429)
-      } else if (meta.status && meta.status === 404) {
-        const non200 = new Error('Got status: ' + meta.status + ' ' + meta.statusText + ' for ' + fetchUrl)
-        non200.code = meta.status
-        non200.url = fetchUrl
-        non200.meta = meta
-        return JSON.stringify(non200)
-      } else if (meta.status && meta.status !== 200) {
-        const non200 = new Error('Got status: ' + meta.status + ' ' + meta.statusText + ' for ' + fetchUrl)
-        non200.code = meta.status
-        non200.url = fetchUrl
-        non200.meta = meta
-        return Bluebird.reject(non200)
+        return thenReadContent()
+      } else {
+        await writeGzipFile(content, data)
+        return rejectIfHTTPError(fetchUrl, meta, [meta, data], err)
       }
-      return content
-    })
+    } else {
+      let data
+      try {
+        data = await readGzipFile(content, orFetchUrl)
+      } catch (err) {
+        // corrupted gzips we retry, anything else explode
+        if (err.code !== 'Z_DATA_ERROR') throw err
+        await clearUrl(fetchUrl)
+        data = await readGzipFile(content, orFetchUrl)
+      }
+      return thenReadMetadata(data)
+    }
   }
 
-  function thenReadMetadata (result) {
-    return Bluebird.all([metafile, readJSON(metafile, () => meta)]).then(([metafile, meta]) => {
-      meta.fromCache = meta.fetchedAt !== fetchedAt ? metafile : null
-      if (meta.startURL) {
-        meta.startUrl = meta.startURL
-        delete meta.startURL
-      }
-      if (meta.finalURL) {
-        meta.finalUrl = meta.finalURL
-        delete meta.finalURL
-      }
-      if (!meta.finalUrl) meta.finalUrl = meta.startUrl
-      if (meta.status && meta.status !== 200) {
-        const non200 = new Error('Got status: ' + meta.status + ' ' + meta.statusText + ' for ' + fetchUrl)
-        non200.code = meta.status
-        non200.url = fetchUrl
-        non200.meta = meta
-        return Bluebird.reject(non200)
-      }
-      return [meta, result]
-    })
+  async function orFetchUrl () {
+    const [res, content] = await resolveCall(onMiss, fetchUrl, existingMeta)
+    meta.finalUrl = res.url || meta.startUrl
+    meta.status = res.status
+    meta.statusText = res.statusText
+    meta.headers = res.headers.raw()
+    meta.fetchedAt = fetchedAt
+    if (meta.status && meta.status === 304) {
+      const [, data] = await thenReadContent()
+      return data
+    } else {
+      return rejectIfHTTPError(fetchUrl, meta, content, err)
+    }
   }
+
+  async function thenReadMetadata (result) {
+    const [newMetafile, newMeta] = await Promise.all([metafile, readJSON(metafile, () => meta)])
+    newMeta.fromCache = newMeta.fetchedAt !== fetchedAt ? newMetafile : null
+    if (newMeta.startURL) {
+      newMeta.startUrl = newMeta.startURL
+      delete newMeta.startURL
+    }
+    if (newMeta.finalURL) {
+      newMeta.finalUrl = newMeta.finalURL
+      delete newMeta.finalURL
+    }
+    if (!newMeta.finalUrl) newMeta.finalUrl = newMeta.startUrl
+    return rejectIfHTTPError(newMeta.startUrl, newMeta, [newMeta, result], err)
+  }
+}
+
+function rejectIfHTTPError (fetchUrl, meta, payload, err) {
+  if (meta.status && meta.status === 403) {
+    err.message = 'Got status: ' + meta.status + ' ' + meta.statusText + ' for ' + fetchUrl
+    err.code = meta.status
+    err.url = fetchUrl
+    err.meta = meta
+    return Promise.reject(err)
+  } else if (meta.status && meta.status === 429) {
+    err.message = 'Got status: ' + meta.status + ' ' + meta.statusText + ' for ' + fetchUrl
+    err.code = meta.status
+    err.url = fetchUrl
+    err.meta = meta
+    err.retryAfter = meta.headers['retry-after']
+    return Promise.reject(err)
+  } else if (meta.status && meta.status === 404) {
+    err.message = 'Got status: ' + meta.status + ' ' + meta.statusText + ' for ' + fetchUrl
+    err.code = meta.status
+    err.url = fetchUrl
+    err.meta = meta
+    return Promise.reject(err)
+  } else if (meta.status && (meta.status < 200 || meta.status >= 400) ) {
+    err.message = 'Got status: ' + meta.status + ' ' + meta.statusText + ' for ' + fetchUrl
+    err.code = meta.status
+    err.url = fetchUrl
+    err.meta = meta
+    return Promise.reject(err)
+  }
+  return payload
 }
 
 async function ignoreHarmlessErrors (p) {
@@ -249,12 +262,13 @@ async function ignoreHarmlessErrors (p) {
   }
 }
 
-function clearUrl (fetchUrl) {
+async function clearUrl (fetchUrl) {
   const metafile = cacheUrlMetaName(fetchUrl)
   const content = cacheUrlContentName(fetchUrl)
   return Promise.all([clearFile(metafile), clearFile(content)])
 }
 
 async function invalidateUrl (fetchUrl) {
-  invalidated[await fetchUrl] = true
+  const furl = await fetchUrl
+  invalidated[furl] = true
 }
