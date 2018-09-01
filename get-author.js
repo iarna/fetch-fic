@@ -41,8 +41,8 @@ async function main (fics) {
     try {
        fic = Fic.fromJSON(TOML.parse(await fs.readFile(file)))
     } catch (err) {
-      err.file = file
-      throw err
+      console.error(file, err)
+      return
     }
     progress.show('Loading author ' + file)
     const author = await getFicUserInfo(fic)
