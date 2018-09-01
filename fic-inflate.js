@@ -27,6 +27,7 @@ function ficInflate (fic, fetch, tracker) {
           process.emit('debug', `Got content for #${chapterInfo.order}: ${chapterInfo.name}`)
           progress.show(fic.title, `${chapterInfo.name}`)
           chapterInfo.words = chapter.words
+          chapterInfo.tags = chapter.tags
           words += chapter.words
           if (chapterInfo.link == null) chapterInfo.link = chapter.chapterLink
           for (let prop of qw`name author authorUrl created modified headings`) {
