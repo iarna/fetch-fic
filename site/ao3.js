@@ -101,6 +101,10 @@ class ArchiveOfOurOwn extends Site {
         }
       })
     }
+    if (fic.authorUrl === 'https://archiveofourown.org/users/orphan_account/profile') {
+      fic.authorUrl = null
+      fic.author = fic.author.replace(/ [(]orphan_account[)]$/, '')
+    }
     const $metadata = $('ol.index').find('li').first()
     const metadataLink = this.normalizeChapterLink($metadata.find('a').attr('href'), base)
     const Chapter = use('fic').Chapter
