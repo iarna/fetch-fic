@@ -271,4 +271,5 @@ async function clearUrl (fetchUrl) {
 async function invalidateUrl (fetchUrl) {
   const furl = await fetchUrl
   invalidated[furl] = true
+  invalidated[furl.replace(/#.*$/, '')] = true
 }
