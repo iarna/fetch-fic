@@ -19,9 +19,4 @@ module.exports.anyCase = arr => {
     }
   })
   return Object.keys(seen).map(_ => seen[_])
-  return arr.filter(v => {
-    if (seen.has(v)) return false
-    seen.add(v.toLowerCase())
-    return true
-  })
 }
