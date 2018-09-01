@@ -36,9 +36,11 @@ function rewriteLinks (fic, chapter, handleLink) {
 
 function rewriteIframes (fic, chapter) {
   chapter.$content.find('iframe').each((ii, iframe) => {
-    const $iframe = chapter.$content.find(iframe)
-    const src = url.resolve(chapter.base, $iframe.attr('src'))
-    $iframe.replaceWith(`<a href="${src}">Video Link</a>`)
+    try {
+      const $iframe = chapter.$content.find(iframe)
+      const src = url.resolve(chapter.base, $iframe.attr('src'))
+      $iframe.replaceWith(`<a href="${src}">Video Link</a>`)
+    } catch (_) {}
   })
 }
 
