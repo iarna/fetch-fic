@@ -266,6 +266,9 @@ class Fic {
     const fic = new this()
     return fic.importFromJSON(raw)
   }
+  static publicMembers () {
+    return qw`title id link altlinks updateFrom author authorUrl authors created modified publisher cover art description notes tags words fics chapterHeadings includeTOC numberTOC fetchMeta scrapeMeta filename`
+  }
 
   toJSON () {
     const result = {}
@@ -286,6 +289,21 @@ class Fic {
     }
     if (!this.externals) result.externals = this.externals
     if (!this.spoilers) result.spoilers = this.spoilers
+    return result
+  }
+  toFullJSON () {
+    const result = {}
+    for (let prop of Fic.publicMembers()) {
+      result[prop] = this[prop]
+    }
+    for (let prop in this.extra) {
+      result[prop] = this.extra[prop]
+    }
+    result.chapters = this.chapters.toFullJSON(this)
+    if (!result.fics) result.fics = []
+    result.fics.sort(sortFics)
+    result.externals = this.externals
+    result.spoilers = this.spoilers
     return result
   }
 }
@@ -503,6 +521,9 @@ class ChapterList extends Array {
   toJSON (fic) {
     return this.map(chap => chap.toJSON ? chap.toJSON(fic) : chap)
   }
+  toFullJSON (fic) {
+    return this.map(chap => chap.toFullJSON ? chap.toFullJSON(fic) : chap.toJSON ? chap.toJSON(fic) : chap)
+  }
 }
 
 class Chapter {
@@ -555,6 +576,27 @@ class Chapter {
       externals: this.externals !== ficExternals ? this.externals : null,
       spoilers: this.spoilers !== ficSpoilers ? this.spoilers: null,
       headings: this.headings !== ficHeadings ? this.headings: null,
+      words: this.words
+    }
+  }
+  toFullJSON (fic) {
+    return {
+      name: this.name,
+      type: this.type,
+      description: this.description,
+      notes: this.notes,
+      cover: this.cover,
+      art: this.art,
+      link: this.link,
+      altlinks: this.altlinks,
+      fetchFrom: this.fetchFrom,
+      author: this.author,
+      authorUrl: this.authorUrl,
+      created: this.created === 'Invalid Date' ? null : this.created,
+      modified: this.modified === 'Invalid Date' ? null : this.modified,
+      externals: this.externals,
+      spoilers: this.spoilers,
+      headings: this.headings,
       words: this.words
     }
   }
