@@ -134,9 +134,7 @@ var fetchLatestVersionWithoutInflate = promisify.args((fetch, existingFic, fromT
     }
   }
 
-  // Fetch the fic from cache first, which ensures we get any cookies
-  // associated with it, THEN fetch it w/o the cache to get updates.
-  return getFic(fetch.withOpts({cacheBreak: false})).then(()=> getFic(fetch))
+  return getFic(fetch)
 })
 
 function createdDate (chapOrFic) {
