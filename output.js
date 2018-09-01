@@ -1,4 +1,6 @@
 'use strict'
+const moment = require('moment')
+
 class Output {
   static register (shortname, output) {
     this.registered[shortname] = output
@@ -201,6 +203,10 @@ class Output {
     if (chapter.words) {
       const commaNumber = require('comma-number')
       content += ` <small>[${commaNumber(chapter.words)}&nbsp;words]</small>`
+    }
+    let date = chapter.modified || chapter.created
+    if (date) {
+      content += ` <small>${moment(date).format('YYYY-MM-DD')}</small>`
     }
     return content
   }
