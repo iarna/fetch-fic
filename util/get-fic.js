@@ -111,7 +111,7 @@ function getFic (fetch, fic) {
   const externals = {}
   const images = {}
   const chapters = fic.chapters.filter(ch => ch.type !== 'Staff Post')
-  const maxConcurrency = 40 // limit saves memory, not network, network is protected elsewhere
+  const maxConcurrency = 10 // limit saves memory, not network, network is protected elsewhere
 
   process.emit('debug', `Outputting ${chapters.length} chapters of ${fic.title}`)
   let completed = 0
