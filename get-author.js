@@ -30,7 +30,12 @@ async function main (fics) {
     await fs.writeFile(authorFile + '.new', JSON.stringify(authors, null, 2))
     await fs.rename(authorFile + '.new', authorFile)
   }, 10000)
+  let current
+  process.on('unhandledRejection', error => {
+    console.log('unhandledRejection in', current, error);
+  })
   await forEach(fics, 1, async file => {
+    current = file
     progress.show('Loading data ' + file)
     let fic
     try {
