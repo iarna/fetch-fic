@@ -144,13 +144,15 @@ class Fic {
   }
 
   importFromJSON (raw) {
+    if (raw.parent) return SubFic.fromJSON(raw.parent, raw)
     const props = qw`id link altlinks title created modified
      description notes tags publisher cover art chapterHeadings words updateFrom
-     includeTOC numberTOC fetchMeta scrapeMeta`
+     includeTOC numberTOC fetchMeta scrapeMeta filename`
 
     for (let prop of props) {
       if (prop in raw) this[prop] = raw[prop]
     }
+
     if (raw.authors) {
       this.authors = raw.authors.map(au => {
         if (typeof au === 'string') {
@@ -269,7 +271,7 @@ class Fic {
     const result = {}
     for (let prop of qw`
          title _id _link altlinks updateFrom authors created modified publisher cover art
-         description notes tags words fics chapterHeadings _includeTOC _numberTOC fetchMeta scrapeMeta
+         description notes tags words fics chapterHeadings _includeTOC _numberTOC fetchMeta scrapeMeta filename
        `) {
       if (this[prop] != null && (!Array.isArray(this[prop]) || this[prop].length)) result[prop.replace(/^_/,'')] = this[prop]
     }
@@ -319,8 +321,13 @@ class SubFic extends Fic {
     return this.chapters.chapterExists(link, this)
   }
   static fromJSON (parent, raw) {
+    if (typeof parent === 'string') {
+      parent = Fic.fromJSON({id: parent})
+    }
     const fic = new this(parent)
-    fic.importFromJSON(raw)
+    const init = Object.assign({}, raw)
+    delete init.parent
+    fic.importFromJSON(init)
     return fic
   }
   // inherit from the main fic
