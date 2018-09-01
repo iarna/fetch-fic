@@ -3,6 +3,7 @@ module.exports = update
 
 const Bluebird = require('bluebird')
 const qw = require('qw')
+const qr = require('@perl/qr')
 
 const fetch = use('fetch')
 const Fic = use('fic')
@@ -15,18 +16,24 @@ const TOML = use('toml')
 const moment = require('moment')
 const uniq = require('lodash.uniq')
 const tagmap = use('tagmap')
+const deepEqual = require('fast-deep-equal')
+const notDeepEqual = (a, b) => !deepEqual(a, b)
 
-function detagTitle (title) {
-  const tags = []
-  const tagExp = /[(](.*?)[)]|[\[](.*?)[\]]|[{](.*?)[}]/g
-  const tagMatch = title.match(tagExp)
-  if (tagMatch) {
-    title = title.replace(tagExp, '').trim()
-    tagMatch.map(t =>
-      t.slice(1,-1)
-       .split(/[/,|]/)
-       .map(st => 'freeform:' + st.trim())
-       .forEach(st => tags.push(st)))
+function detagTitle (titleAndTags) {
+  let [title, tags] = titleAndTags || [undefined, []]
+  const tagMatchers = [ qr`[{](?:.{2,})[}]`, qr`(?!^)[\[](?:.{2,})[\]]`, qr`[(](?:.{2,})[)]` ]
+  for (let tagExp of tagMatchers) {
+    const tagMatch = title.match(tagExp)
+    if (tagMatch) {
+      const [,tagBit] = title.match(qr`(${tagExp}.*)$`)
+      title = title.replace(qr`(${tagExp}.*)$`, '').trim()
+      tagBit.split(/[{}\[\]()/,;|]/)
+       .map(_ => _.trim())
+       .filter(_ => _)
+       .map(_ => `freeform:title:${_}`)
+       .forEach(st => tags.push(st))
+      break
+    }
   }
   return {title, tags}
 }
