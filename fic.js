@@ -221,13 +221,13 @@ class Fic {
   }
 
   static async fromOnlyUrl (fetch, link) {
+    const err = new Error(`Could not find chapters in: ${link}`)
     const fic = new this(fetch)
     fic.site = Site.fromUrl(link)
     fic.link = fic.site.link
     fic.fetchMeta = true
     await fic.site.getFicMetadata(fetch, fic)
     if (fic.chapters.length === 0 && fic.fics.length === 0) {
-      const err = new Error(`Could not find chapters in: ${link}`)
       err.code = 404
       err.url = link
       throw err
