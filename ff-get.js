@@ -108,7 +108,7 @@ async function _reallyRead (urls, args) {
     try {
       deflatedFic = await progress.addWork(fetchFic(), fetchTracker)
     } catch (ex) {
-      process.emit('error', 'ff-get', ex)
+      process.emit('error', 'ff-get','fetching',  ex)
       return
     } finally {
       enableCache()
