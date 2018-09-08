@@ -96,7 +96,7 @@ module.exports = function mapTags (site, tags, perFandom) {
   tags = uniq.anyCase(tags)
 
   if (perFandom) {
-    return tags.sort(sortTags)
+    return tags.sort(tagCompare)
   } else {
     let fxf = uniq(flatMap(tags.filter(_=>/^(fandom|xover|fusion):/.test(_)), fandomsFromTag))
     tags = uniqFandom(uniq([fandom(tags)].concat(fxf)).filter(fd => tagmap[fd]).reduce((tags, fd) => mapTags(fd, tags, true), tags))
@@ -162,7 +162,7 @@ module.exports = function mapTags (site, tags, perFandom) {
         tags.unshift(pfMatch[1])
       }
     }
-    return tags.sort(sortTags)
+    return tags.sort(tagCompare)
   }
 }
 
@@ -295,7 +295,7 @@ function isForEnd (aa) {
       || / - OC$| [(]OC[)]$/.test(aa)
 }
 
-function sortTags (aa, bb) {
+function tagCompare (aa, bb) {
   return catify(aa).localeCompare(catify(bb))
 }
 
