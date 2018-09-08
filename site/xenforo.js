@@ -513,6 +513,7 @@ class Xenforo extends Site {
   }
 
   normalizeLink (href, base) {
+    if (!href) return href
     // force ssl
     if (!/index.php/.test(href)) href = href.replace(/^http:/, 'https:')
     // resolve base url
