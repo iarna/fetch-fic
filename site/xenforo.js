@@ -111,7 +111,7 @@ class Xenforo extends Site {
     fic.rawTags = fic.tags.concat(chapter.chapterTags)
     fic.tags = tagmap(fic.tags.concat(chapter.chapterTags))
     fic.author = chapter.author
-    fic.authorUrl = chapter.authorUrl
+    fic.authorUrl = this.normalizeAuthorLink(chapter.authorUrl)
     fic.notes = chapter.$content.text().trim().replace(/^([^\n]+)[\s\S]*?$/, '$1')
   }
 
@@ -136,7 +136,7 @@ class Xenforo extends Site {
     fic.tags = tagmap(fic.tags)
 
     if (!fic.author) fic.author = chapter.author
-    if (!fic.authorUrl) fic.authorUrl = chapter.authorUrl
+    if (!fic.authorUrl) fic.authorUrl = this.normalizeAuthorLink(chapter.authorUrl)
 
     const firstPara = chapter.$content.text().trim().replace(/^([^\n]+)[\s\S]*?$/, '$1')
     if (!fic.notes) fic.notes = firstPara
@@ -339,7 +339,7 @@ class Xenforo extends Site {
     }
     chapter.base = chapter.$('base').attr('href') || finalUrl
     const $author = chapter.$($message.find('a.username')[0])
-    chapter.authorUrl = $author.attr('href') && url.resolve(chapter.base, $author.attr('href'))
+    chapter.authorUrl = this.normalizeAuthorLink($author.attr('href') && url.resolve(chapter.base, $author.attr('href')))
     chapter.author = $author.text().trim()
     chapter.created = this.dateTime($message.find('a.datePermalink .DateTime'), tz)
     let baseLightness = 100
