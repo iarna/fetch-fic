@@ -35,64 +35,13 @@ WILL load global modules if you ask it to. But don't.
 const cache = use('cache')
 ```
 
-Implements a generic read-through cache, and then builds a URL cache on top
-of that.  All arguments can be ordinary values or promises and all return
-values are Bluebird promises.
+Implements a very basic cache.
 
 All files for the cache are kept in `~/.fetch-fic` where `~` is resolved to
 `os.homedir()`.
 
 For the sake of simplicity, documentation will discuss what the returned
 promises resolve to.
-
-## cache.readFile (filename, onMiss) → Promise(Buffer)
-
-Returns a Buffer containing the contents of `filename` relative to the cache
-root.
-
-Any error reading from `filename` will result in `onMiss` being called and
-it's return value being written to the cache and returned.  Errors from
-`onMiss` are passed through as a rejection.
-
-`onMiss` takes no arguments and is expected to return a Buffer or a thing
-that `Buffer.from` can turn into a Buffer.  The return value can be either a
-promise or an ordinary value.
-
-## cache.clearFile (filename) → Promise
-
-Removes the file from the cache.  If `filename` does not exist, this still
-resolves succesfully.  Any other error will result in a rejection
-
-## cache.readUrl (url, onMiss) → Promise([Object, Buffer])
-
-Returns a two element array, the first element is an object with infomration
-about the resource, the second is a buffer containing the resource.
-
-The `onMiss` callback looks like **onMiss (url) → Promise(Object)**.
-
-It is expeccted to return an object with the following properties:
-
-* `url` - (optional) The final URL, after any redirects are processed.
-* `status` - The final HTTP status code.
-* `statusText` - The final HTTP status text.
-* `headers` - An object with a `.raw()` method that returns an object with
-  the response headers.
-* `buffer()` - Returns a Buffer with the contents of the resource.
-
-An object of this type is provided by the promise returned from the
-`node-fetch` object.
-
-The information about the resource is stored in:
-  `urls/<domainname>/<u1>/<u2>/<urlsha>.json`
-
-And the resource itself is stored in:
-  `urls/<domainname>/<u1>/<u2>/<urlsha>.<ext>.gz`
-
-Where `<urlsha>` is the `sha256` of the URL.
-
-And `<u1>` and `<u2>` are the first and second characters of `<urlsha>`.
-
-And `<ext>` is taken from the URL. If the URL has no extension in it then `data` is used.
 
 ## cache.clearUrl (url) → Promise
 
@@ -102,6 +51,18 @@ Removes the `.json` and `.gz` components of a URL from the cache using `cache.cl
 
 Marks the url as dirty, so that future fetches will skip the cache, in THIS
 SESSION ONLY.
+
+## cache.exists (url) → Promise(Boolean)
+
+True of url exists in the cache.
+
+## cache.get (url) → Promise([meta, content])
+
+Fetch metadata and content for the url.
+
+## cache.set (url, meta, content) → Promise
+
+Set the metadata and content for the url.
 
 # util/call-limit.js
 

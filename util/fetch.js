@@ -84,7 +84,12 @@ async function fetchWithCache (fetch, toFetch, opts$) {
   const opts = Object.assign({}, await opts$)
   process.emit('debug', 'Fetching', toFetch, opts)
   if (opts.cacheBreak) await cache.invalidateUrl(toFetch)
-  const [meta, content] = await cache.readUrl(toFetch, async (toFetch, meta) => {
+  let meta = {}
+  let content
+  try {
+    [meta, content] = await cache.get(toFetch)
+  } catch (ex) {}
+  if (!content || cache.cacheBreak) {
     if (opts.noNetwork) throw NoNetwork(toFetch, opts)
     const cookies = await getCookieStringP(opts.cookieJar, toFetch)
     delete opts.cookieJar
@@ -95,15 +100,54 @@ async function fetchWithCache (fetch, toFetch, opts$) {
       opts.headers['If-Modified-Since'] = meta.headers['last-modified']
     }
     opts.headers['user-agent'] = USER_AGENT
-    process.emit('debug', 'Downloading', toFetch, opts)
-    return fetch(toFetch, opts)
-  })
-  if (meta.headers && meta.headers['set-cookie'] && /questionablequest/.test(toFetch)) {
-    for (let rawCookie of meta.headers['set-cookie']) {
-      try {
-        await setCookieP(opts.cookieJar, rawCookie, meta.finalUrl || toFetch)
-      } catch (_) {}
+    if (meta.headers && meta.headers['set-cookie'] && /questionablequest/.test(toFetch)) {
+      for (let rawCookie of meta.headers['set-cookie']) {
+        try {
+          await setCookieP(opts.cookieJar, rawCookie, meta.finalUrl || toFetch)
+        } catch (_) {}
+      }
+    }
+    //process.emit('warn', 'Downloading', toFetch)
+    let [res, data] = await fetch(toFetch, opts)
+    meta.finalUrl = res.url || toFetch
+    meta.status = res.status
+    meta.statusText = res.statusText
+    meta.headers = res.headers.raw()
+    meta.fetchedAt = Date.now()
+    if (meta.status && meta.status !== 304) {
+      await cache.set(toFetch, meta, data)
+      content = data
     }
   }
-  return [meta, content]
+  return [meta, rejectIfHTTPError(toFetch, meta, content, new Error())]
+}
+
+function rejectIfHTTPError (fetchUrl, meta, payload, err) {
+  if (meta.status && meta.status === 403) {
+    err.message = 'Got status: ' + meta.status + ' ' + meta.statusText + ' for ' + fetchUrl
+    err.code = meta.status
+    err.url = fetchUrl
+    err.meta = meta
+    throw err
+  } else if (meta.status && meta.status === 429) {
+    err.message = 'Got status: ' + meta.status + ' ' + meta.statusText + ' for ' + fetchUrl
+    err.code = meta.status
+    err.url = fetchUrl
+    err.meta = meta
+    err.retryAfter = meta.headers['retry-after']
+    throw err
+  } else if (meta.status && meta.status === 404) {
+    err.message = 'Got status: ' + meta.status + ' ' + meta.statusText + ' for ' + fetchUrl
+    err.code = meta.status
+    err.url = fetchUrl
+    err.meta = meta
+    throw err
+  } else if (meta.status && (meta.status < 200 || meta.status >= 400) ) {
+    err.message = 'Got status: ' + meta.status + ' ' + meta.statusText + ' for ' + fetchUrl
+    err.code = meta.status
+    err.url = fetchUrl
+    err.meta = meta
+    throw err
+  }
+  return payload
 }
