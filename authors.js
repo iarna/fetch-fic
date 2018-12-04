@@ -39,6 +39,18 @@ class Authors extends Array {
       return false
     }
   }
+  getAll (au) {
+    if (this.byName.has(au.toLowerCase())) return [...this.byName.get(au.toLowerCase())].map(_ => this[_])
+    if (this.byLink.has(au)) return [this[this.byLink.get(au)]]
+    try {
+      const authorSite = Site.fromUrl(au)
+      const nlink = authorSite.normalizeAuthorLink(au)
+      if (this.byLink.has(nlink)) return [this[this.byLink.get(nlink)]]
+      return false
+    } catch (_) {
+      return false
+    }
+  }
   add (author) {
     if (!author.name) throw new Error()
     const id = this.length
