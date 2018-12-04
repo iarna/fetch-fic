@@ -521,6 +521,7 @@ class Xenforo extends Site {
     // normalize post urls
     href = href.replace(qr`/threads/[^/]+/(?:page-\d+)?#post-(\d+)$`, '/posts/$1')
                .replace(qr`(/posts/[^/]+)/$`, '$1')
+               .replace(qr`/threads/([^./]+[.])?(\d+)([/].*)?$`, '/threads/$2')
                .replace(qr`/goto/post[?]id=(\d+).*?$`, '/posts/$1')
                .replace(/forum.questionable/, 'questionable')
                .replace(/[/]sufficient/, '/forums.sufficient')
