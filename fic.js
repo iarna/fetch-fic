@@ -395,7 +395,11 @@ class SubFic extends Fic {
     return this._authors
   }
   set authors (authors) {
-    this._authors = authors
+    if (authors && authors.length) {
+      this._authors = authors
+    } else {
+      this._authors = null
+    }
   }
   get author () {
     const author = this._authors && this._authors[0]
