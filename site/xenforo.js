@@ -71,9 +71,9 @@ class Xenforo extends Site {
     let mostRecent
     const tz = this.getTz($)
     const loadThreadmarks = (type, $) => {
-      let chapters = $('li.threadmarkItem')
+      let chapters = $('li.threadmarkListItem')
+      if (chapters.length === 0) chapters = $('li.threadmarkItem') // older
       if (chapters.length === 0) chapters = $('li.primaryContent') // qq
-      if (chapters.length === 0) chapters = $('li.threadmarkListItem') // ah
       chapters.each((ii, chapter) => {
         const $chapter = $(chapter)
         $chapter.find('li').remove() // remove child chapters so that $link.text() works right
