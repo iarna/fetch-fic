@@ -194,7 +194,7 @@ var mergeFic = promisify.args(function mergeFic (existingFic, newFic, add) {
     }
   }
 
-  if (existingFic.tags.some(_ => _ === 'Snippets')) {
+  if (false && existingFic.tags.some(_ => _ === 'Snippets')) {
     toAdd.forEach(ch => {
       const subFic = new Fic.SubFic(existingFic)
       if (ch.tags) {
