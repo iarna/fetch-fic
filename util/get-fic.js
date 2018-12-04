@@ -11,11 +11,14 @@ const progress = use('progress')
 const Site = use('site')
 const forEach = use('for-each')
 const map = use('map')
+const qr = require('@perl/qr')
 
 function rewriteLinks (fic, chapter, handleLink) {
   chapter.$content.find('a').each((ii, a) => {
     const $a = chapter.$content.find(a)
-    const startAs = $a.attr('href')
+    const startAs = $a.attr('href').replace(qr`^(?:https?://)?(?:\s|%20)+`, '')
+        .replace(qr`^https?://.*(https?//)`, 'https://')
+        .replace(qr`^https?//`, 'https://')
     if (!startAs) {
       $a.remove()
       return
