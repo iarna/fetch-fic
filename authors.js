@@ -12,8 +12,9 @@ class Authors extends Array {
     })
   }
   has (au) {
+    if (au == null) return false
     if (this.byLink.has(au)) return true
-    if (this.byName.has(au)) return true
+    if (this.byName.has(au.toLowerCase())) return true
     try {
       const authorSite = Site.fromUrl(au)
       const nlink = authorSite.normalizeAuthorLink(au)
@@ -25,7 +26,10 @@ class Authors extends Array {
   }
   get (au) {
     if (this.byLink.has(au)) return this[this.byLink.get(au)]
-    if (this.byName.has(au)) return this[this.byName.get(au)]
+    if (this.byName.has(au.toLowerCase())) {
+      const [ firstId ] = this.byName.get(au.toLowerCase())
+      return this[firstId]
+    }
     try {
       const authorSite = Site.fromUrl(au)
       const nlink = authorSite.normalizeAuthorLink(au)
@@ -41,8 +45,8 @@ class Authors extends Array {
     this.push(author)
     for (let au of author.account) {
       this.byLink.set(au.link, id)
-      if (!this.byName.has(au.name)) this.byName.set(au.name, new Set())
-      this.byName.get(au.name).add(id)
+      if (!this.byName.has(au.name.toLowerCase())) this.byName.set(au.name.toLowerCase(), new Set())
+      this.byName.get(au.name.toLowerCase()).add(id)
     }
   }
   remove (index) {
@@ -50,7 +54,7 @@ class Authors extends Array {
     delete this[index]
     author.account.forEach(ac => {
       this.byLink.delete(ac.link)
-      this.byName.get(ac.name).delete(index)
+      this.byName.get(ac.name.toLowerCase()).delete(index)
     })
   }
   merge (src, dest) {
@@ -64,8 +68,8 @@ class Authors extends Array {
     for (let ac of au.account) {
       this[dest].account.push(ac)
       this.byLink.set(ac.link, dest)
-      if (!this.byName.has(ac.name)) this.byName.set(ac.name, new Set())
-      this.byName.get(ac.name).add(dest)
+      if (!this.byName.has(ac.name.toLowerCase())) this.byName.set(ac.name.toLowerCase(), new Set())
+      this.byName.get(ac.name.toLowerCase()).add(dest)
     }
     for (let key of qw`gender dob location twitter tumblr instagram homepage deviantart soundcloud lj reddit fandoms `) {
       if (!au[key]) continue
