@@ -462,7 +462,17 @@ class SubFic extends Fic {
   }
   toJSON () {
     const result = {}
-    if (deepEqual(this._authors, this.parent.authors)) {
+    let ourAuthors = (this._authors || []).sort((aa, bb) => aa.name.localeCompare(bb.name))
+      .map(_ => {
+        const site = Site.fromUrl(_.link)
+        return {name: _.name, link: site.normalizeAuthorLink(_.link)}
+      })
+    let parentAuthors = this.parent.authors.sort((aa, bb) => aa.name.localeCompare(bb.name))
+      .map(_ => {
+        const site = Site.fromUrl(_.link)
+        return {name: _.name, link: site.normalizeAuthorLink(_.link)}
+      })
+    if (!ourAuthors.length || deepEqual(ourAuthors, parentAuthors)) {
       this._authors = null
     }
     for (let prop of qw`
@@ -475,6 +485,7 @@ class SubFic extends Fic {
     for (let prop in this.extra) {
       result[prop] = this.extra[prop]
     }
+    if (result.authors) result.authors = result.authors.map(({name, link}) => name + (link ? ` <${link}>` : ''))
 
     return result
   }
