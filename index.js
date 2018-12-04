@@ -20,3 +20,11 @@ Object.defineProperty(exports, 'cacheClear', {
 Object.defineProperty(exports, 'Fic', {
   get: () => require('./fic.js')
 })
+
+Object.defineProperty(exports, 'ficInflate', {
+  get: () => require('./fic-inflate.js')
+})
+
+Object.defineProperty(exports, 'Site', {
+  get: () => require('./site.js')
+})
