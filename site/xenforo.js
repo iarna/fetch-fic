@@ -528,6 +528,7 @@ class Xenforo extends Site {
     return href
   }
   normalizeAuthorLink (href, base) {
+    if (!href) return href
     return this.normalizeLink(href, base)
       .replace(qr`/members/[^.]+[.](\d+)/?$`, '/members/$1')
       .replace(qr`/forum[.](questionablequesting[.]com)/`, '/$1/')
