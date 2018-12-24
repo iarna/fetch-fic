@@ -389,7 +389,7 @@ class SubFic extends Fic {
       if (chap && (chap.author || chap.authorUrl)) {
         this._authors = [{name: chap.author, link: chap.authorUrl}]
       } else {
-        this._authors = [...this.parent.authors.map(_ => ({..._}))]
+        this._authors = [...this.parent.authors.map(_ => Object.assign({}, _))]
       }
     }
     return this._authors
