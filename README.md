@@ -160,8 +160,8 @@ Commands:
   cache-clear <url>  Remove a URL from the cache
 
 Options:
+  --debug  Show log entries from the specified modules
   --help   Show help                                                   [boolean]
-  --debug                                                              [boolean]
 ```
 
 You can see the help screens for any of these commands by including
@@ -363,12 +363,13 @@ would only be used if the site was taking greater than 200ms to reply (and
 thus the requests-per-second limitation was allowing us to have ANY
 concurrent requests).
 
-### --debug
+### --debug=list,of,named,modules
 
 Used by: All commands
 
 Enables debugging.  This makes errors print stack traces instead of just
-messages and makes those stack traces extra long.
+messages.  Logs entries from named modules like fetch or inflate-fic.  Set
+to `1` to get all debugging output.
 
 ### --no-network
 

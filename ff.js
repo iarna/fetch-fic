@@ -127,11 +127,7 @@ const argv = yargs
     handler: setCommand(ff.cacheClear)
   })
   .option('debug', {
-    type: 'boolean',
-    default: process.env.BLUEBIRD_DEBUG && process.env.BLUEBIRD_DEBUG !== '0',
-    global: true
-  })
-  .option('verbose', {
+    describe: 'Show log entries from the specified modules',
     global: true
   })
   .strict()
@@ -175,8 +171,7 @@ onExit(() => {
   console.log('Exited without resolving promises!')
 })
 
-if (argv.debug) process.env.BLUEBIRD_DEBUG = '1'
-if (argv.verbose) progress.setVerbose(argv.verbose)
+if (argv.debug) progress.setVerbose((argv.debug === 1 || argv.debug === 'true' || argv.debug === 'yes') ? true : argv.debug)
 
 process.on('unhandledRejection', (reason, p) => {
    console.log('Unhandled Rejection at:', p, 'reason:', reason);
