@@ -32,7 +32,7 @@ class WattPad extends Site {
       const [meta, result] = await fetch(apiUrl)
       const data = JSON.parse(result)
       const base = data.url
-      fic.title = data.title
+      fic.title = data.title.trim()
       fic.cover = data.cover
       fic.author = data.user.name
       fic.authorUrl = `https://www.wattpad.com/user/${data.user.username}`
@@ -43,7 +43,7 @@ class WattPad extends Site {
       fic.comments = data.commentCount
       fic.description = data.description.replace(/\n/g, '<br>\n')
       data.parts.forEach(part => {
-        fic.addChapter({name: part.title, link: part.url})
+        fic.addChapter({name: part.title.trim(), link: part.url})
       })
       const tags = data.tags.map(_ => `freeform:${_}`)
       if (data.completed) {
@@ -127,7 +127,7 @@ class WattPad extends Site {
     const [res, auhtml] = await fetch(link)
     const $ = cheerio.load(auhtml)
     const profile = fixHTML($('section.profile-about div.description').html()).replace(/\n/g, '<br>\n')
-    const name = $('h1.profile-name').text().trim() || externalName
+    const name = $('h1.profile-name').text().trim() || externalName.trim()
     const image = $('div.avatar img').attr('src')
     return {name, link, profile, image}
   }
