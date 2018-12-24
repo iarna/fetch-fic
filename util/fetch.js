@@ -82,7 +82,6 @@ function setCookieP (jar, cookie, link) {
 
 async function fetchWithCache (fetch, toFetch, opts$) {
   const opts = Object.assign({}, await opts$)
-  process.emit('debug', 'Fetching', toFetch, opts)
   if (opts.cacheBreak) await cache.invalidateUrl(toFetch)
   let meta = {}
   let content
@@ -110,6 +109,7 @@ async function fetchWithCache (fetch, toFetch, opts$) {
       }
     }
     //process.emit('warn', 'Downloading', toFetch)
+    process.emit('debug', 'Fetching from net', toFetch, opts.cacheBreak)
     let [res, data] = await fetch(toFetch, opts)
     // only use this new version if:
     // 1. the cached version was an error
@@ -128,6 +128,9 @@ async function fetchWithCache (fetch, toFetch, opts$) {
         content = data
       }
     }
+  }
+  if (meta.fromCache) {
+    process.emit('debug', 'Using cached', toFetch)
   }
   if (meta.status && meta.status === 403) {
     const err = new Error('Got status: ' + meta.status + ' ' + meta.statusText + ' for ' + toFetch)
