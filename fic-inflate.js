@@ -44,11 +44,11 @@ function ficInflate (fic, fetch, tracker) {
             }
           }).catch(err => {
             chapterInfo.error = err
-            process.emit('error', err.message)
+            process.emit('error', 'fetch', chapterInfo.fetchWith(), err)
           })
         } catch (err) {
           chapterInfo.error = err
-          process.emit('error', chapterInfo)
+          process.emit('error', 'getContent', chapterInfo.fetchWith(), err)
         }
       }).finally(() => {
         if (!fic.words) fic.words = words
