@@ -118,11 +118,11 @@ async function fetchWithCache (fetch, toFetch, opts$) {
     // successes.
     if (meta.status !== 200 || res.status === 200) {
       meta.finalUrl = res.url || toFetch
-      meta.status = res.status
-      meta.statusText = res.statusText
-      meta.headers = res.headers.raw()
       meta.fetchedAt = Date.now()
-      if (meta.status && meta.status !== 304) {
+      if (res.status && res.status !== 304) {
+        meta.status = res.status
+        meta.statusText = res.statusText
+        meta.headers = res.headers.raw()
         meta.fromCache = false
         await cache.set(toFetch, meta, data)
         content = data
