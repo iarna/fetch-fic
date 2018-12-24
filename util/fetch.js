@@ -111,14 +111,22 @@ async function fetchWithCache (fetch, toFetch, opts$) {
     }
     //process.emit('warn', 'Downloading', toFetch)
     let [res, data] = await fetch(toFetch, opts)
-    meta.finalUrl = res.url || toFetch
-    meta.status = res.status
-    meta.statusText = res.statusText
-    meta.headers = res.headers.raw()
-    meta.fetchedAt = Date.now()
-    if (meta.status && meta.status !== 304) {
-      await cache.set(toFetch, meta, data)
-      content = data
+    // only use this new version if:
+    // 1. the cached version was an error
+    // 2. OR the result from THIS fetch was a success
+    // this means that errors from attempts to update don't stomp on earlier
+    // successes.
+    if (meta.status !== 200 || res.status === 200) {
+      meta.finalUrl = res.url || toFetch
+      meta.status = res.status
+      meta.statusText = res.statusText
+      meta.headers = res.headers.raw()
+      meta.fetchedAt = Date.now()
+      if (meta.status && meta.status !== 304) {
+        meta.fromCache = false
+        await cache.set(toFetch, meta, data)
+        content = data
+      }
     }
   }
   return [meta, rejectIfHTTPError(toFetch, meta, content, new Error())]
