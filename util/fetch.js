@@ -88,6 +88,8 @@ async function fetchWithCache (fetch, toFetch, opts$) {
   let content
   try {
     [meta, content] = await cache.get(toFetch)
+    meta.fromCache = true
+    if (!meta.finalUrl) meta.finalUrl = toFetch
   } catch (ex) {}
   if (!content || cache.cacheBreak) {
     if (opts.noNetwork) throw NoNetwork(toFetch, opts)
