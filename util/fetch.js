@@ -129,35 +129,31 @@ async function fetchWithCache (fetch, toFetch, opts$) {
       }
     }
   }
-  return [meta, rejectIfHTTPError(toFetch, meta, content, new Error())]
-}
-
-function rejectIfHTTPError (fetchUrl, meta, payload, err) {
   if (meta.status && meta.status === 403) {
-    err.message = 'Got status: ' + meta.status + ' ' + meta.statusText + ' for ' + fetchUrl
+    const err = new Error('Got status: ' + meta.status + ' ' + meta.statusText + ' for ' + toFetch)
     err.code = meta.status
-    err.url = fetchUrl
+    err.url = toFetch
     err.meta = meta
     throw err
   } else if (meta.status && meta.status === 429) {
-    err.message = 'Got status: ' + meta.status + ' ' + meta.statusText + ' for ' + fetchUrl
+    const err = new Error('Got status: ' + meta.status + ' ' + meta.statusText + ' for ' + toFetch)
     err.code = meta.status
-    err.url = fetchUrl
+    err.url = toFetch
     err.meta = meta
     err.retryAfter = meta.headers['retry-after']
     throw err
   } else if (meta.status && meta.status === 404) {
-    err.message = 'Got status: ' + meta.status + ' ' + meta.statusText + ' for ' + fetchUrl
+    const err = new Error('Got status: ' + meta.status + ' ' + meta.statusText + ' for ' + toFetch)
     err.code = meta.status
-    err.url = fetchUrl
+    err.url = toFetch
     err.meta = meta
     throw err
   } else if (meta.status && (meta.status < 200 || meta.status >= 400) ) {
-    err.message = 'Got status: ' + meta.status + ' ' + meta.statusText + ' for ' + fetchUrl
+    const err = new Error('Got status: ' + meta.status + ' ' + meta.statusText + ' for ' + toFetch)
     err.code = meta.status
-    err.url = fetchUrl
+    err.url = toFetch
     err.meta = meta
     throw err
   }
-  return payload
+  return [meta, content]
 }
