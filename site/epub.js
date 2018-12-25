@@ -2,7 +2,7 @@
 const Site = use('site')
 const path = require('path')
 const qr = require('@perl/qr')
-const epubReader = require('epub-reader')
+const epubReader = require('@iarna/epub-reader')
 const tagmap = use('tagmap')('epub')
 const url = require('url')
 
