@@ -25,6 +25,7 @@ function rewriteLinks (fic, chapter, handleLink) {
     startAs = startAs.replace(qr`^(?:https?://)?(?:\s|%20)+`, '')
         .replace(qr`^https?://.*(https?//)`, 'https://')
         .replace(qr`^https?//`, 'https://')
+        .replace(qr.g`^\[URL=%27|%27\]$`, '')
     let src
     if (startAs.substr(0,4) !== 'http' && /^www[.]|[.]com$/.test(startAs)) {
       src = 'http://' + startAs
