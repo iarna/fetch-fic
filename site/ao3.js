@@ -108,7 +108,7 @@ class ArchiveOfOurOwn extends Site {
       fic.author = fic.author.replace(/ [(]orphan_account[)]$/, '')
     }
     const $metadata = $('ol.index').find('li').first()
-    const metadataLink = this.normalizeChapterLink($metadata.find('a').attr('href'), base)
+    const metadataLink = this.normalizeChapterLink($metadata.find('a').attr('href') || fic.link, base)
     const Chapter = use('fic').Chapter
     const chapter = await new Chapter({link: metadataLink}).getContent(fetch)
 
