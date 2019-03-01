@@ -33,10 +33,10 @@ class WattPad extends Site {
     fic.link = this.link
     fic.publisher = this.publisherName
     fic.chapterHeadings = true
-    const [, id] = fic.link.match(qr`/(\d+)`)
-    const apiUrl = `https://www.wattpad.com/api/v3/stories/${id}?include_deleted=false&fields=id%2Ctitle%2CvoteCount%2CreadCount%2CcommentCount%2Cdescription%2Curl%2CfirstPublishedPart%2Ccover%2Clanguage%2CisAdExempt%2Cuser(name%2Cusername%2Cavatar%2Cdescription%2Clocation%2Chighlight_colour%2CbackgroundUrl%2CnumLists%2CnumStoriesPublished%2CnumFollowing%2CnumFollowers%2Ctwitter)%2Ccompleted%2CnumParts%2ClastPublishedPart%2Cparts(id%2Ctitle%2Clength%2Curl%2Cdeleted%2Cdraft)%2Ctags%2Ccategories%2Crating%2Crankings%2CtagRankings%2Clanguage%2Ccopyright%2CsourceLink%2CfirstPartId%2Cdeleted%2Cdraft`
     let tags = []
     try {
+      const [, id] = fic.link.match(qr`/(\d+)`)
+      const apiUrl = `https://www.wattpad.com/api/v3/stories/${id}?include_deleted=false&fields=id%2Ctitle%2CvoteCount%2CreadCount%2CcommentCount%2Cdescription%2Curl%2CfirstPublishedPart%2Ccover%2Clanguage%2CisAdExempt%2Cuser(name%2Cusername%2Cavatar%2Cdescription%2Clocation%2Chighlight_colour%2CbackgroundUrl%2CnumLists%2CnumStoriesPublished%2CnumFollowing%2CnumFollowers%2Ctwitter)%2Ccompleted%2CnumParts%2ClastPublishedPart%2Cparts(id%2Ctitle%2Clength%2Curl%2Cdeleted%2Cdraft)%2Ctags%2Ccategories%2Crating%2Crankings%2CtagRankings%2Clanguage%2Ccopyright%2CsourceLink%2CfirstPartId%2Cdeleted%2Cdraft`
       const [meta, result] = await fetch(apiUrl)
       const data = JSON.parse(result)
       const base = data.url
