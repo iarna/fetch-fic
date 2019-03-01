@@ -25,6 +25,7 @@ class Authors extends Array {
     }
   }
   get (au) {
+    if (au == null) return false
     if (this.byLink.has(au)) return this[this.byLink.get(au)]
     if (this.byName.has(au.toLowerCase())) {
       const [ firstId ] = this.byName.get(au.toLowerCase())
@@ -40,6 +41,7 @@ class Authors extends Array {
     }
   }
   getAll (au) {
+    if (au == null) return false
     if (this.byName.has(au.toLowerCase())) return [...this.byName.get(au.toLowerCase())].map(_ => this[_])
     if (this.byLink.has(au)) return [this[this.byLink.get(au)]]
     try {
