@@ -513,6 +513,9 @@ class ChapterList extends Array {
     this.push(new Chapter(Object.assign({}, opts, {name, order: this.length})))
     this.sort()
   }
+  filter () {
+    return new ChapterList(...[].filter.apply(this, arguments))
+  }
   sort () {
     const types = {}
     types['chapter'] = 0
