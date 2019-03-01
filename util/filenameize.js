@@ -1,6 +1,7 @@
 'use strict'
 module.exports = filenameize
+const remove = require('diacritics').remove
 
 function filenameize (str) {
-  return str.replace(/\W/g, '-').replace(/--+/g, '-').replace(/^-|-$/g, '').toLowerCase()
+  return remove(str.normalize('NFKC')).replace(/\W/g, '-').replace(/--+/g, '-').replace(/^-|-$/g, '').toLowerCase()
 }
