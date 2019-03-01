@@ -24,6 +24,11 @@ class WattPad extends Site {
     this.shortName = 'wattpad'
     this.type = 'wattpad'
   }
+  normalizeLink (href, base) {
+    if (!href) return
+    return super.normalizeLink(href, base)
+      .replace(qr`/story/(\d+)-.*$`, '/story/$1')
+  }
   async getFicMetadata (fetch, fic) {
     fic.link = this.link
     fic.publisher = this.publisherName
