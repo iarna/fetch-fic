@@ -117,11 +117,15 @@ class ArchiveOfOurOwn extends Site {
     const chapterCounts = $stats.find('dd.chapters').text().trim().split('/')
     const written = chapterCounts[0]
     const planned = chapterCounts[1]
-    if (written === planned) {
-      if (written === '1') {
-        fic.tags.push('status:one-shot')
-      } else {
-        fic.tags.push('status:complete')
+    if (fic.tags.includes('freeform:Abandoned Work - Unfinished and Discontinued')) {
+      fic.tags.push('status:abandoned')
+    } else {
+      if (written === planned) {
+        if (written === '1') {
+          fic.tags.push('status:one-shot')
+        } else {
+          fic.tags.push('status:complete')
+        }
       }
     }
     fic.title = chapter.$('h2.title').text().trim()
