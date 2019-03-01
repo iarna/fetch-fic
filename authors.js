@@ -202,6 +202,18 @@ class Account {
     this.image = opts.image || undefined
     this.profile = opts.profile || undefined
   }
+  set link (url) {
+    try {
+      const authorSite = Site.fromUrl(url)
+      const nlink = authorSite.normalizeAuthorLink(url)
+      this._link = nlink
+    } catch (_) {
+      this._link = url
+    }
+  }
+  get link () {
+    return this._link
+  }
   toJSON () {
     return {
       name: this.name,
