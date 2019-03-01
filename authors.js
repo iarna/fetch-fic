@@ -58,7 +58,13 @@ class Authors extends Array {
     const id = this.length
     this.push(author)
     for (let au of author.account) {
-      this.byLink.set(au.link, id)
+      try {
+        const authorSite = Site.fromUrl(au.link)
+        const nlink = authorSite.normalizeAuthorLink(au.link)
+        this.byLink.set(nlink, id)
+      } catch (_) {
+        this.byLink.set(au.link, id)
+      }
       if (!this.byName.has(au.name.toLowerCase())) this.byName.set(au.name.toLowerCase(), new Set())
       this.byName.get(au.name.toLowerCase()).add(id)
     }
