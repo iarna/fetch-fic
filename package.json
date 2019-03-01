@@ -19,6 +19,7 @@
   "author": "Rebecca Turner <me@re-becca.org> (http://re-becca.org/)",
   "license": "ISC",
   "dependencies": {
+    "@fanfic/tag-tools": "^1.0.0",
     "@iarna/epub-reader": "^1.0.0",
     "@iarna/lib": "^1.0.5",
     "@iarna/rtf-to-html": "^1.1.0",
