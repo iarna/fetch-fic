@@ -3,7 +3,9 @@ const url = require('url')
 const Site = use('site')
 const moment = require('moment')
 const tagmap = use('tagmap')('ffnet')
+const wordmap = use('tagmap')('words')
 const qr = require('@perl/qr')
+const wordsFromDesc = use('words-from-desc')
 
 class FanFictionNet extends Site {
   static matches (siteUrlStr) {
@@ -114,8 +116,6 @@ class FanFictionNet extends Site {
         fic.tags.push('status:complete')
       }
     }
-    fic.rawTags = fic.tags.slice()
-    fic.tags = tagmap(fic.tags)
     if ($chapters.length) {
       $chapters.each((ii, vv) => {
         const chapterName = chapter.$(vv).text().match(/^\d+[.](?: (.*))?$/)
@@ -129,6 +129,16 @@ class FanFictionNet extends Site {
     const last = fic.chapters[fic.chapters.length - 1]
     if (!first.created) first.created = fic.created || (info && (info.published || info.updated)) || fic.modified
     if (!last.modified) last.modified = fic.modified || (info && (info.updated || info.published)) || fic.created
+
+    let titleAndDesc = fic.title
+    // words that imply that something is being negated make the desc unsafe
+    // to troll for keywords
+    if (!/\b(no|exclud\S+|none)\b/i.test(fic.description)) {
+      titleAndDesc += '\n' + fic.description
+    }
+    const words = wordsFromDesc(titleAndDesc).map(_ => `freeform:${_}`)
+    fic.rawTags = fic.tags.concat(wordmap(words).changed())
+    fic.tags = tagmap(fic.rawTags)
   }
 
   async getChapter (fetch, chapterInfo) {

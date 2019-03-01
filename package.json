@@ -39,6 +39,7 @@
     "fs-write-stream-atomic": "^1.0.10",
     "funstream": "^3.1.0",
     "gauge": "^2.7.4",
+    "html-entities-decoder": "^1.0.0",
     "html-escape": "^2.0.0",
     "iconv-lite": "^0.4.19",
     "lodash.uniq": "^4.5.0",
@@ -58,6 +59,7 @@
     "toml": "^2.3.3",
     "tough-cookie": "^2.3.3",
     "uuid": "^3.1.0",
+    "wink-porter2-stemmer": "^2.0.0",
     "xml2js": "^0.4.19",
     "yargs": "^6.6.0"
   },

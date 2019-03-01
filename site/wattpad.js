@@ -3,7 +3,9 @@ const url = require('url')
 const Site = use('site')
 const moment = require('moment')
 const tagmap = use('tagmap')('wattpad')
+const wordmap = use('tagmap')('words')
 const qr = require('@perl/qr')
+const wordsFromDesc = use('words-from-desc')
 
 class WattPad extends Site {
   static matches (siteUrlStr) {
@@ -28,6 +30,7 @@ class WattPad extends Site {
     fic.chapterHeadings = true
     const [, id] = fic.link.match(qr`/(\d+)`)
     const apiUrl = `https://www.wattpad.com/api/v3/stories/${id}?include_deleted=false&fields=id%2Ctitle%2CvoteCount%2CreadCount%2CcommentCount%2Cdescription%2Curl%2CfirstPublishedPart%2Ccover%2Clanguage%2CisAdExempt%2Cuser(name%2Cusername%2Cavatar%2Cdescription%2Clocation%2Chighlight_colour%2CbackgroundUrl%2CnumLists%2CnumStoriesPublished%2CnumFollowing%2CnumFollowers%2Ctwitter)%2Ccompleted%2CnumParts%2ClastPublishedPart%2Cparts(id%2Ctitle%2Clength%2Curl%2Cdeleted%2Cdraft)%2Ctags%2Ccategories%2Crating%2Crankings%2CtagRankings%2Clanguage%2Ccopyright%2CsourceLink%2CfirstPartId%2Cdeleted%2Cdraft`
+    let tags = []
     try {
       const [meta, result] = await fetch(apiUrl)
       const data = JSON.parse(result)
@@ -45,7 +48,7 @@ class WattPad extends Site {
       data.parts.forEach(part => {
         fic.addChapter({name: part.title.trim(), link: part.url})
       })
-      const tags = data.tags.map(_ => `freeform:${_}`)
+      tags = data.tags.map(_ => `freeform:${_}`)
       if (data.completed) {
         if (fic.chapters.length === 1) {
           tags.push('status:one-shot')
@@ -54,7 +57,6 @@ class WattPad extends Site {
         }
       }
       fic.rawTags = tags.slice()
-      fic.tags = tagmap(tags)
     } catch (ex) {
       process.emit('error', ex.message)
       const [meta, html] = await fetch(this.link.replace(qr`(/story/[^/]+)/?$`, '$1/parts'))
@@ -88,7 +90,6 @@ class WattPad extends Site {
         const name = $a.text().trim()
         fic.addChapter({name, link})
       })
-      const tags = []
       const $tags = $content.find('ul.tag-items')
       $tags.find('div').each((ii, div) => {
         const $div = $(div)
@@ -104,9 +105,16 @@ class WattPad extends Site {
           tags.push('status:complete')
         }
       }
-      fic.rawTags = tags.slice()
-      fic.tags = tagmap(tags)
     }
+    let titleAndDesc = fic.title
+    // words that imply that something is being negated make the desc unsafe
+    // to troll for keywords
+    if (!/\b(no|exclud\S+|none)\b/i.test(fic.notes)) {
+      titleAndDesc += '\n' + fic.notes
+    }
+    const words = wordsFromDesc(titleAndDesc).map(_ => `freeform:${_}`)
+    fic.rawTags = tags.concat(wordmap(words).changed())
+    fic.tags = tagmap(fic.rawTags)
   }
   async getChapter (fetch, chapterInfo) {
     const [meta, html] = await fetch(chapterInfo.fetchWith())

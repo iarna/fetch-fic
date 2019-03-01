@@ -4,8 +4,10 @@ const Site = use('site')
 const cache = use('cache')
 const moment = require('moment')
 const tagmap = use('tagmap')('ao3')
+const wordmap = use('tagmap')('words')
 const qr = require('@perl/qr')
 const forEach = use('for-each')
+const wordsFromDesc = use('words-from-desc')
 
 class ArchiveOfOurOwn extends Site {
   static matches (siteUrlStr) {
@@ -122,8 +124,17 @@ class ArchiveOfOurOwn extends Site {
         fic.tags.push('status:complete')
       }
     }
-    fic.rawTags = fic.tags.slice()
-    fic.tags = tagmap(fic.tags)
+    fic.title = chapter.$('h2.title').text().trim()
+    fic.description = (chapter.$('.summary').find('.userstuff').html() || '').replace(/<p>/g, '\n<p>').replace(/^\s+|\s+$/g, '')
+    let titleAndDesc = fic.title
+    // words that imply that something is being negated make the desc unsafe
+    // to troll for keywords
+    if (!/\b(no|exclud\S+|none)\b/i.test(fic.description)) {
+      titleAndDesc += '\n' + fic.description
+    }
+    const words = wordsFromDesc(titleAndDesc).map(_ => `freeform:${_}`)
+    fic.rawTags = fic.tags.concat(wordmap(words).changed())
+    fic.tags = tagmap(fic.rawTags)
     fic.created = moment.utc($stats.find('dd.published').text().trim())
     const modified = $stats.find('dd.status').text().trim()
     fic.modified = modified && moment.utc(modified)
@@ -132,8 +143,6 @@ class ArchiveOfOurOwn extends Site {
     fic.kudos = Number($stats.find('dd.kudos').text().trim())
     fic.bookmarks = Number($stats.find('dd.bookmarks').text().trim())
     fic.hits = Number($stats.find('dd.hits').text().trim())
-    fic.title = chapter.$('h2.title').text().trim()
-    fic.description = (chapter.$('.summary').find('.userstuff').html() || '').replace(/<p>/g, '\n<p>').replace(/^\s+|\s+$/g, '')
     const chapterList = $('ol.index').find('li')
     chapterList.each((ii, vv) => {
       const $vv = $(vv)

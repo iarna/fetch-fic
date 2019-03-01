@@ -4,9 +4,11 @@ const url = require('url')
 const Site = use('site')
 const moment = require('moment-timezone')
 const tagmap = use('tagmap')('xenforo')
+const wordmap = use('tagmap')('words')
 const uniqTags = use('tagmap')('raw')
 const qr = require('@perl/qr')
 const cache = use('cache')
+const wordsFromDesc = use('words-from-desc')
 
 const knownSites = {
   'forums.sufficientvelocity.com': 'Sufficient Velocity',
@@ -63,7 +65,8 @@ class Xenforo extends Site {
     const $ = await fetchWithCheerio(this.threadmarkUrl())
 
     const base = $('base').attr('href') || this.threadmarkUrl()
-    const tat = this.detagTitle(this.scrapeTitle($))
+    const rawTitle = this.scrapeTitle($)
+    const tat = this.detagTitle(rawTitle)
     fic.title = tat.title
     fic.tags = fic.tags.concat(tat.tags)
     const $sections = $('div.threadmarks ol.tabs li')
@@ -108,11 +111,18 @@ class Xenforo extends Site {
     let findFirst = fic.chapters.filter(_ => _.type === 'chapter')
     if (findFirst.length === 0) findFirst = fic.chapters
     const chapter = await findFirst[0].getContent(fetch.withOpts({cacheBreak: false}))
-    fic.rawTags = fic.tags.concat(chapter.chapterTags)
-    fic.tags = tagmap(fic.tags.concat(chapter.chapterTags))
+    fic.notes = this.scrapeTitle($) + '\n\n' + chapter.$content.text().trim().replace(/^([^\n]+)[\s\S]*?$/, '$1')
+    let titleAndDesc = fic.title
+    // words that imply that something is being negated make the desc unsafe
+    // to troll for keywords
+    if (!/\b(no|exclud\S+|none)\b/i.test(fic.notes)) {
+      titleAndDesc += '\n' + fic.notes
+    }
+    const words = wordsFromDesc(titleAndDesc).map(_ => `freeform:${_}`)
+    fic.rawTags = fic.tags.concat(chapter.chapterTags).concat(wordmap(words).changed())
+    fic.tags = tagmap(fic.rawTags)
     fic.author = chapter.author
     fic.authorUrl = this.normalizeAuthorLink(chapter.authorUrl)
-    fic.notes = chapter.$content.text().trim().replace(/^([^\n]+)[\s\S]*?$/, '$1')
   }
 
   async scrapeFicMetadata (fetch, fic) {
