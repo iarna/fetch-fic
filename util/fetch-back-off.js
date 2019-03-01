@@ -132,7 +132,7 @@ async function runQueue () {
         if (info.tries > maxRetries) throw err
         const retryDelay = 1500 + (500* (info.tries ** 2))
         if (err.code === 408 || err.type === 'body-timeout' || /timeout/i.test(err.message)) {
-          process.emit('warn', `Timeout on ${uri} sleeping`, retryDelay / 1000, 'seconds')
+          process.emit('warn', `Timeout on ${info.uri} sleeping`, retryDelay / 1000, 'seconds')
           host.queue.unshift(info)
           host.nextReq = Number(moment()) + retryDelay
         } else if (err.code === 429) {
