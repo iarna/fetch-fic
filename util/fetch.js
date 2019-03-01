@@ -94,7 +94,7 @@ async function fetchWithCache (fetch, toFetch, opts$) {
     if (opts.noNetwork) throw NoNetwork(toFetch, opts)
     const cookies = await getCookieStringP(opts.cookieJar, toFetch)
     delete opts.cookieJar
-    if (!opts.headers) opts.headers = {}
+    opts.headers = Object.assign({}, opts.headers || {})
     opts.headers.Cookie = cookies
     const domain = url.parse(toFetch).hostname.replace(/^forums?[.]/, '')
     if (meta.headers && meta.headers['last-modified']) {
