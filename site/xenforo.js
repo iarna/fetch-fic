@@ -69,6 +69,9 @@ class Xenforo extends Site {
     const tat = this.detagTitle(rawTitle)
     fic.title = tat.title
     fic.tags = fic.tags.concat(tat.tags)
+    if (/(?<!never )\b(complete|finished)\b/.test(rawTitle)) {
+      fic.tags.push('status:complete')
+    }
     const $sections = $('div.threadmarks ol.tabs li')
     let leastRecent
     let mostRecent
