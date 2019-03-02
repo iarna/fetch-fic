@@ -540,11 +540,10 @@ class Xenforo extends Site {
                .replace(/[/]sufficient/, '/forums.sufficient')
     return href
   }
+
   normalizeAuthorLink (href, base) {
-    if (!href) return href
-    return this.normalizeLink(href, base)
-      .replace(qr`/members/[^.]+[.](\d+)/?$`, '/members/$1')
-      .replace(qr`/forum[.](questionablequesting[.]com)/`, '/$1/')
+    return super.normalizeAuthorLink(href, base)
+      .replace(qr`/members/([^/]+[.])?(\d+)/?$`, '/members/$2')
   }
 
   dateTime (elem, tz) {
