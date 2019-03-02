@@ -139,6 +139,20 @@ class WattPad extends Site {
     const authCookies = require(`${__dirname}/../.authors_cookies.json`)
     const [res, auhtml] = await fetch(link)
     const $ = cheerio.load(auhtml)
+    const scripts = []
+    $('script').each((ii, script) => scripts.push($(script).html().trim()))
+    for (let scriptText of scripts) {
+      if (!/^window.prefetched/.test(scriptText)) continue
+      const info = JSON.parse(scriptText.replace(/^window.prefetched = (.*);$/, '$1'))
+      const [userKey] = Object.keys(info).filter(_ => /^user.[^.]+$/.test(_))
+      const [user] = info[userKey].data
+      return {
+        name: user.username || externalName,
+        link,
+        profile: user.description,
+        image: user.avatar
+      }
+    }
     const profile = fixHTML($('section.profile-about div.description').html()).replace(/\n/g, '<br>\n')
     const name = $('h1.profile-name').text().trim() || externalName.trim()
     const image = $('div.avatar img').attr('src')
