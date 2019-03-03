@@ -14,7 +14,7 @@ class Site {
   static fromUrl (rawUrl) {
     if (this.registered.length === 0) {
       const sitesAvailable = qw`
-        xenforo fanfictionnet ao3 ao3/series wattpad
+        xenforo fanfictionnet ao3 ao3/series wattpad royalroad
         seananmcguire worm worm2 pgte
         deviantart gravatar wp-facebook wikipedia youtube nanodesutranslations
         epub scrivener local
