@@ -46,7 +46,11 @@ class RoyalRoad extends Site {
     });
     fic.rawTags = fic.tags;
     fic.tags = tagmap(fic.tags);
-    fic.cover = $('img.thumbnail').attr('src');
+    let cover = $('img.thumbnail').attr('src');
+    // Generic covers are hosted on /Content/... instead of cdn
+    if (!cover.startsWith('https://')) {
+      cover = `https://www.royalroad.com${cover}`;
+    }
   }
   async getChapter (fetch, chapterInfo) {
     const [meta, html] = await fetch(chapterInfo.fetchWith());
