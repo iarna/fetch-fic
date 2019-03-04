@@ -118,7 +118,7 @@ const argv = yargs
     handler: setCommand(ff.generate)
   })
   .command({
-    command: 'cache-clear <url>',
+    command: 'cache-clear <url...>',
     desc: 'Remove a URL from the cache',
     aliases: ['clear-cache', 'clear'],
     builder: yargs => {

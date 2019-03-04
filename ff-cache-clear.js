@@ -4,6 +4,8 @@ module.exports = cacheClear
 const cache = use('cache')
 
 async function cacheClear (args) {
-  await cache.clearUrl(args.url)
+  for (let url of args.url) {
+    await cache.clearUrl(url)
+  }
   process.stdout.write('cache cleared\n')
 }
