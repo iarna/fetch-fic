@@ -36,6 +36,7 @@ class Site {
   }
 
   normalizeLink (href, base) {
+    if (!href) return href
     // resolve base url
     if (base) {
       const url = require('url')
