@@ -76,11 +76,13 @@ class Xenforo extends Site {
     let leastRecent
     let mostRecent
     const tz = this.getTz($)
-    const loadThreadmarks = (type, $) => {
+    const loadThreadmarks = async (type, $, tmLink) => {
       let chapters = $('li.threadmarkListItem')
       if (chapters.length === 0) chapters = $('li.threadmarkItem') // older
       if (chapters.length === 0) chapters = $('li.primaryContent') // qq
-      chapters.each((ii, chapter) => {
+      const cl = []
+      chapters.each((ii, chapter) => { cl.push(chapter) })
+      for (let chapter of cl) {
         const $chapter = $(chapter)
         $chapter.find('li').remove() // remove child chapters so that $link.text() works right
         if ($chapter.find('a.username').length) return
@@ -90,8 +92,30 @@ class Xenforo extends Site {
         const created = this.dateTime($chapter.find('.DateTime'), tz)
         if (!leastRecent || created < leastRecent) leastRecent = created
         if (!mostRecent || created > mostRecent) mostRecent = created
-        fic.chapters.addChapter({name, type, link, created})
-      })
+        if (link) {
+          fic.chapters.addChapter({name, type, link, created})
+        } else {
+          try {
+            const min = $chapter.attr('data-range-min')
+            const max = $chapter.attr('data-range-max')
+            const threadId = $chapter.attr('data-thread-id')
+            const categoryId = $chapter.attr('data-category-id')
+            const requestUri = url.parse(tmLink).pathname
+            const [headers, body] = await fetch(url.resolve(base, '/index.php?threads/threadmarks/load-range'), {
+              method: 'POST',
+              cacheURL: url.resolve(base, `/threads/threadmarks/load-range?min=${min}&max=${max}&thread_id=${threadId}&category_id=${categoryId}`),
+              headers: {
+                'content-type': 'application/x-www-form-urlencoded'
+              },
+              body: `min=${min}&max=${max}&thread_id=${threadId}&category_id=${categoryId}&_xfRequestUri=${requestUri}&_xfResponseType=json`
+            })
+            const cheerio = require('cheerio')
+            await loadThreadmarks(type, cheerio.load(JSON.parse(body).templateHtml), tmLink)
+          } catch (ex) {
+            console.error(ex)
+          }
+        }
+      }
     }
     if ($sections.length > 1) {
       const sections = []
@@ -103,10 +127,10 @@ class Xenforo extends Site {
         sections.push({type, link})
       })
       for (let section of sections) {
-        loadThreadmarks(section.type, await fetchWithCheerio(section.link))
+        await loadThreadmarks(section.type, await fetchWithCheerio(section.link), section.link)
       }
     } else {
-      loadThreadmarks('chapter', $)
+      await loadThreadmarks('chapter', $, fic.link)
     }
     fic.created = leastRecent
     fic.modified = mostRecent

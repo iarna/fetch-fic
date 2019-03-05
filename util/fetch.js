@@ -85,8 +85,12 @@ async function fetchWithCache (fetch, toFetch, opts$) {
   if (opts.cacheBreak) await cache.invalidateUrl(toFetch)
   let meta = {}
   let content
+  let cacheURL = toFetch
   try {
-    [meta, content] = await cache.get(toFetch)
+    if (opts.cacheURL) {
+      cacheURL = opts.cacheURL
+    }
+    [meta, content] = await cache.get(cacheURL)
     meta.fromCache = true
     if (!meta.finalUrl) meta.finalUrl = toFetch
   } catch (ex) {}
@@ -124,7 +128,7 @@ async function fetchWithCache (fetch, toFetch, opts$) {
         meta.statusText = res.statusText
         meta.headers = res.headers.raw()
         meta.fromCache = false
-        await cache.set(toFetch, meta, data)
+        await cache.set(cacheURL, meta, data)
         content = data
       }
     }
