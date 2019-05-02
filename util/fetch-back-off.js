@@ -122,10 +122,23 @@ async function runQueue () {
       host.queue.shift()
       host.lastReq = now
       ++host.flying
-      info.fetch(info.uri, info.opts).then(res => {
-        return res.buffer().then(content => {
-          return [res, content]
-        })
+      info.fetch(info.uri, info.opts).then(async res => {
+        const content = await res.buffer()
+        if (res.status === 429) {
+          let retryAfter = 3000 + (500* (info.tries ** 2))
+          if (meta.headers['retry-after']) {
+            if (/^\d+$/.test(meta.headers['retry-after'])) {
+              retryAfter = Number(meta.headers['retry-after']) * 1000
+            } else {
+              retryAfter = (moment().unix() - moment.utc(meta.headers['retry-after'], 'ddd, DD MMM YYYY HH:mm:ss ZZ').unix()) * 1000
+            }
+          }
+          process.emit('warn', 'Request backoff requested, sleeping', retryAfter / 1000, 'seconds', `(${meta.headers['retry-after'] ? 'at: ' + meta.headers['retry-after'] + ', ' : ''}now: ${moment.utc()})`)
+          host.queue.unshift(info)
+          host.nextReq = Number(moment()) + retryAfter
+        } else {
+          return info.done([res, content])
+        }
       }).catch(err => {
         if (!info.tries) info.tries = 0
         ++info.tries
@@ -153,7 +166,7 @@ async function runQueue () {
       }).finally(() => {
         -- host.flying
         host.lastComplete = Number(moment())
-      }).then(info.done, err => info.done(Promise.reject(err)))
+      }).catch(err => info.done(Promise.reject(err)))
     }
   }
 }

@@ -94,7 +94,7 @@ async function fetchWithCache (fetch, toFetch, opts$) {
     meta.fromCache = true
     if (!meta.finalUrl) meta.finalUrl = toFetch
   } catch (ex) {}
-  if (!content || cache.cacheBreak) {
+  if (meta.status === 429 || !content || cache.cacheBreak) {
     if (opts.noNetwork) throw NoNetwork(toFetch, opts)
     const cookies = await getCookieStringP(opts.cookieJar, toFetch)
     delete opts.cookieJar
@@ -136,20 +136,20 @@ async function fetchWithCache (fetch, toFetch, opts$) {
   if (meta.fromCache) {
     process.emit('debug', 'Using cached', toFetch)
   }
-  if (meta.status && meta.status === 403) {
+  if (meta.status === 403) {
     const err = new Error('Got status: ' + meta.status + ' ' + meta.statusText + ' for ' + toFetch)
     err.code = meta.status
     err.url = toFetch
     err.meta = meta
     throw err
-  } else if (meta.status && meta.status === 429) {
+  } else if (meta.status === 429) {
     const err = new Error('Got status: ' + meta.status + ' ' + meta.statusText + ' for ' + toFetch)
     err.code = meta.status
     err.url = toFetch
     err.meta = meta
     err.retryAfter = meta.headers['retry-after']
     throw err
-  } else if (meta.status && meta.status === 404) {
+  } else if (meta.status === 404) {
     const err = new Error('Got status: ' + meta.status + ' ' + meta.statusText + ' for ' + toFetch)
     err.code = meta.status
     err.url = toFetch
