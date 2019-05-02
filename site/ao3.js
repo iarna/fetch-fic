@@ -236,7 +236,16 @@ class ArchiveOfOurOwn extends Site {
         const viewAdult = hasViewAdult.test(chapterInfo.fetchWith())
         const baseLink = chapterInfo.fetchWith().replace(hasViewAdult, '')
         if (location.indexOf(baseLink) !== -1) {
-          if (viewAdult) location += '?view_adult=true'
+          if (viewAdult) {
+            if (/view_adult=true/.test(location)) {
+              throw err
+            }
+            if (/[?]/.test(location)) {
+              location += '&view_adult=true'
+            } else {
+              location += '?view_adult=true'
+            }
+          }
           chapterInfo.fetchFrom = location
           return this.getChapter(fetch, chapterInfo)
         }
