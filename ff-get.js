@@ -59,9 +59,9 @@ async function _reallyRead (urls, args) {
     maxConcurrency: 6,
     requestsPerSecond: 10,
     perSite: {
-      "www.alternatehistory.com": {
-        maxConcurrency: 1,
-        requestsPerSecond: 1,
+      "forum.questionablequesting.com": {
+        maxConcurrency: 6,
+        requestsPerSecond: 4,
       },
       "forums.spacebattles.com": {
         maxConcurrency: 1,
@@ -71,13 +71,17 @@ async function _reallyRead (urls, args) {
         maxConcurrency: 6,
         requestsPerSecond: 4,
       },
-      "forum.questionablequesting.com": {
-        maxConcurrency: 6,
-        requestsPerSecond: 4,
-      },
       "questionablequesting.com": {
         maxConcurrency: 6,
         requestsPerSecond: 4,
+      },
+      "www.alternatehistory.com": {
+        maxConcurrency: 1,
+        requestsPerSecond: 1,
+      },
+      "www.royalroad.com": {
+        maxConcurrency: 1,
+        requestsPerSecond: 1,
       },
     },
     timeout: 3500
