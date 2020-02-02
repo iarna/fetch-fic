@@ -20,8 +20,8 @@ class FictionPress extends Site {
     super(siteUrlStr)
     this.publisher = 'www.fictionpress.com'
     this.publisherName = 'FictionPress.com'
-    this.type = 'ffnet'
-    this.shortName = 'ffnet'
+    this.type = 'fictionpress'
+    this.shortName = 'fictionpress'
     const siteUrl = url.parse(siteUrlStr)
     const path = siteUrl.pathname || siteUrl.path || ''
     const ficMatch = path.match(qr`^/s/(\d+)(?:/\d+(?:/(.*))?)?`)
