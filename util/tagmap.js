@@ -31,5 +31,17 @@ if (!loaded) {
 module.exports = function mapTags (site, tags, opts) {
   if (!tags) return (tags, opts) => mapTags(site, tags, opts)
   if (!opts) opts = {}
-  return tagmap.translateTags(site, tags)
+
+  // If tagmap.toml doesn't exist, this won't be initialized
+  if (typeof tagmap.translateTags === 'function') {
+    return tagmap.translateTags(site, tags)
+  }
+
+  // Passable fallback
+  const empty = () => undefined;
+  tagmap = {
+    changed: empty
+  };
+
+  return tagmap;
 }
