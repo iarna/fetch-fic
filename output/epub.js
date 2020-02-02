@@ -32,9 +32,9 @@ class OutputEpub extends Output {
     const Streampub = require('streampub')
     const statusRe = /^status:(stalled|abandoned|complete|one-shot)$/
     const fandomRe = /^fandom:/
-    let tags = this.fic.tags && this.fic.tags.filter(tag => !fandomRe.test(tag) && !statusRe.test(tag))
+    let tags = this.fic.tags && this.fic.tags.filter && this.fic.tags.filter(tag => !fandomRe.test(tag) && !statusRe.test(tag))
     let modified = moment(this.fic.modified || this.fic.started || this.fic.created || moment())
-    let status = this.fic.tags && this.fic.tags.filter(tag => statusRe.test(tag))[0]
+    let status = this.fic.tags && this.fic.tags.filter && this.fic.tags.filter(tag => statusRe.test(tag))[0]
     if (status) status = status.replace(/^status:/, '')
     if (!status && modified) {
       const oneMonthAgo = moment().subtract(1, 'month')
@@ -47,7 +47,7 @@ class OutputEpub extends Output {
         status = 'in-progress'
       }
     }
-    let fandom = this.fic.tags && this.fic.tags.filter(tag => fandomRe.test(tag)).map(tag => tag.replace(fandomRe, ''))[0]
+    let fandom = this.fic.tags && this.fic.tags.filter && this.fic.tags.filter(tag => fandomRe.test(tag)).map(tag => tag.replace(fandomRe, ''))[0]
     const epub = new Streampub({
       id: this.fic.id,
       title: this.fic.title,
